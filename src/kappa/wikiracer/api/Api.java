@@ -10,13 +10,14 @@ import kappa.wikiracer.wiki.LinkRequest;
 @RestController
 public class Api {
 
-	@RequestMapping(value = "/api/test/", method = RequestMethod.GET)
-	public String test() {
-		return "test";
-	}
+  @RequestMapping(value = "/api/test/", method = RequestMethod.GET)
+  public String test() {
+    return "test";
+  }
 
-	@RequestMapping(value = "/api/test/wiki", method = RequestMethod.GET)
-	public String wiki(@RequestParam(value = "title", defaultValue = "Albert Einstein") String title) {
-		return LinkRequest.sendRequest(title);
-	}
+  @RequestMapping(value = "/api/test/wiki", method = RequestMethod.GET)
+  public String wiki(
+      @RequestParam(value = "title", defaultValue = "Albert Einstein") String title) {
+    return LinkRequest.sendRequest(title);
+  }
 }
