@@ -1,0 +1,42 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.10.RELEASE")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'application'
+
+mainClassName = "kappa.wikiracer.runner.Runner"
+
+sourceSets.main.java.srcDirs = ['src']
+
+version = '0.01'
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'kappa.wikiracer.runner.runner'
+    }
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+defaultTasks 'run'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+	compile "org.springframework.boot:spring-boot-starter-web"
+	compile "org.json:json"
+    testCompile 'junit:junit:4.12'
+}	
