@@ -148,3 +148,9 @@ gradle-app.setting
 .idea/artifacts
 .idea/dbnavigator.xml
 src/META-INF
+
+gradlew
+
+gradlew.bat
+
+gradle/*
