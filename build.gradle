@@ -19,17 +19,14 @@ sourceSets.main.java.srcDirs = ['src']
 
 version = '0.01'
 
-jar {
-    manifest {
-        attributes 'Main-Class': 'kappa.wikiracer.runner.runner'
-    }
-
-    from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-    }
+task stage {
+    dependsOn build
 }
 
-defaultTasks 'run'
+jar {
+    baseName = 'wikiracer'
+    version = '0.01'
+}
 
 repositories {
     mavenCentral()
