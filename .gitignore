@@ -154,3 +154,5 @@ gradlew
 gradlew.bat
 
 gradle/*
+
+keystore.p12
