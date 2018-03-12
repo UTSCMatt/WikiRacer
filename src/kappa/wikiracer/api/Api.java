@@ -6,17 +6,24 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import kappa.wikiracer.dao.TestDao;
 import kappa.wikiracer.wiki.LinkRequest;
 
 @RestController
 public class Api {
   
-  @Value("${secret.test}")
-  private String secretTest;
+  @Value("${spring.datasource.username}")
+  private String dbUsername;
+  
+  @Value("${spring.datasource.url}")
+  private String dbUrl;
+  
+  @Value("${spring.datasource.password}")
+  private String dbPassword;
 
   @RequestMapping(value = "/api/test/", method = RequestMethod.GET)
   public String test() {
-    return secretTest;
+    return new TestDao(dbUrl, dbUsername, dbPassword).test();
   }
 
   @RequestMapping(value = "/api/test/wiki", method = RequestMethod.GET)
