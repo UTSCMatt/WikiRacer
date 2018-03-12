@@ -4,6 +4,7 @@ buildscript {
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.10.RELEASE")
+        classpath 'com.github.mowedgrass:jasypt-gradle-boot-plugin:0.1.33'
     }
 }
 
@@ -12,6 +13,7 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'application'
+apply plugin: 'encrypt'
 
 mainClassName = "kappa.wikiracer.runner.Runner"
 
@@ -35,5 +37,6 @@ repositories {
 dependencies {
 	compile "org.springframework.boot:spring-boot-starter-web"
 	compile "org.json:json"
+	compile group: 'com.github.ulisesbocchio', name: 'jasypt-spring-boot-starter', version: '1.18'
     testCompile 'junit:junit:4.12'
 }	
