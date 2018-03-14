@@ -1,7 +1,9 @@
 package kappa.wikiracer.api;
 
 import java.sql.SQLException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import kappa.wikiracer.dao.UserDao;
 import kappa.wikiracer.exception.UserNotFoundException;
@@ -50,8 +52,9 @@ public class Api {
 
   /*** Testing API Ends ***/
 
-  private void setSession(HttpServletRequest req, String username) {
+  private void setSession(HttpServletRequest req, HttpServletResponse res, String username) {
     req.getSession().setAttribute("username", username);
+    res.setHeader("Set-Cookie", "JSESSIONID=" + req.getSession().getId() + "; HttpOnly; SameSite=strict");
   }
 
   private void invalidateSession(HttpServletRequest req) {
@@ -61,13 +64,13 @@ public class Api {
     }
   }
 
-  @RequestMapping(value = "/login", method = RequestMethod.POST)
-  public ResponseEntity<String> login(HttpServletRequest req, String username, String password) {
+  @RequestMapping(value = "/login/", method = RequestMethod.POST)
+  public ResponseEntity<String> login(HttpServletRequest req, HttpServletResponse res, String username, String password) {
     try {
       String hash = new UserDao(dbUrl, dbUsername, dbPassword).getUserPasswordHash(username);
       if (UserVerification.checkPassword(password, hash)) {
         invalidateSession(req);
-        setSession(req, username);
+        setSession(req, res, username);
         return new ResponseEntity<String>("Success", HttpStatus.OK);
       } else {
         return new ResponseEntity<String>("Invalid username or password", HttpStatus.UNAUTHORIZED);
@@ -79,8 +82,8 @@ public class Api {
     }
   }
 
-  @RequestMapping(value = "/signup", method = RequestMethod.POST)
-  public ResponseEntity<String> signup(HttpServletRequest req, String username, String password) {
+  @RequestMapping(value = "/signup/", method = RequestMethod.POST)
+  public ResponseEntity<String> signup(HttpServletRequest req, HttpServletResponse res, String username, String password) {
     username = StringUtils.trimToEmpty(username);
     password = StringUtils.trimToEmpty(password);
     if (!UserVerification.usernameIsValid(username)) {
@@ -90,7 +93,7 @@ public class Api {
       new UserDao(dbUrl, dbUsername, dbPassword)
           .createUser(username, UserVerification.createHash(password));
       invalidateSession(req);
-      setSession(req, username);
+      setSession(req, res, username);
       return new ResponseEntity<String>("Success", HttpStatus.OK);
     } catch (SQLException ex) {
       if (ex.getMessage().equals("Username already in use")) {
@@ -98,5 +101,17 @@ public class Api {
       }
       return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  @RequestMapping(value = "/logoff/", method = RequestMethod.GET)
+  public ResponseEntity<String> logoff(HttpServletRequest req, HttpServletResponse res) {
+    invalidateSession(req);
+    for (Cookie cookie : req.getCookies()) {
+      cookie.setMaxAge(0);
+      cookie.setValue(null);
+      cookie.setPath("/");
+      res.addCookie(cookie);
+    }
+    return new ResponseEntity<String>("Logged off", HttpStatus.OK);
   }
 }
