@@ -1,10 +1,12 @@
 package kappa.wikiracer.api;
 
 import java.sql.SQLException;
+import java.util.Set;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import kappa.wikiracer.dao.LinkDao;
 import kappa.wikiracer.dao.UserDao;
 import kappa.wikiracer.exception.UserNotFoundException;
 import kappa.wikiracer.util.UserVerification;
@@ -44,10 +46,13 @@ public class Api {
     }
   }
 
-  @RequestMapping(value = "/api/test/wiki", method = RequestMethod.GET)
-  public String wiki(
-      @RequestParam(value = "title", defaultValue = "Albert Einstein") String title) {
-    return LinkRequest.sendRequest(title);
+  @RequestMapping(value = "/api/test/", method = RequestMethod.POST)
+  public ResponseEntity<String> test(String parent, String child) {
+    try {
+      return new ResponseEntity<String>(hasLink(parent, child).toString(), HttpStatus.OK);
+    } catch (SQLException ex) {
+      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   /*** Testing API Ends ***/
@@ -63,6 +68,24 @@ public class Api {
       session.invalidate();
     }
   }
+
+  private Boolean hasLink(String parentTitle, String childTitle) throws SQLException {
+    Set<String> links = new LinkDao(dbUrl, dbUsername, dbPassword).getLinks(parentTitle);
+    if (links.contains(childTitle)) {
+      return true;
+    } else {
+      Set<String> updatedLinks = LinkRequest.sendRequest(parentTitle);
+      if (updatedLinks.contains(childTitle)) {
+        updatedLinks.removeAll(links);
+        new LinkDao(dbUrl, dbUsername, dbPassword).addLinks(parentTitle, updatedLinks);
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+
+  /*** API BEGINS ***/
 
   @RequestMapping(value = "/login/", method = RequestMethod.POST)
   public ResponseEntity<String> login(HttpServletRequest req, HttpServletResponse res, String username, String password) {
@@ -114,4 +137,7 @@ public class Api {
     }
     return new ResponseEntity<String>("Logged off", HttpStatus.OK);
   }
+
+  /*** API ENDS ***/
+
 }
