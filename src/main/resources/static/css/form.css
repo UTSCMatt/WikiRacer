@@ -1,0 +1,32 @@
+.form {
+    display: grid;
+    margin: 32px;
+    padding: 10px 20px;
+    border: black 2px solid;
+    background-color: #333;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.form_element {
+    font-size: 18px;
+    margin-bottom: 6px;
+    border-radius: 2px;
+    border: black 2px solid;
+}
+
+.btn {
+    border-radius: 2px;
+    text-align: center;
+    font-size: 18px;
+    color: white;
+    background-color: rgb(108, 108, 108);
+    border: black 2px solid;
+    padding: 8px;
+    width: 25%;
+}
+
+.btn:hover {
+    background-color: rgb(64, 128, 256);
+    cursor: pointer;
+}
