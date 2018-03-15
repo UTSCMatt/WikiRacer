@@ -13,7 +13,7 @@ public class LinkRequest {
     if (article.contains("|")) {
       throw new InvalidArticleException("Articles cannot contain '|'");
     }
-    String request = "?action=query&pllimit=max&format=json&prop=links&titles=" + article;
+    String request = "?action=query&pllimit=max&format=json&prop=links&titles=" + article + "&plnamespace=0";
     return continueRequest(request);
   }
 
@@ -41,10 +41,7 @@ public class LinkRequest {
       JSONArray links = json.getJSONArray(MediaWikiConstants.LINKS);
       for (int i = 0; i < links.length(); i++) {
         String title = links.getJSONObject(i).getString(MediaWikiConstants.TITLE);
-        if (!title.contains(":")) {
-          // Do not include links such as Template:Albert Einstein
-          titles.add(links.getJSONObject(i).getString(MediaWikiConstants.TITLE));
-        }
+        titles.add(links.getJSONObject(i).getString(MediaWikiConstants.TITLE));
       }
     } while (continueJson != null);
     return titles;

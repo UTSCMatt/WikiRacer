@@ -11,6 +11,7 @@ public class GameDao extends Dao {
 
   public GameDao(String url, String username, String password) throws SQLException {
     super(url, username, password);
+    getConnection().close();
   }
 
   public String createGame(String start, String end) throws SQLException {
@@ -43,7 +44,7 @@ public class GameDao extends Dao {
     do {
 
       id = UUID.randomUUID().toString().replaceAll("-", "");
-      Connection c = getConnection();
+      Connection c = newConnection();
       PreparedStatement stmt;
       String sql = "SELECT COUNT(GameId) AS total FROM Games WHERE GameId=?";
 
