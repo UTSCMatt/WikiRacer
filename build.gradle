@@ -19,6 +19,7 @@ apply plugin: 'encrypt'
 mainClassName = "kappa.wikiracer.runner.Runner"
 
 // May have to comment out line below temporarily for Eclipse
+// Afterwards, manually configure project build path
 sourceSets.main.java.srcDirs = ['src']
 
 version = '0.01'
