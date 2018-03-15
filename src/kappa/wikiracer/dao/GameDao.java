@@ -5,16 +5,18 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.UUID;
+import kappa.wikiracer.exception.GameException;
 
 public class GameDao extends Dao {
 
   public GameDao(String url, String username, String password) throws SQLException {
     super(url, username, password);
-    getConnection().close();
   }
 
   public String createGame(String start, String end) throws SQLException {
+    getConnection().close();
     String id = generateGameId();
 
     Connection c = newConnection();
@@ -33,6 +35,118 @@ public class GameDao extends Dao {
     stmt.close();
 
     return id;
+
+  }
+
+  public String joinGame(String gameId, String username) throws SQLException, GameException {
+    Connection c = getConnection();
+    CallableStatement stmt;
+
+    String sql = "CALL Join_Game(?,?)";
+
+    stmt = c.prepareCall(sql);
+    stmt.setString(1, gameId);
+    stmt.setString(2, username);
+
+    ResultSet rs = stmt.executeQuery();
+
+    rs.next();
+
+    if (rs.getInt(1) < 0) {
+      throw new GameException(rs.getString(2));
+    } else {
+     return rs.getString(2);
+    }
+  }
+
+  public Boolean inGame(String gameId, String username) throws SQLException {
+    Connection c = getConnection();
+    PreparedStatement stmt;
+
+    String sql = "SELECT COUNT(GameId) FROM player_game_map WHERE GameId = (SELECT Id FROM Games WHERE GameId=?) AND UserId = (SELECT Id FROM Users WHERE Username=?)";
+
+    stmt = c.prepareStatement(sql);
+    stmt.setString(1, gameId);
+    stmt.setString(2, username);
+
+    ResultSet rs = stmt.executeQuery();
+
+    rs.next();
+
+    Boolean results = rs.getInt(1) > 0;
+
+    c.close();
+    stmt.close();
+    rs.close();
+
+    return results;
+
+  }
+
+  public String getCurrentPage(String gameId, String username) throws SQLException {
+    Connection c = getConnection();
+    PreparedStatement stmt;
+
+    String sql = "SELECT w.Title FROM player_game_map m INNER JOIN Wiki_Pages w ON m.CurrentPage=w.Id WHERE m.GameId = (SELECT Id FROM Games WHERE GameId=?) AND m.UserId = (SELECT Id FROM Users WHERE Username=?)";
+
+    stmt = c.prepareStatement(sql);
+    stmt.setString(1, gameId);
+    stmt.setString(2, username);
+
+    ResultSet rs = stmt.executeQuery();
+
+    rs.next();
+
+    String results = rs.getString("Title");
+
+    c.close();
+    stmt.close();
+    rs.close();
+
+    return results;
+
+  }
+
+  public String finalPage(String gameId) throws SQLException {
+    Connection c = getConnection();
+    PreparedStatement stmt;
+
+    String sql = "SELECT w.Title FROM games g INNER JOIN Wiki_Pages w ON g.EndId=w.Id WHERE g.GameId = ?";
+
+    stmt = c.prepareStatement(sql);
+    stmt.setString(1, gameId);
+
+    ResultSet rs = stmt.executeQuery();
+
+    rs.next();
+
+    String results = rs.getString("Title");
+
+    c.close();
+    stmt.close();
+    rs.close();
+
+    return results;
+  }
+
+  public int changePage(String gameId, String username, String nextPage, Boolean finished) throws SQLException {
+    Connection c = getConnection();
+    PreparedStatement stmt;
+
+    String sql = finished ? "UPDATE player_game_map SET CurrentPage=(SELECT Id FROM wiki_pages WHERE Title=?), EndTime=CURRENT_TIMESTAMP, Finished=TRUE" : "UPDATE player_game_map SET CurrentPage=(SELECT Id FROM wiki_pages WHERE Title=?)";
+    sql += " WHERE GameId = (SELECT Id FROM Games WHERE GameId=?) AND UserId = (SELECT Id FROM Users WHERE Username=?)";
+
+    stmt = c.prepareStatement(sql);
+    stmt.setString(1, nextPage);
+    stmt.setString(2, gameId);
+    stmt.setString(3, username);
+
+    int result = stmt.executeUpdate();
+
+    c.close();
+    stmt.close();
+
+    return result;
 
   }
 

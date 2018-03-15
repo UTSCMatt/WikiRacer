@@ -11,6 +11,7 @@ import javax.servlet.http.HttpSession;
 import kappa.wikiracer.dao.GameDao;
 import kappa.wikiracer.dao.LinkDao;
 import kappa.wikiracer.dao.UserDao;
+import kappa.wikiracer.exception.GameException;
 import kappa.wikiracer.exception.InvalidArticleException;
 import kappa.wikiracer.exception.UserNotFoundException;
 import kappa.wikiracer.util.UserVerification;
@@ -20,12 +21,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import kappa.wikiracer.dao.TestDao;
 import kappa.wikiracer.wiki.LinkRequest;
 
 @RestController
@@ -99,6 +99,10 @@ public class Api {
     }
   }
 
+  private Boolean inGame(String gameId, String username) throws SQLException {
+    return new GameDao(dbUrl,dbUsername,dbPassword).inGame(gameId, username);
+  }
+
   /*** API BEGINS ***/
 
   @RequestMapping(value = "/login/", method = RequestMethod.POST)
@@ -152,35 +156,31 @@ public class Api {
     return new ResponseEntity<String>("Logged off", HttpStatus.OK);
   }
 
-  @RequestMapping(value = "/api/game/", method = RequestMethod.PUT)
-  public ResponseEntity<Map<String, String>> createGame(HttpServletRequest req, String start, String end) {
-    if (!isAuthenticated(req)) return new ResponseEntity<Map<String, String>>(new HashMap<>(), HttpStatus.UNAUTHORIZED);
+  @RequestMapping(value = "/api/game/new/", method = RequestMethod.POST)
+  public ResponseEntity<?> createGame(HttpServletRequest req, String start, String end) {
+    if (!isAuthenticated(req)) return new ResponseEntity<>("Not logged in", HttpStatus.UNAUTHORIZED);
     start = StringUtils.trimToEmpty(start);
     end = StringUtils.trimToEmpty(end);
     if (start.isEmpty()) {
       start = RandomRequest.getRandom();
     } else {
-      Map<String, String> response = new HashMap<>();
-      response.put("error", "Invalid starting article");
       try {
         if (!ExistRequest.exists(start)) {
-          return new ResponseEntity<Map<String, String>>(response, HttpStatus.BAD_REQUEST);
+          return new ResponseEntity<>(start + " does not exist", HttpStatus.NOT_FOUND);
         }
       } catch (InvalidArticleException ex) {
-        return new ResponseEntity<Map<String, String>>(response, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
       }
     }
     if (end.isEmpty()) {
       end = RandomRequest.getRandom();
     } else {
-      Map<String, String> response = new HashMap<>();
-      response.put("error", "Invalid ending article");
       try {
         if (!ExistRequest.exists(end)) {
-          return new ResponseEntity<Map<String, String>>(response, HttpStatus.BAD_REQUEST);
+          return new ResponseEntity<>(end + " does not exist", HttpStatus.NOT_FOUND);
         }
       } catch (InvalidArticleException ex) {
-        return new ResponseEntity<Map<String, String>>(response, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
       }
     }
 
@@ -189,16 +189,59 @@ public class Api {
     response.put("end", end);
     try {
       response.put("id", new GameDao(dbUrl,dbUsername,dbPassword).createGame(start,end));
+      new GameDao(dbUrl,dbUsername,dbPassword).joinGame(response.get("id"),
+          (String) req.getSession().getAttribute("username"));
     } catch (SQLException ex) {
-      response = new HashMap<>();
-      response.put("error", ex.getMessage());
-      return new ResponseEntity<Map<String, String>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (GameException ex) {
+      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
-    return new ResponseEntity<Map<String, String>>(response, HttpStatus.OK);
+    return new ResponseEntity<>(response, HttpStatus.OK);
 
   }
 
-  /*** API ENDS ***/
+  @RequestMapping(value = "/api/game/{gameId}/join/", method = RequestMethod.POST)
+  public ResponseEntity<String> joinGame(HttpServletRequest req, @PathVariable String gameId) {
+    if (!isAuthenticated(req)) return new ResponseEntity<String>("Not logged in", HttpStatus.UNAUTHORIZED);
+    try {
+      return new ResponseEntity<String>(new GameDao(dbUrl,dbUsername,dbPassword).joinGame(gameId,
+          (String) req.getSession().getAttribute("username")), HttpStatus.OK);
+    } catch (SQLException ex) {
+      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (GameException ex) {
+      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @RequestMapping(value = "/api/game/{gameId}/goto/{nextPage}/", method = RequestMethod.POST)
+  public ResponseEntity<?> goToPage(HttpServletRequest req, @PathVariable String gameId, @PathVariable String nextPage) {
+    if (!isAuthenticated(req))
+      return new ResponseEntity<String>("Not logged in", HttpStatus.UNAUTHORIZED);
+    String username = (String) req.getSession().getAttribute("username");
+    try {
+      if (!inGame(gameId, username))
+        return new ResponseEntity<String>("Join game first", HttpStatus.UNAUTHORIZED);
+      nextPage = StringUtils.trimToEmpty(nextPage);
+      if (!ExistRequest.exists(nextPage))
+        return new ResponseEntity<String>(nextPage + " does not exist", HttpStatus.NOT_FOUND);
+      String currentPage = new GameDao(dbUrl, dbUsername, dbPassword).getCurrentPage(gameId, username);
+      String finalPage = new GameDao(dbUrl, dbUsername, dbPassword).finalPage(gameId);
+      if (currentPage.equals(finalPage)) return new ResponseEntity<String>("Game already finished", HttpStatus.BAD_REQUEST);
+      if (!hasLink(currentPage, nextPage)) return new ResponseEntity<String>("No link to '" + nextPage + "' found in '" + currentPage + "'", HttpStatus.NOT_FOUND);
+      Boolean finished = nextPage.equals(finalPage);
+      new GameDao(dbUrl, dbUsername, dbPassword).changePage(gameId, username, nextPage, finished);
+      Map<String, Object> response = new HashMap<>();
+      response.put("finished", finished);
+      response.put("current_page", nextPage);
+      return new ResponseEntity<>(response, HttpStatus.OK);
+    } catch (SQLException ex) {
+      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (InvalidArticleException ex) {
+      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+  }
+
+    /*** API ENDS ***/
 
 }
