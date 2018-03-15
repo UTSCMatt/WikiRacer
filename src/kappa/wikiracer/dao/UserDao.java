@@ -9,7 +9,7 @@ import kappa.wikiracer.exception.UserNotFoundException;
 
 public class UserDao extends Dao {
 
-  public UserDao(String url, String username, String password) {
+  public UserDao(String url, String username, String password) throws SQLException {
     super(url, username, password);
   }
 

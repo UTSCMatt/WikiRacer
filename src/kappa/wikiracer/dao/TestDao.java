@@ -1,5 +1,6 @@
 package kappa.wikiracer.dao;
 
+import java.sql.SQLException;
 import java.sql.Statement;
 
 
@@ -8,7 +9,7 @@ import java.sql.ResultSet;
 
 public class TestDao extends Dao {
   
-  public TestDao(String url, String username, String password) {
+  public TestDao(String url, String username, String password) throws SQLException {
     super(url, username, password);
   }
 

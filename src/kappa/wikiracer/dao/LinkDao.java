@@ -11,7 +11,7 @@ import java.util.Set;
 
 public class LinkDao extends Dao {
 
-  public LinkDao(String url, String username, String password) {
+  public LinkDao(String url, String username, String password) throws SQLException {
     super(url, username, password);
   }
 

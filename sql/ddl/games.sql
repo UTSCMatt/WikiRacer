@@ -1,0 +1,9 @@
+﻿CREATE TABLE Games (
+	Id INT NOT NULL AUTO_INCREMENT,
+	GameId VARCHAR(255) NOT NULL,
+	StartId int NOT NULL,
+	EndId int NOT NULL,
+	PRIMARY KEY (Id, GameId),
+	FOREIGN KEY (StartId) REFERENCES Wiki_Pages(Id),
+	FOREIGN KEY (EndId) REFERENCES Wiki_Pages(Id)
+);

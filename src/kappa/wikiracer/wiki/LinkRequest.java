@@ -4,16 +4,20 @@ import java.util.ArrayList;
 
 import java.util.HashSet;
 import java.util.Set;
+import kappa.wikiracer.exception.InvalidArticleException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class LinkRequest {
-  public static Set<String> sendRequest(String article) {
+  public static Set<String> sendRequest(String article) throws InvalidArticleException {
+    if (article.contains("|")) {
+      throw new InvalidArticleException("Articles cannot contain '|'");
+    }
     String request = "?action=query&pllimit=max&format=json&prop=links&titles=" + article;
     return continueRequest(request);
   }
 
-  private static Set<String> continueRequest(String rawRequest) {
+  private static Set<String> continueRequest(String rawRequest) throws InvalidArticleException {
     Set<String> titles = new HashSet<>();
     JSONObject continueJson = null;
     do {

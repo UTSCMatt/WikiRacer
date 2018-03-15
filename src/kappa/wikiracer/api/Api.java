@@ -1,15 +1,21 @@
 package kappa.wikiracer.api;
 
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import kappa.wikiracer.dao.GameDao;
 import kappa.wikiracer.dao.LinkDao;
 import kappa.wikiracer.dao.UserDao;
+import kappa.wikiracer.exception.InvalidArticleException;
 import kappa.wikiracer.exception.UserNotFoundException;
 import kappa.wikiracer.util.UserVerification;
+import kappa.wikiracer.wiki.ExistRequest;
+import kappa.wikiracer.wiki.RandomRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -52,6 +58,8 @@ public class Api {
       return new ResponseEntity<String>(hasLink(parent, child).toString(), HttpStatus.OK);
     } catch (SQLException ex) {
       return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (InvalidArticleException ex) {
+      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -69,7 +77,13 @@ public class Api {
     }
   }
 
-  private Boolean hasLink(String parentTitle, String childTitle) throws SQLException {
+  private Boolean isAuthenticated(HttpServletRequest req) {
+    HttpSession session = req.getSession(false);
+    return session != null && session.getAttribute("username") != null;
+  }
+
+  private Boolean hasLink(String parentTitle, String childTitle)
+      throws SQLException, InvalidArticleException {
     Set<String> links = new LinkDao(dbUrl, dbUsername, dbPassword).getLinks(parentTitle);
     if (links.contains(childTitle)) {
       return true;
@@ -136,6 +150,53 @@ public class Api {
       res.addCookie(cookie);
     }
     return new ResponseEntity<String>("Logged off", HttpStatus.OK);
+  }
+
+  @RequestMapping(value = "/api/game/", method = RequestMethod.PUT)
+  public ResponseEntity<Map<String, String>> createGame(HttpServletRequest req, String start, String end) {
+    if (!isAuthenticated(req)) return new ResponseEntity<Map<String, String>>(new HashMap<>(), HttpStatus.UNAUTHORIZED);
+    start = StringUtils.trimToEmpty(start);
+    end = StringUtils.trimToEmpty(end);
+    if (start.isEmpty()) {
+      start = RandomRequest.getRandom();
+    } else {
+      Map<String, String> response = new HashMap<>();
+      response.put("error", "Invalid starting article");
+      try {
+        if (!ExistRequest.exists(start)) {
+          return new ResponseEntity<Map<String, String>>(response, HttpStatus.BAD_REQUEST);
+        }
+      } catch (InvalidArticleException ex) {
+        return new ResponseEntity<Map<String, String>>(response, HttpStatus.BAD_REQUEST);
+      }
+    }
+    if (end.isEmpty()) {
+      end = RandomRequest.getRandom();
+    } else {
+      Map<String, String> response = new HashMap<>();
+      response.put("error", "Invalid ending article");
+      try {
+        if (!ExistRequest.exists(end)) {
+          return new ResponseEntity<Map<String, String>>(response, HttpStatus.BAD_REQUEST);
+        }
+      } catch (InvalidArticleException ex) {
+        return new ResponseEntity<Map<String, String>>(response, HttpStatus.BAD_REQUEST);
+      }
+    }
+
+    Map<String, String> response = new HashMap<>();
+    response.put("start", start);
+    response.put("end", end);
+    try {
+      response.put("id", new GameDao(dbUrl,dbUsername,dbPassword).createGame(start,end));
+    } catch (SQLException ex) {
+      response = new HashMap<>();
+      response.put("error", ex.getMessage());
+      return new ResponseEntity<Map<String, String>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    return new ResponseEntity<Map<String, String>>(response, HttpStatus.OK);
+
   }
 
   /*** API ENDS ***/
