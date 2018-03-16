@@ -25,7 +25,6 @@ header{
 #navbar {
     display: flex;
     list-style-type: none;
-    position: sticky;
     margin: 0px;
     padding: 0px;
     overflow: hidden;

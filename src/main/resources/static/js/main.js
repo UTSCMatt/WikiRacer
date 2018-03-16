@@ -1,8 +1,8 @@
 (function() {
     "use strict"
-    window.onload = function() {
+    window.addEventListener('load', function() {
         var navBar = document.getElementById("navbar");
-        var newElmt = this.document.createElement('li');
+        var newElmt = document.createElement('li');
         newElmt.className = "navelmt";
         newElmt.id = "loginBtn";
         if (!api.getUser()){
@@ -17,5 +17,5 @@
             });
         }
         navBar.appendChild(newElmt);
-    };
+    });
 }());
