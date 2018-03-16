@@ -6,6 +6,7 @@ import java.net.URL;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import kappa.wikiracer.exception.InvalidArticleException;
 import org.json.JSONObject;
 
 class SendRequest {

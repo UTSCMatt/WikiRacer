@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title>Wikiracer</title>
     <link href="css/main.css" rel="stylesheet" type="text/css"/>
+    <link href="css/form.css" rel="stylesheet" type="text/css"/>
+    <link href="css/game.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
     <header>
@@ -14,10 +16,35 @@
         <li class="navelmt"><a href="game.html">Play Now</a></li>
         <li class="navelmt"><a href="leaderboard.html">Leaderboards</a></li>   
         <li class="navelmt"><a href="profile.html">Profile</a></li>
-    </ul> 
+    </ul>
+    <div id="form_container">
+        <form class="form" id="new-game_form">
+            <div class="form_title">Enter Start Page</div>
+            <input type="text" id="startpage" class="form_element" placeholder="(Leave empty for random)" />
+            <div class="form_title">Enter End Page</div>
+            <input type="text" id="endpage" class="form_element" placeholder="(Leave empty for random)" />
+            <div>
+                <button type="button" id="options_btn" class="btn">Show Options</button>
+                <button type="submit" id="start_btn" class="btn">Start Game</button>
+            </div>
+            <div id="options_wrapper"></div>
+        </form>
+        Or
+        <form class="form" if="join_game_form">
+            <div class="form_title">Use a Room Code to Join a Game</div>
+            <input type="text" id="gamecode" class="form_element" placeholder="Enter a room code" />
+            <div>
+                <button type="submit" id="join_btn" class="btn">Join Game</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="gamebox"></div>
+
     <script src="js/api.js"></script>
     <script src="js/main.js"></script>
     <script src="js/game.js"></script>
+    
     <footer>
         <a href='credits.html'>Credits</a>
     </footer>

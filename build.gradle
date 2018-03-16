@@ -18,7 +18,14 @@ apply plugin: 'encrypt'
 
 mainClassName = "kappa.wikiracer.runner.Runner"
 
-sourceSets.main.java.srcDirs = ['src']
+sourceSets {
+	main {
+		java {
+			srcDirs = ['src']
+			exclude 'main/'
+		}
+	}
+}
 
 version = '0.01'
 

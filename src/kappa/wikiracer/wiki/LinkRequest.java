@@ -1,25 +1,24 @@
 package kappa.wikiracer.wiki;
 
 import java.util.ArrayList;
-import java.util.List;
 
+import java.util.HashSet;
+import java.util.Set;
+import kappa.wikiracer.exception.InvalidArticleException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class LinkRequest {
-  public static String sendRequest(String article) {
-    String request = "?action=query&limit=max&format=json&prop=links&titles=" + article;
-    List<String> titlesAsJson = continueRequest(request);
-    // After this is testing purposes
-    StringBuffer titles = new StringBuffer();
-    for (String title : titlesAsJson) {
-      titles.append(title + "\n");
+  public static Set<String> sendRequest(String article) throws InvalidArticleException {
+    if (article.contains("|")) {
+      throw new InvalidArticleException("Articles cannot contain '|'");
     }
-    return titles.toString();
+    String request = "?action=query&pllimit=max&format=json&prop=links&titles=" + article + "&plnamespace=0";
+    return continueRequest(request);
   }
 
-  private static List<String> continueRequest(String rawRequest) {
-    List<String> titles = new ArrayList<>();
+  private static Set<String> continueRequest(String rawRequest) throws InvalidArticleException {
+    Set<String> titles = new HashSet<>();
     JSONObject continueJson = null;
     do {
       String request;
@@ -41,6 +40,7 @@ public class LinkRequest {
       json = json.getJSONObject(pageId);
       JSONArray links = json.getJSONArray(MediaWikiConstants.LINKS);
       for (int i = 0; i < links.length(); i++) {
+        String title = links.getJSONObject(i).getString(MediaWikiConstants.TITLE);
         titles.add(links.getJSONObject(i).getString(MediaWikiConstants.TITLE));
       }
     } while (continueJson != null);
