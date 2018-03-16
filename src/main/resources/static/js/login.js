@@ -16,7 +16,7 @@
             };
         }
         // changes the intended action to signin
-        document.getElementById("login").addEventListener('click', function(e) {
+        document.getElementById("signin").addEventListener('click', function(e) {
             document.querySelector("form [name=action]").value = "signin";
             submit();
         });
