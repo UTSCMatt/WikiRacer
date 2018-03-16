@@ -1,9 +1,13 @@
 package kappa.wikiracer.api;
 
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -68,7 +72,11 @@ public class Api {
 
   private void setSession(HttpServletRequest req, HttpServletResponse res, String username) {
     req.getSession().setAttribute("username", username);
-    res.setHeader("Set-Cookie", "JSESSIONID=" + req.getSession().getId() + "; HttpOnly; SameSite=strict");
+    Calendar expireTime = Calendar.getInstance();
+    expireTime.add(Calendar.MONTH, 1);
+    SimpleDateFormat cookieDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+    cookieDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+    res.setHeader("Set-Cookie", "JSESSIONID=" + req.getSession().getId() + "; HttpOnly; SameSite=strict; Secure; Path=/; Expires=" + cookieDateFormat.format(expireTime.getTime()));
   }
 
   private void invalidateSession(HttpServletRequest req) {
