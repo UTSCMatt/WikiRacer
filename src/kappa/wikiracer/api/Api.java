@@ -19,6 +19,7 @@ import kappa.wikiracer.wiki.ExistRequest;
 import kappa.wikiracer.wiki.RandomRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -102,6 +103,12 @@ public class Api {
   private Boolean inGame(String gameId, String username) throws SQLException {
     return new GameDao(dbUrl,dbUsername,dbPassword).inGame(gameId, username);
   }
+  
+  private ResponseEntity<String> redirectToHome() {
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Location", "/");
+    return new ResponseEntity<String>(headers, HttpStatus.FOUND);
+  }
 
   /*** API BEGINS ***/
 
@@ -112,7 +119,7 @@ public class Api {
       if (UserVerification.checkPassword(password, hash)) {
         invalidateSession(req);
         setSession(req, res, username);
-        return new ResponseEntity<String>("Success", HttpStatus.OK);
+        return new ResponseEntity<String>("redirect:/", HttpStatus.OK);
       } else {
         return new ResponseEntity<String>("Invalid username or password", HttpStatus.UNAUTHORIZED);
       }
@@ -135,7 +142,7 @@ public class Api {
           .createUser(username, UserVerification.createHash(password));
       invalidateSession(req);
       setSession(req, res, username);
-      return new ResponseEntity<String>("Success", HttpStatus.OK);
+      return redirectToHome();
     } catch (SQLException ex) {
       if (ex.getMessage().equals("Username already in use")) {
         return new ResponseEntity<String>("Username in use", HttpStatus.CONFLICT);
@@ -147,13 +154,18 @@ public class Api {
   @RequestMapping(value = "/logoff/", method = RequestMethod.GET)
   public ResponseEntity<String> logoff(HttpServletRequest req, HttpServletResponse res) {
     invalidateSession(req);
-    for (Cookie cookie : req.getCookies()) {
-      cookie.setMaxAge(0);
-      cookie.setValue(null);
-      cookie.setPath("/");
-      res.addCookie(cookie);
+    Cookie[] cookies = req.getCookies();
+      if (cookies != null) {
+      for (Cookie cookie : cookies) {
+        cookie.setMaxAge(0);
+        cookie.setValue(null);
+        cookie.setPath("/");
+        res.addCookie(cookie);
+      }
     }
-    return new ResponseEntity<String>("Logged off", HttpStatus.OK);
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Location", "/");
+    return redirectToHome();
   }
 
   @RequestMapping(value = "/api/game/new/", method = RequestMethod.POST)
@@ -197,7 +209,7 @@ public class Api {
       return new ResponseEntity<String>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
-    return new ResponseEntity<>(response, HttpStatus.OK);
+    return redirectToHome();
 
   }
 
