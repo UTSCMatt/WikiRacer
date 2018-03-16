@@ -127,7 +127,7 @@ public class Api {
       if (UserVerification.checkPassword(password, hash)) {
         invalidateSession(req);
         setSession(req, res, username);
-        return new ResponseEntity<String>("redirect:/", HttpStatus.OK);
+        return redirectToHome();
       } else {
         return new ResponseEntity<String>("Invalid username or password", HttpStatus.UNAUTHORIZED);
       }
