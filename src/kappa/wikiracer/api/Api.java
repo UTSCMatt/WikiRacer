@@ -76,7 +76,10 @@ public class Api {
     expireTime.add(Calendar.MONTH, 1);
     SimpleDateFormat cookieDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
     cookieDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-    res.setHeader("Set-Cookie", "JSESSIONID=" + req.getSession().getId() + "; HttpOnly; SameSite=strict; Secure; Path=/; Expires=" + cookieDateFormat.format(expireTime.getTime()));
+    String expireString = cookieDateFormat.format(expireTime.getTime());
+    res.setHeader("Set-Cookie", "JSESSIONID=" + req.getSession().getId() + "; HttpOnly; SameSite=strict; Secure; Path=/; Expires=" + expireString);
+    res.addHeader("Set-Cookie", "username=" + username+ "; SameSite=strict; Secure; Path=/; Expires=" + expireString);
+
   }
 
   private void invalidateSession(HttpServletRequest req) {
@@ -217,7 +220,7 @@ public class Api {
       return new ResponseEntity<String>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
-    return redirectToHome();
+    return new ResponseEntity<>(response, HttpStatus.OK);
 
   }
 
