@@ -18,8 +18,8 @@
                 var rulesCat = document.getElementById("ban_cat").value.replace(/, /g, ",");
                 var rulesArt = document.getElementById("ban_art").value.replace(/, /g, ",");
                 var rules = {
-                    categories = [],
-                    articles = []
+                    "categories" : [],
+                    "articles" : []
                 };
                 // splits the user input by commas into an array
                 rules.categories = rulesCat.split(",");
@@ -45,12 +45,12 @@
 
         document.getElementById("options_btn").addEventListener("click", function(e) {
             var optionsBtn = document.getElementById("options_btn");
-
-            if (optionsMenu.style.display == "none") {
-                optionsMenu.style.display = "";
+            var optionsMenu = document.getElementById("options_menu");
+            if (optionsMenu.className == "hidden") {
+                optionsMenu.className = "";
                 optionsBtn.innerHTML = "Hide Options"
             } else {
-                optionsMenu.style.display = "none";
+                optionsMenu.className = "hidden";
                 optionsBtn.innerHTML = "Show Options"
             }   
         });
