@@ -236,7 +236,7 @@ public class Api {
       end = ResolveRedirectRequest.resolveRedirect(end);
     } catch (InvalidArticleException ex) {
       // Internal server error because this should not happen due to user error
-      return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<>(JSONObject.quote("Start: " + start + ", End: " + end), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     Map<String, String> response = new HashMap<>();

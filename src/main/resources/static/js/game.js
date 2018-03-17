@@ -118,15 +118,15 @@
                                 return error;
                             }
                             api.checkNewPage(gameId, linkSplit, function(err, res) {
-                                if (res.finished) {
-                                    // placeholder for actual win 
-                                    alert("a winner is you!");   
-                                }
-                                else if (err) {
+                                if (err) {
                                     console.log(err);
                                     alert("link not allowed");
                                     // returns the user to page they were on if the next page is banned or invalid
                                     createGameWindow(content, gameId);
+                                }
+                                else if (res.finished) {
+                                     // placeholder for actual win 
+                                     alert("a winner is you!");   
                                 } else {
                                     api.getWikiPage(res.current_page, function(err, res) {
                                         if (err) console.log(err);
