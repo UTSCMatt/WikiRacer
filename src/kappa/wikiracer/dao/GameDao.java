@@ -133,13 +133,13 @@ public class GameDao extends Dao {
     Connection c = getConnection();
     PreparedStatement stmt;
 
-    String sql = finished ? "UPDATE player_game_map SET CurrentPage=(SELECT Id FROM wiki_pages WHERE Title=?), EndTime=CURRENT_TIMESTAMP, Finished=TRUE" : "UPDATE player_game_map SET CurrentPage=(SELECT Id FROM wiki_pages WHERE Title=?)";
-    sql += " WHERE GameId = (SELECT Id FROM Games WHERE GameId=?) AND UserId = (SELECT Id FROM Users WHERE Username=?)";
+    String sql = "UPDATE player_game_map SET NumClicks = NumClicks + 1, CurrentPage=(SELECT Id FROM wiki_pages WHERE Title=?), EndTime=CURRENT_TIMESTAMP, Finished=? WHERE GameId = (SELECT Id FROM Games WHERE GameId=?) AND UserId = (SELECT Id FROM Users WHERE Username=?)";
 
     stmt = c.prepareStatement(sql);
     stmt.setString(1, nextPage);
-    stmt.setString(2, gameId);
-    stmt.setString(3, username);
+    stmt.setBoolean(2, finished);
+    stmt.setString(3, gameId);
+    stmt.setString(4, username);
 
     int result = stmt.executeUpdate();
 
