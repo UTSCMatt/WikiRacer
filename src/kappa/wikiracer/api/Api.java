@@ -265,6 +265,16 @@ public class Api {
     }
   }
 
+  @RequestMapping(value = "/api/leaderboard/", method = RequestMethod.GET)
+  public ResponseEntity<?> viewLeaderboard(HttpServletRequest req, HttpServletResponse res) {
+    String[] response;
+    try {
+      response = new GameDao(dbUrl, dbUsername, dbPassword).getGameList();
+    } catch (SQLException ex) {
+      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    return new ResponseEntity<String[]>(response, HttpStatus.OK);
+  }
     /*** API ENDS ***/
 
 }
