@@ -86,6 +86,10 @@ var api = (function() {
     	send("GET", "/api/getGameList/", null, callback);
     };
 
+    module.getGameStats = function(gameId, callback) {
+    	send("GET", "/api/getGameStats/" + gameId + "/", null, callback);
+    };
+
     return module;
 
 })();

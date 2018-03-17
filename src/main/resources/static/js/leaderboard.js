@@ -20,7 +20,7 @@
         // add event listener for changing dropdown menu for selecting game to view
         document.getElementById('select_game_dropdown').addEventListener('change', function(e){
             // not default, grab the game with the selected game id
-            if(document.getElementById('select_gallery_dropdown').value != 'default'){
+            if(document.getElementById('select_game_dropdown').value != 'default'){
                 selectedGame = document.getElementById('select_game_dropdown').value;
                 // gets the game stats of the selected game id TODO
 //                api.getGameStats(selectedGame, function(err, gameStats){

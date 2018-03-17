@@ -203,4 +203,29 @@ public class GameDao extends Dao {
 
     return results;
   }
+
+//  public ArrayList<String> getGameStats(String gameId) throws SQLException {
+//    Connection c = getConnection();
+//    PreparedStatement stmt;
+//
+//    String sql = "SELECT  FROM player_game_map";
+//
+//    stmt = c.prepareStatement(sql);
+//
+//    ResultSet rs = stmt.executeQuery();
+//    rs.next();
+//
+//    ArrayList<String> results = new ArrayList<String>();
+//
+//    while(rs.next()){
+//      results.add(rs.getString("GameId"));
+//
+//    }
+//    c.close();
+//    stmt.close();
+//    rs.close();
+//
+//    return results;
+//  }
+
 }
