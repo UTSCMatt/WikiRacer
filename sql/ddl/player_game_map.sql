@@ -9,4 +9,4 @@
 	FOREIGN KEY (GameId) REFERENCES Games(Id),
 	FOREIGN KEY (UserId) REFERENCES Users(Id),
 	FOREIGN KEY (CurrentPage) REFERENCES wiki_pages(Id)
-)
+) CHARACTER SET=utf8;

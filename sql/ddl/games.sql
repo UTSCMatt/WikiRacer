@@ -6,4 +6,4 @@
 	PRIMARY KEY (Id, GameId),
 	FOREIGN KEY (StartId) REFERENCES Wiki_Pages(Id),
 	FOREIGN KEY (EndId) REFERENCES Wiki_Pages(Id)
-);
+) CHARACTER SET=utf8;
