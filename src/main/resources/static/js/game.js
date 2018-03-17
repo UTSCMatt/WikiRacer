@@ -15,10 +15,19 @@
             
             try {
                 //var gameMode = document.querySelector('input[name="game_mode"]:checked').value;
-                api.makeGame(startPage, endPage/*, gameMode, "test"*/, function (err, res) {
+                var rulesCat = document.getElementById("ban_cat").value.replace(/, /g, ",");
+                var rulesArt = document.getElementById("ban_art").value.replace(/, /g, ",");
+                var rules = {
+                    categories = [],
+                    articles = []
+                };
+                // splits the user input by commas into an array
+                rules.categories = rulesCat.split(",");
+                rules.articles = rulesArt.split(",");
+                formBox.style.display = "none";
+                api.makeGame(startPage, endPage/*, gameMode*/, rules, function (err, res) {
                     if (err) console.log(err);
                     else {
-                        formBox.style.display = "none";
                         startPage = res.start;
                         endPage = res.end;
                         var gameId = res.id;
@@ -36,36 +45,23 @@
 
         document.getElementById("options_btn").addEventListener("click", function(e) {
             var optionsBtn = document.getElementById("options_btn");
-            var optionsMenu = document.getElementById("options_menu");
-            if (optionsMenu) {
-                if (optionsMenu.style.display == "none") {
-                    optionsMenu.style.display = "";
-                    optionsBtn.innerHTML = "Hide Options"
-                } else {
-                    optionsMenu.style.display = "none";
-                    optionsBtn.innerHTML = "Show Options"
-                }
-            } else {
-                var optionsMenu = document.createElement("div");
-                optionsMenu.id = "options_menu";
-                optionsMenu.innerHTML = `<input type="radio" id="opt_time" name="game_mode" value="Timed"> 
-                                    Time based scoring<br>
-                                    <input type="radio" id="opt_clicks" name="game_mode" value="Clicks">
-                                    Click based scoring`;
-                document.getElementById("options_wrapper").appendChild(optionsMenu);
+
+            if (optionsMenu.style.display == "none") {
+                optionsMenu.style.display = "";
                 optionsBtn.innerHTML = "Hide Options"
-                
-            }
-            
+            } else {
+                optionsMenu.style.display = "none";
+                optionsBtn.innerHTML = "Show Options"
+            }   
         });
 
         document.getElementById("join_btn").addEventListener("click", function (e) {
             e.preventDefault();
             var joinGameId = document.getElementById("gamecode").value;
+            formBox.style.display = "none";
             api.joinGame(joinGameId, function (err, res) {
                 if (err) console.log(err);
                 else {
-                    formBox.style.display = "none";
                     processNewPage(res);
                 }
             });
@@ -73,8 +69,7 @@
 
         function processNewPage(content, gameId) {
             createGameWindow(content, gameId);
-        };
-
+        }
         // creates the structure for displaying the game
         function createGameWindow(content, gameId) {
             var gameBox = document.getElementById("gamebox");
@@ -108,11 +103,23 @@
                     else {
                         links[i].addEventListener('click', function (e) {
                             e.preventDefault();
+                            try {
+                                var frameWrapper = document.getElementById("framewrapper");
+                                frameWrapper.style.backgroundColor = "#333333";
+                                var loadIcon = document.createElement("img");
+                                loadIcon.style.marginTop = "64px";
+                                loadIcon.src = "images/loader.gif";
+                                frameWrapper.innerHTML = "";
+                                frameWrapper.appendChild(loadIcon);
+                            } catch (error) {
+                                return error;
+                            }
                             api.checkNewPage(gameId, linkSplit, function(err, res) {
                                 if (err) console.log(err);
                                 else if (res.finished) {
                                     alert("a winner is you!");
                                 } else {
+                                    
                                     api.getWikiPage(res.current_page, function(err, res) {
                                         if (err) console.log(err);
                                         else {

@@ -20,20 +20,23 @@ var api = (function() {
     }
     // send data through Ajax requests
     function send(method, url, data, callback) {
-        var formdata = new FormData();
-        Object.keys(data).forEach(function (key) {
-            var value = data[key];
-            formdata.append(key, value);
-        });
+       
         var xhr = new XMLHttpRequest();
         xhr.onload = function () {
             if (xhr.status !== 200) callback("[" + xhr.status + "]" + xhr.responseText, null);
             else callback(null, JSON.parse(xhr.responseText));
         };
-        
+
+
         xhr.open(method, url, true);
         if (!data) xhr.send();
         else {
+            var formdata = new FormData();
+            Object.keys(data).forEach(function (key) {
+                var value = data[key];
+                formdata.append(key, value);
+            });
+           
             xhr.send(formdata);
         }
         
@@ -59,8 +62,8 @@ var api = (function() {
         send("GET", "/logoff/", null, callback);
     };
 
-    module.makeGame = function(start, end, /*gameMode, rules,*/ callback) {
-        send("POST", "/api/game/new/", {start: start, end: end/*, gameMode: gameMode, rules: rules*/}, callback);
+    module.makeGame = function(start, end, /*gameMode*/ rules, callback) {
+        send("POST", "/api/game/new/", {start: start, end: end/*, gameMode: gameMode*/, rules: rules}, callback);
     };
 
     module.joinGame = function(gameId, callback) {
