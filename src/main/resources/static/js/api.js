@@ -2,6 +2,7 @@ var api = (function() {
 
     var wikiURL = "https://en.wikipedia.org/w/api.php";
    
+
     // send cross origin requests to mediawiki api
     function sendWikiApi(method, url, data, callback) {
         var xhr = new XMLHttpRequest();
@@ -29,8 +30,13 @@ var api = (function() {
             if (xhr.status !== 200) callback("[" + xhr.status + "]" + xhr.responseText, null);
             else callback(null, JSON.parse(xhr.responseText));
         };
+        
         xhr.open(method, url, true);
-        xhr.send(formdata);
+        if (!data) xhr.send();
+        else {
+            xhr.send(formdata);
+        }
+        
     }
     var module = {};
 
@@ -62,11 +68,15 @@ var api = (function() {
     };
 
     module.getWikiPage = function(query, callback) {
-        send("GET", wikiURL + "?action=parse&format=json&page=" + query + "&prop=text%7Clinks%7Ctemplates%7Cimages%7Csections%7Cdisplaytitle%7Ciwlinks%7Cproperties%7Cparsewarnings", null, callback);
+        sendWikiApi("GET", wikiURL + "?action=parse&format=json&page=" + query + "&origin=*&prop=text%7Clinks%7Ctemplates%7Cimages%7Csections%7Cdisplaytitle%7Ciwlinks%7Cproperties%7Cparsewarnings", null, callback);
     };
 
+    module.checkNewPage = function(gameId, nextPage, callback) {
+        send("POST", "/api/game/" + gameId + "/goto/", {nextPage: nextPage}, callback);
+    }
+
     module.getImgUrl = function(filename, callback) {
-    	send("GET", wikiURL + filename, null, callback);
+    	sendWikiApi("GET", wikiURL + filename, null, callback);
     };
 
     return module;
