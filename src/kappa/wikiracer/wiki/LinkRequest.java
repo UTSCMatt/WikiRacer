@@ -13,6 +13,7 @@ public class LinkRequest {
     if (SendRequest.invalidArticle(article)) {
       throw new InvalidArticleException("Articles has invalid characters");
     }
+    article = SendRequest.encodeTitles(article);
     String request = "?action=query&pllimit=max&format=json&prop=links&titles=" + article + "&plnamespace=0";
     return continueRequest(request);
   }
