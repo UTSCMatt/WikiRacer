@@ -133,7 +133,7 @@ public class Api {
     if (CategoryRequest.inCategory(nextPage, bannedCategories)) {
       return true;
     }
-    return true;
+    return false;
   }
   
   private ResponseEntity<String> redirectToHome() {

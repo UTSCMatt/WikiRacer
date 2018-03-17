@@ -43,6 +43,7 @@
             }
         });
 
+        // used to toggle the options menu
         document.getElementById("options_btn").addEventListener("click", function(e) {
             var optionsBtn = document.getElementById("options_btn");
             var optionsMenu = document.getElementById("options_menu");
@@ -54,11 +55,12 @@
                 optionsBtn.innerHTML = "Show Options"
             }   
         });
-
+        
         document.getElementById("join_btn").addEventListener("click", function (e) {
             e.preventDefault();
             var joinGameId = document.getElementById("gamecode").value;
             formBox.style.display = "none";
+            // join existing game using game code
             api.joinGame(joinGameId, function (err, res) {
                 if (err) console.log(err);
                 else {
@@ -104,6 +106,7 @@
                         links[i].addEventListener('click', function (e) {
                             e.preventDefault();
                             try {
+                                // replaces game window with loading screen
                                 var frameWrapper = document.getElementById("framewrapper");
                                 frameWrapper.style.backgroundColor = "#333333";
                                 var loadIcon = document.createElement("img");
@@ -116,11 +119,13 @@
                             }
                             api.checkNewPage(gameId, linkSplit, function(err, res) {
                                 if (res.finished) {
+                                    // placeholder for actual win 
                                     alert("a winner is you!");   
                                 }
                                 else if (err) {
                                     console.log(err);
                                     alert("link not allowed");
+                                    // returns the user to page they were on if the next page is banned or invalid
                                     createGameWindow(content, gameId);
                                 } else {
                                     api.getWikiPage(res.current_page, function(err, res) {
