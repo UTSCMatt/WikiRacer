@@ -62,7 +62,10 @@
             api.joinGame(joinGameId, function (err, res) {
                 if (err) console.log(err);
                 else {
-                    createGameWindow(res);
+                    api.getWikiPage(res.start, function(err, res) {
+                        if (err) console.log(err);
+                        else createGameWindow(res, joinGameId);
+                    });
                 }
             });
         });
@@ -113,7 +116,7 @@
                             }
                             api.checkNewPage(gameId, linkSplit, function(err, res) {
                                 if (res.finished) {
-                                    alert("a winner is you!");            
+                                    alert("a winner is you!");   
                                 }
                                 else if (err) {
                                     console.log(err);
