@@ -12,7 +12,7 @@
             newElmt.addEventListener('click', function(){
                 api.signout(function(err, res){
                     if (err) console.log(err);
-                    else window.location.href = "";
+                    else window.location.href = "/";
                 });
             });
         }

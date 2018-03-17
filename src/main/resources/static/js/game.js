@@ -23,7 +23,7 @@
                         endPage = res.end;
                         var gameId = res.id;
                         // get the json representation of the starting page
-                        api.getWikiPage(startPage, function(err, res) {
+                        api.getWikiPage(res.start, function(err, res) {
                             if (err) console.log(err);
                             else processNewPage(res, gameId);
                         });
@@ -66,20 +66,18 @@
                 if (err) console.log(err);
                 else {
                     formBox.style.display = "none";
-                    
                     processNewPage(res);
                 }
             });
         });
 
         function processNewPage(content, gameId) {
-            var pageObj = JSON.parse(content);
-            createGameWindow(pageObj, gameId);
-        };
-
+            createGameWindow(content, gameId);
+        }
         // creates the structure for displaying the game
         function createGameWindow(content, gameId) {
             var gameBox = document.getElementById("gamebox");
+            gameBox.innerHTML = "";
             var frameWrapper = document.createElement("div");
             var frame = document.createElement("div");
             frameWrapper.id = "framewrapper";
@@ -90,31 +88,51 @@
             frameWrapper.appendChild(frame);
             gameBox.appendChild(frameWrapper);
             gameBox.prepend("Game ID: " + gameId);
-            insertLinks();
-            insertImages();
+            insertLinks(gameId);
             frameWrapper.style.visibility = "";
         };
 
-        function insertLinks() {
-
-            var links = document.getElementsByTagName("a");
-
+        function insertLinks(gameId) {
+        
+            var links = document.getElementById("framewrapper").getElementsByTagName("a");
+            var regex = new RegExp(/Template|#|action=edit|:|external/);
             for (var i = 0; i < links.length; i++) {
                 (function () {
+                    var linkSplit = links[i].href.split("/wiki/").slice(-1)[0];
                     // removes external links and template links
-                    if((links[i].href.split("/wiki/")[1].includes("Template")) || links[i].className == "external text") {
+                    if(regex.test(linkSplit) || regex.test(links[i].className)) {
                         links[i].removeAttribute("href");
                     }
                     // replaces internal wiki links with api calls for their respective pages
                     else {
                         links[i].addEventListener('click', function (e) {
                             e.preventDefault();
-                            api.getWikiPage(links[i].href.split("/wiki/")[1], function(err, res) {
+                            try {
+                                var frameWrapper = document.getElementById("framewrapper");
+                                frameWrapper.style.backgroundColor = "#333333";
+                                var loadIcon = document.createElement("img");
+                                loadIcon.src = "images/loader.gif";
+                                loadIcon.style.margin = "auto";
+                                frameWrapper.innerHTML = "";
+                                frameWrapper.appendChild(loadIcon);
+                            } catch (error) {
+                                return error;
+                            }
+                            api.checkNewPage(gameId, linkSplit, function(err, res) {
                                 if (err) console.log(err);
-                                else {
-                                    processNewPage(res);
+                                else if (res.finished) {
+                                    alert("a winner is you!");
+                                } else {
+                                    
+                                    api.getWikiPage(res.current_page, function(err, res) {
+                                        if (err) console.log(err);
+                                        else {
+                                            processNewPage(res, gameId);
+                                        }
+                                    });  
                                 }
-                            });   
+                            });
+                            
                         });
                     }
                    
@@ -122,11 +140,6 @@
             }
             
         };
-        // retrieves images from wiki and inserts them
-        function insertImages() {
-
-        };
-
         
     });
 }());
