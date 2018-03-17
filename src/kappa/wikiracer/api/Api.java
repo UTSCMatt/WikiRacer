@@ -98,19 +98,19 @@ public class Api {
 
   private Boolean hasLink(String parentTitle, String childTitle)
       throws SQLException, InvalidArticleException {
-    Set<String> links = new LinkDao(dbUrl, dbUsername, dbPassword).getLinks(parentTitle);
-    if (links.contains(childTitle)) {
-      return true;
-    } else {
+//    Set<String> links = new LinkDao(dbUrl, dbUsername, dbPassword).getLinks(parentTitle);
+//    if (links.contains(childTitle)) {
+//      return true;
+//    } else {
       Set<String> updatedLinks = LinkRequest.sendRequest(parentTitle);
       if (updatedLinks.contains(childTitle)) {
-        updatedLinks.removeAll(links);
+//        updatedLinks.removeAll(links);
         new LinkDao(dbUrl, dbUsername, dbPassword).addLinks(parentTitle, updatedLinks);
         return true;
       } else {
         return false;
       }
-    }
+//    }
   }
 
   private Boolean inGame(String gameId, String username) throws SQLException {
