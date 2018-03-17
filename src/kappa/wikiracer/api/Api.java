@@ -296,7 +296,11 @@ public class Api {
         return new ResponseEntity<String>(
             JSONObject.quote("No link to '" + nextPage + "' found in '" + currentPage + "'"),
             HttpStatus.NOT_FOUND);
+      String oldPage = nextPage;
       nextPage = ResolveRedirectRequest.resolveRedirect(nextPage);
+      if (!nextPage.equals(oldPage)) {
+        new LinkDao(dbUrl, dbUsername, dbPassword).addPage(nextPage);
+      }
       Boolean finished = nextPage.equals(finalPage);
       if (!finished && isBanned(gameId, nextPage)) {
         return new ResponseEntity<String>(JSONObject.quote("Attempt page is banned by rules"),
