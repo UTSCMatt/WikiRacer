@@ -37,4 +37,8 @@ class SendRequest {
     }
     return new JSONObject(jsonString.toString());
   }
+
+  protected static boolean invalidArticle(String article) {
+    return !article.matches("^[^#<>\\[\\]\\|\\{\\}&]+$");
+  }
 }
