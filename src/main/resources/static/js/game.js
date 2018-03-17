@@ -25,7 +25,7 @@
                 rules.categories = rulesCat.split(",");
                 rules.articles = rulesArt.split(",");
                 formBox.style.display = "none";
-                api.makeGame(startPage, endPage/*, gameMode*/, rules, function (err, res) {
+                api.makeGame(startPage, endPage/*, gameMode*/, JSON.stringify(rules), function (err, res) {
                     if (err) console.log(err);
                     else {
                         startPage = res.start;
