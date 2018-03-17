@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -261,21 +262,33 @@ public class Api {
     try {
       if (!inGame(gameId, username))
         return new ResponseEntity<String>(JSONObject.quote("Join game first"), HttpStatus.UNAUTHORIZED);
-      nextPage = StringUtils.trimToEmpty(nextPage);
-      nextPage = nextPage.replaceAll("_", " ");
-      if (!ExistRequest.exists(nextPage))
-        return new ResponseEntity<String>(JSONObject.quote(nextPage + " does not exist"), HttpStatus.NOT_FOUND);
-      String currentPage = new GameDao(dbUrl, dbUsername, dbPassword).getCurrentPage(gameId, username);
-      String finalPage = new GameDao(dbUrl, dbUsername, dbPassword).finalPage(gameId);
-      if (currentPage.equals(finalPage)) return new ResponseEntity<String>(JSONObject.quote("Game already finished"), HttpStatus.BAD_REQUEST);
-      if (!hasLink(currentPage, nextPage)) return new ResponseEntity<String>(JSONObject.quote("No link to '" + nextPage + "' found in '" + currentPage + "'"), HttpStatus.NOT_FOUND);
-      nextPage = ResolveRedirectRequest.resolveRedirect(nextPage);
-      Boolean finished = nextPage.equals(finalPage);
-      new GameDao(dbUrl, dbUsername, dbPassword).changePage(gameId, username, nextPage, finished);
-      Map<String, Object> response = new HashMap<>();
-      response.put("finished", finished);
-      response.put("current_page", nextPage);
-      return new ResponseEntity<>(response, HttpStatus.OK);
+      Set<String> lock = new HashSet<>();
+      lock.add(username);
+      lock.add(gameId);
+      synchronized (lock) {
+        nextPage = StringUtils.trimToEmpty(nextPage);
+        nextPage = nextPage.replaceAll("_", " ");
+        if (!ExistRequest.exists(nextPage))
+          return new ResponseEntity<String>(JSONObject.quote(nextPage + " does not exist"),
+              HttpStatus.NOT_FOUND);
+        String currentPage = new GameDao(dbUrl, dbUsername, dbPassword)
+            .getCurrentPage(gameId, username);
+        String finalPage = new GameDao(dbUrl, dbUsername, dbPassword).finalPage(gameId);
+        if (currentPage.equals(finalPage))
+          return new ResponseEntity<String>(JSONObject.quote("Game already finished"),
+              HttpStatus.BAD_REQUEST);
+        if (!hasLink(currentPage, nextPage))
+          return new ResponseEntity<String>(
+              JSONObject.quote("No link to '" + nextPage + "' found in '" + currentPage + "'"),
+              HttpStatus.NOT_FOUND);
+        nextPage = ResolveRedirectRequest.resolveRedirect(nextPage);
+        Boolean finished = nextPage.equals(finalPage);
+        new GameDao(dbUrl, dbUsername, dbPassword).changePage(gameId, username, nextPage, finished);
+        Map<String, Object> response = new HashMap<>();
+        response.put("finished", finished);
+        response.put("current_page", nextPage);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+      }
     } catch (SQLException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     } catch (InvalidArticleException ex) {
