@@ -14,7 +14,8 @@ public class ResolveRedirectRequest {
     result = result.getJSONObject(MediaWikiConstants.QUERY).getJSONObject(MediaWikiConstants.PAGES);
     String pageId = (String) result.keys().next();
     result = result.getJSONObject(pageId);
-    return result.getString(MediaWikiConstants.TITLE);
+    String redirect = result.getString(MediaWikiConstants.TITLE);
+    return redirect.replaceAll("&", "%26");
   }
 
 }

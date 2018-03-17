@@ -135,6 +135,11 @@ public class Api {
     }
     return false;
   }
+
+  private String fixWikiTitles(String title) {
+    title = title.replaceAll("&", "%26");
+    return title.replaceAll("_", " ");
+  }
   
   private ResponseEntity<String> redirectToHome() {
     HttpHeaders headers = new HttpHeaders();
@@ -206,8 +211,8 @@ public class Api {
     JSONObject parsedRules = new JSONObject(rules);
     JSONArray bannedCategories = parsedRules.getJSONArray(CATEOGORIES);
     JSONArray bannedArticles = parsedRules.getJSONArray(ARTICLES);
-    start = start.replaceAll("_", " ");
-    end = end.replaceAll("_", " ");
+    start = fixWikiTitles(start);
+    end = fixWikiTitles(end);
     if (start.isEmpty()) {
       start = RandomRequest.getRandom(end);
     } else {
@@ -282,7 +287,7 @@ public class Api {
       if (!inGame(gameId, username))
         return new ResponseEntity<String>(JSONObject.quote("Join game first"), HttpStatus.UNAUTHORIZED);
       nextPage = StringUtils.trimToEmpty(nextPage);
-      nextPage = nextPage.replaceAll("_", " ");
+      nextPage = fixWikiTitles(nextPage);
       if (!ExistRequest.exists(nextPage))
         return new ResponseEntity<String>(JSONObject.quote(nextPage + " does not exist"),
             HttpStatus.NOT_FOUND);
