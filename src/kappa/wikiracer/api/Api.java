@@ -133,7 +133,7 @@ public class Api {
     if (CategoryRequest.inCategory(nextPage, bannedCategories) || new RulesDao(dbUrl, dbUsername, dbPassword).getArticles(gameId).contains(nextPage)) {
       return true;
     }
-    return true;
+    return false;
   }
   
   private ResponseEntity<String> redirectToHome() {
