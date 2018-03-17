@@ -62,8 +62,8 @@ var api = (function() {
         send("GET", "/logoff/", null, callback);
     };
 
-    module.makeGame = function(start, end, /*gameMode, rules,*/ callback) {
-        send("POST", "/api/game/new/", {start: start, end: end/*, gameMode: gameMode, rules: rules*/}, callback);
+    module.makeGame = function(start, end, /*gameMode*/ rules, callback) {
+        send("POST", "/api/game/new/", {start: start, end: end/*, gameMode: gameMode*/, rules: rules}, callback);
     };
 
     module.joinGame = function(gameId, callback) {
