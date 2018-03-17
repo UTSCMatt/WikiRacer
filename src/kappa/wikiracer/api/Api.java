@@ -186,6 +186,8 @@ public class Api {
     if (!isAuthenticated(req)) return new ResponseEntity<>("Not logged in", HttpStatus.UNAUTHORIZED);
     start = StringUtils.trimToEmpty(start);
     end = StringUtils.trimToEmpty(end);
+    start = start.replaceAll("_", " ");
+    end = end.replaceAll("_", " ");
     if (start.isEmpty()) {
       start = RandomRequest.getRandom(end);
     } else {
@@ -260,6 +262,7 @@ public class Api {
       if (!inGame(gameId, username))
         return new ResponseEntity<String>("Join game first", HttpStatus.UNAUTHORIZED);
       nextPage = StringUtils.trimToEmpty(nextPage);
+      nextPage = nextPage.replaceAll("_", " ");
       if (!ExistRequest.exists(nextPage))
         return new ResponseEntity<String>(nextPage + " does not exist", HttpStatus.NOT_FOUND);
       String currentPage = new GameDao(dbUrl, dbUsername, dbPassword).getCurrentPage(gameId, username);
