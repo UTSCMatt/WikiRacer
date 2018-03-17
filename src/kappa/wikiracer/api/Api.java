@@ -105,6 +105,8 @@ public class Api {
 //    } else {
       Set<String> updatedLinks = LinkRequest.sendRequest(parentTitle);
       if (updatedLinks.contains(childTitle)) {
+        new LinkDao(dbUrl, dbUsername, dbPassword).addPage(parentTitle);
+        new LinkDao(dbUrl, dbUsername, dbPassword).addPage(childTitle);
 //        updatedLinks.removeAll(links);
 //        new LinkDao(dbUrl, dbUsername, dbPassword).addLinks(parentTitle, updatedLinks);
         return true;
