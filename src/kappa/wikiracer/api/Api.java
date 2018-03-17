@@ -181,7 +181,7 @@ public class Api {
     }
     HttpHeaders headers = new HttpHeaders();
     headers.add("Location", "/");
-    return redirectToHome();
+    return new ResponseEntity<String>(JSONObject.quote("User logged out"), HttpStatus.OK);
   }
 
   @RequestMapping(value = "/api/game/new/", method = RequestMethod.POST)

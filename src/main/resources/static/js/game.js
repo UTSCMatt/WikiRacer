@@ -73,8 +73,7 @@
 
         function processNewPage(content, gameId) {
             createGameWindow(content, gameId);
-        };
-
+        }
         // creates the structure for displaying the game
         function createGameWindow(content, gameId) {
             var gameBox = document.getElementById("gamebox");
@@ -108,11 +107,23 @@
                     else {
                         links[i].addEventListener('click', function (e) {
                             e.preventDefault();
+                            try {
+                                var frameWrapper = document.getElementById("framewrapper");
+                                frameWrapper.style.backgroundColor = "#333333";
+                                var loadIcon = document.createElement("img");
+                                loadIcon.src = "images/loader.gif";
+                                loadIcon.style.margin = "auto";
+                                frameWrapper.innerHTML = "";
+                                frameWrapper.appendChild(loadIcon);
+                            } catch (error) {
+                                return error;
+                            }
                             api.checkNewPage(gameId, linkSplit, function(err, res) {
                                 if (err) console.log(err);
                                 else if (res.finished) {
                                     alert("a winner is you!");
                                 } else {
+                                    
                                     api.getWikiPage(res.current_page, function(err, res) {
                                         if (err) console.log(err);
                                         else {
