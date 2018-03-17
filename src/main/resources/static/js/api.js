@@ -69,6 +69,10 @@ var api = (function() {
     	send("GET", wikiURL + filename, null, callback);
     };
 
+    module.getGameList = function(callback) {
+    	send("GET", "/api/getGameList/", null, callback);
+    };
+
     return module;
 
 })();

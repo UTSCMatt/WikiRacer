@@ -7,7 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.UUID;
-import java.util.Arrays;
+import java.util.ArrayList;
 import kappa.wikiracer.exception.GameException;
 
 public class GameDao extends Dao {
@@ -180,28 +180,22 @@ public class GameDao extends Dao {
     return id;
   }
 
-  public String[] getGameList() throws SQLException {
+  public ArrayList<String> getGameList() throws SQLException {
     Connection c = getConnection();
     PreparedStatement stmt;
 
-    String sql = "SELECT COUNT(GameId) AS size FROM games";
+    String sql = "SELECT GameId FROM games";
 
     stmt = c.prepareStatement(sql);
 
     ResultSet rs = stmt.executeQuery();
     rs.next();
-    int size = rs.getInt("size");
 
-    String[] results = new String[size];
+    ArrayList<String> results = new ArrayList<String>();
 
-    sql = "SELECT GameId FROM games";
-    stmt = c.prepareStatement(sql);
-    rs = stmt.executeQuery();
-    rs.next();
-
-    while(rs.getString("GameId") != null){
+    while(rs.next()){
       results.add(rs.getString("GameId"));
-      rs.next();
+
     }
     c.close();
     stmt.close();

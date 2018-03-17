@@ -1,5 +1,6 @@
 package kappa.wikiracer.api;
 
+import java.sql.Array;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -8,6 +9,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.ArrayList;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -265,15 +267,15 @@ public class Api {
     }
   }
 
-  @RequestMapping(value = "/api/leaderboard/", method = RequestMethod.GET)
-  public ResponseEntity<?> viewLeaderboard(HttpServletRequest req, HttpServletResponse res) {
-    String[] response;
+  @RequestMapping(value = "/api/getGameList/", method = RequestMethod.GET)
+  public ResponseEntity<?> getGameList(HttpServletRequest req, HttpServletResponse res) {
+    ArrayList<String> response = new ArrayList<String>();
     try {
       response = new GameDao(dbUrl, dbUsername, dbPassword).getGameList();
     } catch (SQLException ex) {
       return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return new ResponseEntity<String[]>(response, HttpStatus.OK);
+    return new ResponseEntity<ArrayList<String>>(response, HttpStatus.OK);
   }
     /*** API ENDS ***/
 
