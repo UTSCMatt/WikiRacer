@@ -9,6 +9,7 @@ public class ResolveRedirectRequest {
     if (SendRequest.invalidArticle(article)) {
       throw new InvalidArticleException("Articles has invalid characters");
     }
+    article = SendRequest.encodeTitles(article);
     String request = "?action=query&format=json&titles=" + article + "&redirects=1";
     JSONObject result = SendRequest.sendRequest(request, "POST");
     result = result.getJSONObject(MediaWikiConstants.QUERY).getJSONObject(MediaWikiConstants.PAGES);

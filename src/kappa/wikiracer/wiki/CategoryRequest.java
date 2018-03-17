@@ -13,12 +13,14 @@ public class CategoryRequest {
     if (SendRequest.invalidArticle(article)) {
       throw new InvalidArticleException("Article has invalid characters");
     }
+    article = SendRequest.encodeTitles(article);
     StringBuilder request = new StringBuilder("?action=query&format=json&prop=categories&titles=" + article + "&clcategories=");
     Boolean first = true;
     for (String category : categories) {
       if (!first) {
         request.append("%7C");
       }
+      category = SendRequest.encodeTitles(category);
       request.append(category);
     }
     JSONObject result = SendRequest.sendRequest(request.toString(), "POST");

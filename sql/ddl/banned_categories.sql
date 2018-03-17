@@ -4,4 +4,4 @@
 	PRIMARY KEY (GameId, CategoryId),
 	FOREIGN KEY (GameId) REFERENCES Games(Id),
 	FOREIGN KEY (CategoryId) REFERENCES Wiki_Categories(Id)
-)
+) CHARACTER SET=utf8;
