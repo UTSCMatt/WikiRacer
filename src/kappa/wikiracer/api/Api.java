@@ -106,7 +106,7 @@ public class Api {
       Set<String> updatedLinks = LinkRequest.sendRequest(parentTitle);
       if (updatedLinks.contains(childTitle)) {
 //        updatedLinks.removeAll(links);
-        new LinkDao(dbUrl, dbUsername, dbPassword).addLinks(parentTitle, updatedLinks);
+//        new LinkDao(dbUrl, dbUsername, dbPassword).addLinks(parentTitle, updatedLinks);
         return true;
       } else {
         return false;
@@ -254,8 +254,8 @@ public class Api {
     }
   }
 
-  @RequestMapping(value = "/api/game/{gameId}/goto/{nextPage}/", method = RequestMethod.POST)
-  public ResponseEntity<?> goToPage(HttpServletRequest req, @PathVariable String gameId, @PathVariable String nextPage) {
+  @RequestMapping(value = "/api/game/{gameId}/goto/", method = RequestMethod.POST)
+  public ResponseEntity<?> goToPage(HttpServletRequest req, @PathVariable String gameId, String nextPage) {
     if (!isAuthenticated(req))
       return new ResponseEntity<String>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
     String username = (String) req.getSession().getAttribute("username");
