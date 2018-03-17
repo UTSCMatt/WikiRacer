@@ -132,14 +132,14 @@ public class Api {
       if (UserVerification.checkPassword(password, hash)) {
         invalidateSession(req);
         setSession(req, res, username);
-        return new ResponseEntity<String>("User signed in", HttpStatus.OK);
+        return new ResponseEntity<String>(JSONObject.quote("User signed in"), HttpStatus.OK);
       } else {
-        return new ResponseEntity<String>("Invalid username or password", HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<String>(JSONObject.quote("Invalid username or password"), HttpStatus.UNAUTHORIZED);
       }
     } catch (UserNotFoundException ex) {
-      return new ResponseEntity<String>("Invalid username or password", HttpStatus.UNAUTHORIZED);
+      return new ResponseEntity<String>(JSONObject.quote("Invalid username or password"), HttpStatus.UNAUTHORIZED);
     } catch (SQLException ex) {
-      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -148,19 +148,19 @@ public class Api {
     username = StringUtils.trimToEmpty(username);
     password = StringUtils.trimToEmpty(password);
     if (!UserVerification.usernameIsValid(username)) {
-      return new ResponseEntity<String>("Username invalid", HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<String>(JSONObject.quote("Username invalid"), HttpStatus.BAD_REQUEST);
     }
     try {
       new UserDao(dbUrl, dbUsername, dbPassword)
           .createUser(username, UserVerification.createHash(password));
       invalidateSession(req);
       setSession(req, res, username);
-      return new ResponseEntity<String>("User signed up", HttpStatus.OK);
+      return new ResponseEntity<String>(JSONObject.quote("User signed up"), HttpStatus.OK);
     } catch (SQLException ex) {
       if (ex.getMessage().equals("Username already in use")) {
-        return new ResponseEntity<String>("Username in use", HttpStatus.CONFLICT);
+        return new ResponseEntity<String>(JSONObject.quote("Username in use"), HttpStatus.CONFLICT);
       }
-      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -183,7 +183,7 @@ public class Api {
 
   @RequestMapping(value = "/api/game/new/", method = RequestMethod.POST)
   public ResponseEntity<?> createGame(HttpServletRequest req, String start, String end) {
-    if (!isAuthenticated(req)) return new ResponseEntity<>("Not logged in", HttpStatus.UNAUTHORIZED);
+    if (!isAuthenticated(req)) return new ResponseEntity<>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
     start = StringUtils.trimToEmpty(start);
     end = StringUtils.trimToEmpty(end);
     start = start.replaceAll("_", " ");
@@ -193,10 +193,10 @@ public class Api {
     } else {
       try {
         if (!ExistRequest.exists(start)) {
-          return new ResponseEntity<>(start + " does not exist", HttpStatus.NOT_FOUND);
+          return new ResponseEntity<>(JSONObject.quote(start + " does not exist"), HttpStatus.NOT_FOUND);
         }
       } catch (InvalidArticleException ex) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
       }
     }
     if (end.isEmpty()) {
@@ -204,10 +204,10 @@ public class Api {
     } else {
       try {
         if (!ExistRequest.exists(end)) {
-          return new ResponseEntity<>(end + " does not exist", HttpStatus.NOT_FOUND);
+          return new ResponseEntity<>(JSONObject.quote(end + " does not exist"), HttpStatus.NOT_FOUND);
         }
       } catch (InvalidArticleException ex) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
       }
     }
 
@@ -216,7 +216,7 @@ public class Api {
       end = ResolveRedirectRequest.resolveRedirect(end);
     } catch (InvalidArticleException ex) {
       // Internal server error because this should not happen due to user error
-      return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     Map<String, String> response = new HashMap<>();
@@ -231,9 +231,9 @@ public class Api {
       new GameDao(dbUrl,dbUsername,dbPassword).joinGame(response.get("id"),
           (String) req.getSession().getAttribute("username"));
     } catch (SQLException ex) {
-      return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     } catch (GameException ex) {
-      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     return new ResponseEntity<>(response, HttpStatus.OK);
@@ -242,33 +242,33 @@ public class Api {
 
   @RequestMapping(value = "/api/game/{gameId}/join/", method = RequestMethod.POST)
   public ResponseEntity<String> joinGame(HttpServletRequest req, @PathVariable String gameId) {
-    if (!isAuthenticated(req)) return new ResponseEntity<String>("Not logged in", HttpStatus.UNAUTHORIZED);
+    if (!isAuthenticated(req)) return new ResponseEntity<String>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
     try {
-      return new ResponseEntity<String>(new GameDao(dbUrl,dbUsername,dbPassword).joinGame(gameId,
-          (String) req.getSession().getAttribute("username")), HttpStatus.OK);
+      return new ResponseEntity<String>(JSONObject.quote(new GameDao(dbUrl,dbUsername,dbPassword).joinGame(gameId,
+          (String) req.getSession().getAttribute("username"))), HttpStatus.OK);
     } catch (SQLException ex) {
-      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     } catch (GameException ex) {
-      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
   }
 
   @RequestMapping(value = "/api/game/{gameId}/goto/{nextPage}/", method = RequestMethod.POST)
   public ResponseEntity<?> goToPage(HttpServletRequest req, @PathVariable String gameId, @PathVariable String nextPage) {
     if (!isAuthenticated(req))
-      return new ResponseEntity<String>("Not logged in", HttpStatus.UNAUTHORIZED);
+      return new ResponseEntity<String>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
     String username = (String) req.getSession().getAttribute("username");
     try {
       if (!inGame(gameId, username))
-        return new ResponseEntity<String>("Join game first", HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<String>(JSONObject.quote("Join game first"), HttpStatus.UNAUTHORIZED);
       nextPage = StringUtils.trimToEmpty(nextPage);
       nextPage = nextPage.replaceAll("_", " ");
       if (!ExistRequest.exists(nextPage))
-        return new ResponseEntity<String>(nextPage + " does not exist", HttpStatus.NOT_FOUND);
+        return new ResponseEntity<String>(JSONObject.quote(nextPage + " does not exist"), HttpStatus.NOT_FOUND);
       String currentPage = new GameDao(dbUrl, dbUsername, dbPassword).getCurrentPage(gameId, username);
       String finalPage = new GameDao(dbUrl, dbUsername, dbPassword).finalPage(gameId);
-      if (currentPage.equals(finalPage)) return new ResponseEntity<String>("Game already finished", HttpStatus.BAD_REQUEST);
-      if (!hasLink(currentPage, nextPage)) return new ResponseEntity<String>("No link to '" + nextPage + "' found in '" + currentPage + "'", HttpStatus.NOT_FOUND);
+      if (currentPage.equals(finalPage)) return new ResponseEntity<String>(JSONObject.quote("Game already finished"), HttpStatus.BAD_REQUEST);
+      if (!hasLink(currentPage, nextPage)) return new ResponseEntity<String>(JSONObject.quote("No link to '" + nextPage + "' found in '" + currentPage + "'"), HttpStatus.NOT_FOUND);
       nextPage = ResolveRedirectRequest.resolveRedirect(nextPage);
       Boolean finished = nextPage.equals(finalPage);
       new GameDao(dbUrl, dbUsername, dbPassword).changePage(gameId, username, nextPage, finished);
@@ -277,9 +277,9 @@ public class Api {
       response.put("current_page", nextPage);
       return new ResponseEntity<>(response, HttpStatus.OK);
     } catch (SQLException ex) {
-      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     } catch (InvalidArticleException ex) {
-      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
   }
 
