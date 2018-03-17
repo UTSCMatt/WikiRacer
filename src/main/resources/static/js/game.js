@@ -34,7 +34,7 @@
                         // get the json representation of the starting page
                         api.getWikiPage(res.start, function(err, res) {
                             if (err) console.log(err);
-                            else processNewPage(res, gameId);
+                            else createGameWindow(res, gameId);
                         });
                     }
                 });
@@ -62,14 +62,11 @@
             api.joinGame(joinGameId, function (err, res) {
                 if (err) console.log(err);
                 else {
-                    processNewPage(res);
+                    createGameWindow(res);
                 }
             });
         });
 
-        function processNewPage(content, gameId) {
-            createGameWindow(content, gameId);
-        }
         // creates the structure for displaying the game
         function createGameWindow(content, gameId) {
             var gameBox = document.getElementById("gamebox");
@@ -84,11 +81,11 @@
             frameWrapper.appendChild(frame);
             gameBox.appendChild(frameWrapper);
             gameBox.prepend("Game ID: " + gameId);
-            insertLinks(gameId);
+            insertLinks(content, gameId);
             frameWrapper.style.visibility = "";
         };
 
-        function insertLinks(gameId) {
+        function insertLinks(content, gameId) {
         
             var links = document.getElementById("framewrapper").getElementsByTagName("a");
             var regex = new RegExp(/Template|#|action=edit|:|external/);
@@ -115,15 +112,18 @@
                                 return error;
                             }
                             api.checkNewPage(gameId, linkSplit, function(err, res) {
-                                if (err) console.log(err);
-                                else if (res.finished) {
-                                    alert("a winner is you!");
+                                if (res.finished) {
+                                    alert("a winner is you!");            
+                                }
+                                else if (err) {
+                                    console.log(err);
+                                    alert("link not allowed");
+                                    createGameWindow(content, gameId);
                                 } else {
-                                    
                                     api.getWikiPage(res.current_page, function(err, res) {
                                         if (err) console.log(err);
                                         else {
-                                            processNewPage(res, gameId);
+                                            createGameWindow(res, gameId);
                                         }
                                     });  
                                 }
