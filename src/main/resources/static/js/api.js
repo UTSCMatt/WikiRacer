@@ -78,10 +78,6 @@ var api = (function() {
         send("POST", "/api/game/" + gameId + "/goto/", {nextPage: nextPage}, callback);
     }
 
-    module.getImgUrl = function(filename, callback) {
-    	sendWikiApi("GET", wikiURL + filename, null, callback);
-    };
-
     return module;
 
 })();
