@@ -184,7 +184,7 @@ public class Api {
   }
 
   @RequestMapping(value = "/api/game/new/", method = RequestMethod.POST)
-  public ResponseEntity<?> createGame(HttpServletRequest req, String start, String end) {
+  public ResponseEntity<?> createGame(HttpServletRequest req, String start, String end, HashMap<String, Object> rules) {
     if (!isAuthenticated(req)) return new ResponseEntity<>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
     start = StringUtils.trimToEmpty(start);
     end = StringUtils.trimToEmpty(end);
