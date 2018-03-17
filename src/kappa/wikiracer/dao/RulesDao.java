@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 
 public class RulesDao extends Dao {
@@ -30,7 +31,7 @@ public class RulesDao extends Dao {
       if (!category.startsWith("Category")) {
         fixedCategory = "Category%3A" + fixedCategory;
       }
-      stmt.setString(2, category);
+      stmt.setString(2, StringUtils.trimToEmpty(fixedCategory));
       stmt.addBatch();
     }
 
@@ -70,7 +71,7 @@ public class RulesDao extends Dao {
     for (int i = 0; i < articles.length(); i++) {
       String article = articles.getString(i);
       stmt.setString(1, gameId);
-      stmt.setString(2, article);
+      stmt.setString(2, StringUtils.trimToEmpty(article));
       stmt.addBatch();
     }
     stmt.executeBatch();
