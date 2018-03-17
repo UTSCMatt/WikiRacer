@@ -9,6 +9,7 @@ import org.json.JSONObject;
 
 public class CategoryRequest {
   public static Boolean inCategory(String article, Set<String> categories) throws InvalidArticleException {
+    if (categories.isEmpty()) return false;
     if (SendRequest.invalidArticle(article)) {
       throw new InvalidArticleException("Article has invalid characters");
     }

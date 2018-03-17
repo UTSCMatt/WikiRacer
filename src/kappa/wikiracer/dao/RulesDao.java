@@ -26,13 +26,16 @@ public class RulesDao extends Dao {
 
     for (int i = 0; i < categories.length(); i++) {
       String category = categories.getString(i);
-      stmt.setString(1, gameId);
       String fixedCategory = category.replaceAll(":", "%3A");
       if (!category.startsWith("Category")) {
         fixedCategory = "Category%3A" + fixedCategory;
       }
-      stmt.setString(2, StringUtils.trimToEmpty(fixedCategory));
-      stmt.addBatch();
+      fixedCategory = StringUtils.trimToEmpty(fixedCategory);
+      if (!fixedCategory.isEmpty()) {
+        stmt.setString(1, gameId);
+        stmt.setString(2, fixedCategory);
+        stmt.addBatch();
+      }
     }
 
     stmt.executeBatch();
@@ -52,7 +55,10 @@ public class RulesDao extends Dao {
 
     Set<String> results = new HashSet<>();
     while (rs.next()) {
-      results.add(rs.getString("Category"));
+      String result = rs.getString("Category");
+      if (!result.isEmpty()) {
+        results.add(result);
+      }
     }
     c.close();
     stmt.close();
@@ -70,9 +76,12 @@ public class RulesDao extends Dao {
 
     for (int i = 0; i < articles.length(); i++) {
       String article = articles.getString(i);
-      stmt.setString(1, gameId);
-      stmt.setString(2, StringUtils.trimToEmpty(article));
-      stmt.addBatch();
+      String fixedArticle = StringUtils.trimToEmpty(article);
+      if (!fixedArticle.isEmpty()) {
+        stmt.setString(1, gameId);
+        stmt.setString(2, StringUtils.trimToEmpty(article));
+        stmt.addBatch();
+      }
     }
     stmt.executeBatch();
     c.close();
@@ -91,7 +100,10 @@ public class RulesDao extends Dao {
 
     Set<String> results = new HashSet<>();
     while (rs.next()) {
-      results.add(rs.getString("Title"));
+      String result = rs.getString("Title");
+      if (!result.isEmpty()) {
+        results.add(result);
+      }
     }
     c.close();
     stmt.close();
