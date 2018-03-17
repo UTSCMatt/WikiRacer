@@ -39,6 +39,6 @@ class SendRequest {
   }
 
   protected static boolean invalidArticle(String article) {
-    return !article.matches("^[^#<>\\[\\]\\|\\{\\}&]+$");
+    return !article.matches("^[^#<>\\[\\]\\|\\{\\}]+$");
   }
 }
