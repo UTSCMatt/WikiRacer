@@ -130,7 +130,7 @@ public class Api {
   private Boolean isBanned(String gameId, String nextPage)
       throws SQLException, InvalidArticleException {
     Set<String> bannedCategories = new RulesDao(dbUrl, dbUsername, dbPassword).getCategories(gameId);
-    if (CategoryRequest.inCategory(nextPage, bannedCategories)) {
+    if (CategoryRequest.inCategory(nextPage, bannedCategories) || new RulesDao(dbUrl, dbUsername, dbPassword).getArticles(gameId).contains(nextPage)) {
       return true;
     }
     return true;

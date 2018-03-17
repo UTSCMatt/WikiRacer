@@ -59,4 +59,43 @@ public class RulesDao extends Dao {
     return results;
   }
 
+  public void banArticles(String gameId, JSONArray articles) throws SQLException {
+    Connection c = getConnection();
+    CallableStatement stmt;
+
+    String sql = "CALL Ban_Article(?,?)";
+
+    stmt = c.prepareCall(sql);
+
+    for (int i = 0; i < articles.length(); i++) {
+      String article = articles.getString(i);
+      stmt.setString(1, gameId);
+      stmt.setString(2, article);
+      stmt.addBatch();
+    }
+    stmt.executeBatch();
+    c.close();
+    stmt.close();
+  }
+
+  public Set<String> getArticles(String gameId) throws SQLException {
+    Connection c = getConnection();
+    PreparedStatement stmt;
+
+    String sql = "SELECT p.Title FROM Wiki_Pages p INNER JOIN banned_articles b ON b.ArticleId=p.Id WHERE GameId=(SELECT Id FROM Games WHERE GameId = ?)";
+
+    stmt = c.prepareStatement(sql);
+    stmt.setString(1, gameId);
+    ResultSet rs = stmt.executeQuery();
+
+    Set<String> results = new HashSet<>();
+    while (rs.next()) {
+      results.add(rs.getString("Title"));
+    }
+    c.close();
+    stmt.close();
+    rs.close();
+    return results;
+  }
+
 }
