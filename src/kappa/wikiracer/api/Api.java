@@ -16,15 +16,18 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import kappa.wikiracer.dao.GameDao;
 import kappa.wikiracer.dao.LinkDao;
+import kappa.wikiracer.dao.RulesDao;
 import kappa.wikiracer.dao.UserDao;
 import kappa.wikiracer.exception.GameException;
 import kappa.wikiracer.exception.InvalidArticleException;
 import kappa.wikiracer.exception.UserNotFoundException;
 import kappa.wikiracer.util.UserVerification;
+import kappa.wikiracer.wiki.CategoryRequest;
 import kappa.wikiracer.wiki.ExistRequest;
 import kappa.wikiracer.wiki.RandomRequest;
 import kappa.wikiracer.wiki.ResolveRedirectRequest;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -48,6 +51,9 @@ public class Api {
   
   @Value("${spring.datasource.password}")
   private String dbPassword;
+
+  private final String CATEOGORIES = "categories";
+  private final String ARTICLES = "articles";
 
   /*** Testing API Begins ***/
 
@@ -120,6 +126,15 @@ public class Api {
   private Boolean inGame(String gameId, String username) throws SQLException {
     return new GameDao(dbUrl,dbUsername,dbPassword).inGame(gameId, username);
   }
+
+  private Boolean isBanned(String gameId, String nextPage)
+      throws SQLException, InvalidArticleException {
+    Set<String> bannedCategories = new RulesDao(dbUrl, dbUsername, dbPassword).getCategories(gameId);
+    if (CategoryRequest.inCategory(nextPage, bannedCategories)) {
+      return true;
+    }
+    return true;
+  }
   
   private ResponseEntity<String> redirectToHome() {
     HttpHeaders headers = new HttpHeaders();
@@ -184,10 +199,13 @@ public class Api {
   }
 
   @RequestMapping(value = "/api/game/new/", method = RequestMethod.POST)
-  public ResponseEntity<?> createGame(HttpServletRequest req, String start, String end, HashMap<String, Object> rules) {
+  public ResponseEntity<?> createGame(HttpServletRequest req, String start, String end, String rules) {
     if (!isAuthenticated(req)) return new ResponseEntity<>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
     start = StringUtils.trimToEmpty(start);
     end = StringUtils.trimToEmpty(end);
+    JSONObject parsedRules = new JSONObject(rules);
+    JSONArray bannedCategories = parsedRules.getJSONArray(CATEOGORIES);
+    JSONArray bannedArticles = parsedRules.getJSONArray(ARTICLES);
     start = start.replaceAll("_", " ");
     end = end.replaceAll("_", " ");
     if (start.isEmpty()) {
@@ -232,12 +250,12 @@ public class Api {
       response.put("id", new GameDao(dbUrl,dbUsername,dbPassword).createGame(start,end));
       new GameDao(dbUrl,dbUsername,dbPassword).joinGame(response.get("id"),
           (String) req.getSession().getAttribute("username"));
+      new RulesDao(dbUrl, dbUsername, dbPassword).banCategories(response.get("id"), bannedCategories);
     } catch (SQLException ex) {
       return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     } catch (GameException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
-
     return new ResponseEntity<>(response, HttpStatus.OK);
 
   }
@@ -280,6 +298,10 @@ public class Api {
             HttpStatus.NOT_FOUND);
       nextPage = ResolveRedirectRequest.resolveRedirect(nextPage);
       Boolean finished = nextPage.equals(finalPage);
+      if (!finished && isBanned(gameId, nextPage)) {
+        return new ResponseEntity<String>(JSONObject.quote("Attempt page is banned by rules"),
+            HttpStatus.UNAUTHORIZED);
+      }
       new GameDao(dbUrl, dbUsername, dbPassword).changePage(gameId, username, nextPage, finished);
       Map<String, Object> response = new HashMap<>();
       response.put("finished", finished);
@@ -292,6 +314,6 @@ public class Api {
     }
   }
 
-    /*** API ENDS ***/
+  /*** API ENDS ***/
 
 }

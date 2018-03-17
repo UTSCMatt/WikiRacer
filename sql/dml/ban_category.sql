@@ -8,5 +8,5 @@ BEGIN
 	END IF;
 	SET realGameId = (SELECT Id FROM Games WHERE GameId=newGameId);
 	SET realCategoryId = (SELECT Id FROM Wiki_Categories WHERE Category=newCategory);
-	INSERT INTO banned_categories (GameId, CategoryId) Values (newGameId, realCategoryId);
+	INSERT INTO banned_categories (GameId, CategoryId) Values (realGameId, realCategoryId);
 END //

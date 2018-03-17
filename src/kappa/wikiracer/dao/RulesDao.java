@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
+import org.json.JSONArray;
 
 public class RulesDao extends Dao {
 
@@ -14,7 +15,7 @@ public class RulesDao extends Dao {
     super(url, username, password);
   }
 
-  public void banCategories(String gameId, String[] categories) throws SQLException {
+  public void banCategories(String gameId, JSONArray categories) throws SQLException {
     Connection c = getConnection();
     CallableStatement stmt;
 
@@ -22,7 +23,8 @@ public class RulesDao extends Dao {
 
     stmt = c.prepareCall(sql);
 
-    for (String category : categories) {
+    for (int i = 0; i < categories.length(); i++) {
+      String category = categories.getString(i);
       stmt.setString(1, gameId);
       String fixedCategory = category.replaceAll(":", "%3A");
       if (!category.startsWith("Category")) {
