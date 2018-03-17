@@ -21,6 +21,7 @@ import kappa.wikiracer.exception.UserNotFoundException;
 import kappa.wikiracer.util.UserVerification;
 import kappa.wikiracer.wiki.ExistRequest;
 import kappa.wikiracer.wiki.RandomRequest;
+import kappa.wikiracer.wiki.ResolveRedirectRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
@@ -208,6 +209,14 @@ public class Api {
       }
     }
 
+    try {
+      start = ResolveRedirectRequest.resolveRedirect(start);
+      end = ResolveRedirectRequest.resolveRedirect(end);
+    } catch (InvalidArticleException ex) {
+      // Internal server error because this should not happen due to user error
+      return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     Map<String, String> response = new HashMap<>();
 
 
@@ -257,6 +266,7 @@ public class Api {
       String finalPage = new GameDao(dbUrl, dbUsername, dbPassword).finalPage(gameId);
       if (currentPage.equals(finalPage)) return new ResponseEntity<String>("Game already finished", HttpStatus.BAD_REQUEST);
       if (!hasLink(currentPage, nextPage)) return new ResponseEntity<String>("No link to '" + nextPage + "' found in '" + currentPage + "'", HttpStatus.NOT_FOUND);
+      nextPage = ResolveRedirectRequest.resolveRedirect(nextPage);
       Boolean finished = nextPage.equals(finalPage);
       new GameDao(dbUrl, dbUsername, dbPassword).changePage(gameId, username, nextPage, finished);
       Map<String, Object> response = new HashMap<>();
