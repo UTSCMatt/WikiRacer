@@ -22,6 +22,7 @@ import kappa.wikiracer.util.UserVerification;
 import kappa.wikiracer.wiki.ExistRequest;
 import kappa.wikiracer.wiki.RandomRequest;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -185,7 +186,7 @@ public class Api {
     start = StringUtils.trimToEmpty(start);
     end = StringUtils.trimToEmpty(end);
     if (start.isEmpty()) {
-      start = RandomRequest.getRandom();
+      start = RandomRequest.getRandom(end);
     } else {
       try {
         if (!ExistRequest.exists(start)) {
@@ -196,7 +197,7 @@ public class Api {
       }
     }
     if (end.isEmpty()) {
-      end = RandomRequest.getRandom();
+      end = RandomRequest.getRandom(start);
     } else {
       try {
         if (!ExistRequest.exists(end)) {
@@ -208,6 +209,10 @@ public class Api {
     }
 
     Map<String, String> response = new HashMap<>();
+
+
+    if (start.equals(end)) return new ResponseEntity<String>(JSONObject.quote("Cannot start and end in same article"), HttpStatus.BAD_REQUEST);
+
     response.put("start", start);
     response.put("end", end);
     try {
