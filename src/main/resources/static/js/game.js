@@ -18,8 +18,8 @@
                 var rulesCat = document.getElementById("ban_cat").value.replace(/, /g, ",");
                 var rulesArt = document.getElementById("ban_art").value.replace(/, /g, ",");
                 var rules = {
-                    categories = [],
-                    articles = []
+                    "categories" : [],
+                    "articles" : []
                 };
                 // splits the user input by commas into an array
                 rules.categories = rulesCat.split(",");
