@@ -33,7 +33,7 @@ public class UserDao extends Dao {
     ResultSet rs = stmt.executeQuery();
 
     if (rs.next()) {
-      String password = rs.getString("Password");
+      final String password = rs.getString("Password");
       c.close();
       stmt.close();
       rs.close();

@@ -4,12 +4,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
-
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import javax.net.ssl.HttpsURLConnection;
-
-import kappa.wikiracer.exception.InvalidArticleException;
 import org.json.JSONObject;
 
 public class SendRequest {

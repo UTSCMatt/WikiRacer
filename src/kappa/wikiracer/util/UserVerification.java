@@ -3,6 +3,7 @@ package kappa.wikiracer.util;
 import org.mindrot.jbcrypt.BCrypt;
 
 public class UserVerification {
+
   private static final String USERNAME_REGEX = "^[a-zA-Z0-9._-]{3,}$";
 
   public static boolean usernameIsValid(String username) {

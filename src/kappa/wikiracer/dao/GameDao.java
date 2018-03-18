@@ -9,13 +9,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.ArrayList;
-import java.util.Arrays;
 import kappa.wikiracer.exception.GameException;
 
 public class GameDao extends Dao {
@@ -83,7 +81,7 @@ public class GameDao extends Dao {
     if (rs.getInt(1) < 0) {
       throw new GameException(rs.getString(2));
     } else {
-     return rs.getString(2);
+      return rs.getString(2);
     }
   }
 
@@ -99,7 +97,9 @@ public class GameDao extends Dao {
     Connection c = getConnection();
     PreparedStatement stmt;
 
-    String sql = "SELECT COUNT(GameId) FROM player_game_map WHERE GameId = (SELECT Id FROM Games WHERE GameId=?) AND UserId = (SELECT Id FROM Users WHERE Username=?)";
+    String sql = "SELECT COUNT(GameId) FROM player_game_map"
+        + " WHERE GameId = (SELECT Id FROM Games WHERE GameId=?) AND"
+        + " UserId = (SELECT Id FROM Users WHERE Username=?)";
 
     stmt = c.prepareStatement(sql);
     stmt.setString(1, gameId);
@@ -109,7 +109,7 @@ public class GameDao extends Dao {
 
     rs.next();
 
-    Boolean results = rs.getInt(1) > 0;
+    final Boolean results = rs.getInt(1) > 0;
 
     c.close();
     stmt.close();
@@ -131,7 +131,10 @@ public class GameDao extends Dao {
     Connection c = getConnection();
     PreparedStatement stmt;
 
-    String sql = "SELECT w.Title FROM player_game_map m INNER JOIN Wiki_Pages w ON m.CurrentPage=w.Id WHERE m.GameId = (SELECT Id FROM Games WHERE GameId=?) AND m.UserId = (SELECT Id FROM Users WHERE Username=?)";
+    String sql = "SELECT w.Title FROM player_game_map m INNER JOIN "
+        + "Wiki_Pages w ON m.CurrentPage=w.Id WHERE "
+        + "m.GameId = (SELECT Id FROM Games WHERE GameId=?) AND "
+        + "m.UserId = (SELECT Id FROM Users WHERE Username=?)";
 
     stmt = c.prepareStatement(sql);
     stmt.setString(1, gameId);
@@ -141,7 +144,7 @@ public class GameDao extends Dao {
 
     rs.next();
 
-    String results = rs.getString("Title");
+    final String results = rs.getString("Title");
 
     c.close();
     stmt.close();
@@ -162,7 +165,8 @@ public class GameDao extends Dao {
     Connection c = getConnection();
     PreparedStatement stmt;
 
-    String sql = "SELECT w.Title FROM games g INNER JOIN Wiki_Pages w ON g.EndId=w.Id WHERE g.GameId = ?";
+    String sql = "SELECT w.Title FROM "
+        + "games g INNER JOIN Wiki_Pages w ON g.EndId=w.Id WHERE g.GameId = ?";
 
     stmt = c.prepareStatement(sql);
     stmt.setString(1, gameId);
@@ -171,7 +175,7 @@ public class GameDao extends Dao {
 
     rs.next();
 
-    String results = rs.getString("Title");
+    final String results = rs.getString("Title");
 
     c.close();
     stmt.close();
@@ -190,7 +194,8 @@ public class GameDao extends Dao {
    * @return map which maps "clicks" to number of clicks and "time" to time used
    * @throws SQLException when database has an error
    */
-  public Map<String, Object> changePage(String gameId, String username, String nextPage, Boolean finished) throws SQLException {
+  public Map<String, Object> changePage(String gameId, String username, String nextPage,
+      Boolean finished) throws SQLException {
     Connection c = getConnection();
     CallableStatement stmt;
 
@@ -247,6 +252,15 @@ public class GameDao extends Dao {
     return id;
   }
 
+  /**
+   * Get a list of games. Default no search.
+   *
+   * @param search find games whose id start with this
+   * @param offset skip the first offset games
+   * @param limit the number of results
+   * @return list of games
+   * @throws SQLException when database has an error
+   */
   public List<String> getGameList(String search, int offset, int limit) throws SQLException {
     Connection c = getConnection();
     PreparedStatement stmt;
@@ -262,7 +276,7 @@ public class GameDao extends Dao {
 
     ArrayList<String> results = new ArrayList<String>();
 
-    while(rs.next()){
+    while (rs.next()) {
       results.add(rs.getString("GameId"));
 
     }
@@ -273,12 +287,18 @@ public class GameDao extends Dao {
     return results;
   }
 
+  /**
+   * Get the stats of a given game.
+   *
+   * @param gameId the game's id
+   * @return list of stats of people who finished the game
+   * @throws SQLException when database has an error
+   */
   public List<Map> getGameStats(String gameId) throws SQLException {
     Connection c = getConnection();
     PreparedStatement stmt;
 
     String sql = "CALL Get_Leaderboard(?)";
-
 
     stmt = c.prepareStatement(sql);
     stmt.setString(1, gameId);
@@ -286,7 +306,7 @@ public class GameDao extends Dao {
 
     List<Map> results = new ArrayList<>();
 
-    while(rs.next()){
+    while (rs.next()) {
       String username = rs.getString("Username");
       int timeSpend = rs.getInt("TimeSpend");
       int numClicks = rs.getInt("NumClicks");

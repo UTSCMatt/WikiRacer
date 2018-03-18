@@ -6,7 +6,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class LinkDao extends Dao {
@@ -27,7 +26,9 @@ public class LinkDao extends Dao {
     Connection c = getConnection();
     PreparedStatement stmt;
 
-    String sql = "SELECT p.Title FROM Wiki_Pages p INNER JOIN Wiki_Links l ON p.Id = l.Child WHERE l.Parent = (SELECT Id FROM Wiki_Pages WHERE Title = ?)";
+    String sql = "SELECT p.Title FROM Wiki_Pages p "
+        + "INNER JOIN Wiki_Links l ON p.Id = l.Child "
+        + "WHERE l.Parent = (SELECT Id FROM Wiki_Pages WHERE Title = ?)";
 
     stmt = c.prepareStatement(sql);
     stmt.setString(1, title);
