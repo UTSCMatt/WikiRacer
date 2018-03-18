@@ -266,11 +266,14 @@ public class Api {
   }
 
   @RequestMapping(value = "/api/game/{gameId}/join/", method = RequestMethod.POST)
-  public ResponseEntity<String> joinGame(HttpServletRequest req, @PathVariable String gameId) {
+  public ResponseEntity<?> joinGame(HttpServletRequest req, @PathVariable String gameId) {
     if (!isAuthenticated(req)) return new ResponseEntity<String>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
     try {
-      return new ResponseEntity<String>(JSONObject.quote(new GameDao(dbUrl,dbUsername,dbPassword).joinGame(gameId,
-          (String) req.getSession().getAttribute("username"))), HttpStatus.OK);
+      Map<String, String> response = new HashMap<>();
+      response.put("start", new GameDao(dbUrl,dbUsername,dbPassword).joinGame(gameId, (String) req.getSession().getAttribute("username")));
+      response.put("id", gameId);
+      response.put("end", new GameDao(dbUrl, dbUsername, dbPassword).finalPage(gameId));
+      return new ResponseEntity<>(response, HttpStatus.OK);
     } catch (SQLException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     } catch (GameException ex) {
