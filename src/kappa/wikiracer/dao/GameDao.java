@@ -1,5 +1,9 @@
 package kappa.wikiracer.dao;
 
+import static kappa.wikiracer.api.Api.NUM_CLICKS_KEY;
+import static kappa.wikiracer.api.Api.TIME_SPEND_KEY;
+import static kappa.wikiracer.api.Api.USERNAME_KEY;
+
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -7,8 +11,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -192,15 +196,16 @@ public class GameDao extends Dao {
     return id;
   }
 
-  public List<String> getGameList(int offset, int limit) throws SQLException {
+  public List<String> getGameList(String search, int offset, int limit) throws SQLException {
     Connection c = getConnection();
     PreparedStatement stmt;
 
-    String sql = "SELECT GameId FROM games LIMIT ? OFFSET ?";
+    String sql = "SELECT GameId FROM games WHERE GameId LIKE ? LIMIT ? OFFSET ?";
 
     stmt = c.prepareStatement(sql);
-    stmt.setInt(1, limit);
-    stmt.setInt(2, offset);
+    stmt.setString(1, search + "%");
+    stmt.setInt(2, limit);
+    stmt.setInt(3, offset);
 
     ResultSet rs = stmt.executeQuery();
 
@@ -217,7 +222,7 @@ public class GameDao extends Dao {
     return results;
   }
 
-  public List<List<String>> getGameStats(String gameId) throws SQLException {
+  public List<Map> getGameStats(String gameId) throws SQLException {
     Connection c = getConnection();
     PreparedStatement stmt;
 
@@ -228,13 +233,16 @@ public class GameDao extends Dao {
     stmt.setString(1, gameId);
     ResultSet rs = stmt.executeQuery();
 
-    List<List<String>> results = new ArrayList<>();
+    List<Map> results = new ArrayList<>();
 
     while(rs.next()){
       String username = rs.getString("Username");
       int timeSpend = rs.getInt("TimeSpend");
       int numClicks = rs.getInt("NumClicks");
-      List<String> currentResult = new ArrayList<String>(Arrays.asList(username, Integer.toString(timeSpend), Integer.toString(numClicks)));
+      Map currentResult = new HashMap();
+      currentResult.put(USERNAME_KEY, username);
+      currentResult.put(TIME_SPEND_KEY, timeSpend);
+      currentResult.put(NUM_CLICKS_KEY, numClicks);
       results.add(currentResult);
 
     }

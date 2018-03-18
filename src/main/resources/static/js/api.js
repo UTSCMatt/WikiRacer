@@ -83,7 +83,11 @@ var api = (function() {
     };
 
     module.getGameList = function(offset, limit, search, callback) {
-    	send("GET", "/api/getGameList?offset=" + offset + "&limit=" + limit + "&search=" + search, null, callback);
+      var url = "/api/getGameList?offset=" + offset + "&limit=" + limit;
+      if(search) {
+        url += "&search=" + search;
+      }
+    	send("GET", url, null, callback);
     };
 
     module.getGameStats = function(gameId, callback) {

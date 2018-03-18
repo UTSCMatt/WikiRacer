@@ -66,6 +66,10 @@ public class Api {
   private final String CATEGORIES = "categories";
   private final String ARTICLES = "articles";
 
+  public static final String USERNAME_KEY = "username";
+  public static final String TIME_SPEND_KEY = "timeSpend";
+  public static final String NUM_CLICKS_KEY = "numClicks";
+
   /*** Testing API Begins ***/
 
   @RequestMapping(value = "/api/test/", method = RequestMethod.GET)
@@ -356,10 +360,11 @@ public class Api {
   }
 
   @RequestMapping(value = "/api/getGameList", method = RequestMethod.GET)
-  public ResponseEntity<?> getGameList(HttpServletRequest req, HttpServletResponse res, @RequestParam("offset") int offset, @RequestParam("limit") int limit) {
+  public ResponseEntity<?> getGameList(HttpServletRequest req, HttpServletResponse res, @RequestParam(value = "search", required = false) String search, @RequestParam("offset") int offset, @RequestParam("limit") int limit) {
+    search = StringUtils.trimToEmpty(search);
     List<String> response = new ArrayList<String>();
     try {
-      response = new GameDao(dbUrl, dbUsername, dbPassword).getGameList(offset, limit);
+      response = new GameDao(dbUrl, dbUsername, dbPassword).getGameList(search, offset, limit);
     } catch (SQLException ex) {
       return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -368,7 +373,7 @@ public class Api {
 
   @RequestMapping(value = "/api/getGameStats/{gameId}/", method = RequestMethod.GET)
   public ResponseEntity<?> getGameStats(HttpServletRequest req, HttpServletResponse res, @PathVariable String gameId) {
-    List<List<String>> response = new ArrayList<>();
+    List<Map> response = new ArrayList<>();
     try {
       response = new GameDao(dbUrl, dbUsername, dbPassword).getGameStats(gameId);
     } catch (SQLException ex) {

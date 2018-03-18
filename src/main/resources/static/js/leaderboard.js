@@ -99,9 +99,9 @@
                 var cell0 = row.insertCell(0);
                 var cell1 = row.insertCell(1);
                 var cell2 = row.insertCell(2);
-                cell0.innerHTML = gameStats[i][0];
-                cell1.innerHTML = gameStats[i][1];
-                cell2.innerHTML = gameStats[i][2];
+                cell0.innerHTML = gameStats[i]["username"];
+                cell1.innerHTML = gameStats[i]["timeSpend"];
+                cell2.innerHTML = gameStats[i]["numClicks"];
             };
             statsForm.appendChild(statsTable);
 
