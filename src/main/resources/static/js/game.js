@@ -6,6 +6,12 @@
         var joinGameForm = document.getElementById("join_game_form");
         var formBox = document.getElementById("form_container");
 
+        var gameReqs = {
+            gameId: null,
+            start: null,
+            end: null,
+        };
+
         document.getElementById("start_btn").addEventListener("click", function (e) {
             e.preventDefault();
             // if the user enters a wikipedia url instead of the page title, splits the string and 
@@ -25,16 +31,18 @@
                 rules.categories = rulesCat.split(",");
                 rules.articles = rulesArt.split(",");
                 formBox.style.display = "none";
+                loadingScreen();
                 api.makeGame(startPage, endPage/*, gameMode*/, JSON.stringify(rules), function (err, res) {
                     if (err) console.log(err);
                     else {
-                        startPage = res.start;
-                        endPage = res.end;
-                        var gameId = res.id;
+
+                        gameReqs.gameId = res.id;
+                        gameReqs.start = res.start;
+                        gameReqs.end = res.end;
                         // get the json representation of the starting page
-                        api.getWikiPage(res.start, function(err, res) {
+                        api.getWikiPage(gameReqs.start, function(err, res) {
                             if (err) console.log(err);
-                            else createGameWindow(res, gameId);
+                            else createGameWindow(res, gameReqs);
                         });
                     }
                 });
@@ -60,20 +68,24 @@
             e.preventDefault();
             var joinGameId = document.getElementById("gamecode").value;
             formBox.style.display = "none";
+            loadingScreen();
             // join existing game using game code
             api.joinGame(joinGameId, function (err, res) {
                 if (err) console.log(err);
                 else {
-                    api.getWikiPage(res.start, function(err, res) {
+                    gameReqs.gameId = res.id;
+                    gameReqs.start = res.start;
+                    gameReqs.end = res.end;
+                    api.getWikiPage(gameReqs.start, function(err, res) {
                         if (err) console.log(err);
-                        else createGameWindow(res, joinGameId);
+                        else createGameWindow(res, gameReqs);
                     });
                 }
             });
         });
 
         // creates the structure for displaying the game
-        function createGameWindow(content, gameId) {
+        function createGameWindow(content, gameReqs) {
             var gameBox = document.getElementById("gamebox");
             gameBox.innerHTML = "";
             var frameWrapper = document.createElement("div");
@@ -85,12 +97,28 @@
             frameWrapper.style.visibility = "hidden";
             frameWrapper.appendChild(frame);
             gameBox.appendChild(frameWrapper);
-            gameBox.prepend("Game ID: " + gameId);
-            insertLinks(content, gameId);
+            gameBox.prepend("Game ID: " + gameReqs.gameId);
+            gameBox.prepend("Start Page: " + gameReqs.start + " End Page: " + gameReqs.end + " ");
+            insertLinks(content, gameReqs);
             frameWrapper.style.visibility = "";
         };
 
-        function insertLinks(content, gameId) {
+        function loadingScreen() {
+            // replaces game window with loading screen
+            var gameBox = document.getElementById("gamebox");
+            gameBox.innerHTML = "";
+            var frameWrapper = document.createElement("div");
+            frameWrapper.id = "framewrapper";
+            frameWrapper.style.backgroundColor = "#333333";
+            var loadIcon = document.createElement("img");
+            loadIcon.style.marginTop = "64px";
+            loadIcon.src = "images/loader.gif";
+            frameWrapper.innerHTML = "";
+            frameWrapper.appendChild(loadIcon);
+            gameBox.appendChild(frameWrapper);
+        };
+
+        function insertLinks(content, gameReqs) {
         
             var links = document.getElementById("framewrapper").getElementsByTagName("a");
             var regex = new RegExp(/Template|#|action=edit|:|external/);
@@ -106,32 +134,25 @@
                         links[i].addEventListener('click', function (e) {
                             e.preventDefault();
                             try {
-                                // replaces game window with loading screen
-                                var frameWrapper = document.getElementById("framewrapper");
-                                frameWrapper.style.backgroundColor = "#333333";
-                                var loadIcon = document.createElement("img");
-                                loadIcon.style.marginTop = "64px";
-                                loadIcon.src = "images/loader.gif";
-                                frameWrapper.innerHTML = "";
-                                frameWrapper.appendChild(loadIcon);
+                                loadingScreen();
                             } catch (error) {
                                 return error;
                             }
-                            api.checkNewPage(gameId, linkSplit, function(err, res) {
-                                if (res.finished) {
-                                    // placeholder for actual win 
-                                    alert("a winner is you!");   
-                                }
-                                else if (err) {
+                            api.checkNewPage(gameReqs.gameId, linkSplit, function(err, res) {
+                                if (err) {
                                     console.log(err);
                                     alert("link not allowed");
                                     // returns the user to page they were on if the next page is banned or invalid
-                                    createGameWindow(content, gameId);
+                                    createGameWindow(content, gameReqs);
+                                }
+                                else if (res.finished) {
+                                     // placeholder for actual win 
+                                     alert("a winner is you!");   
                                 } else {
                                     api.getWikiPage(res.current_page, function(err, res) {
                                         if (err) console.log(err);
                                         else {
-                                            createGameWindow(res, gameId);
+                                            createGameWindow(res, gameReqs);
                                         }
                                     });  
                                 }

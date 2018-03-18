@@ -241,7 +241,7 @@ public class Api {
       end = ResolveRedirectRequest.resolveRedirect(end);
     } catch (InvalidArticleException ex) {
       // Internal server error because this should not happen due to user error
-      return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<>(JSONObject.quote("Start: " + start + ", End: " + end), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     Map<String, String> response = new HashMap<>();
@@ -265,8 +265,8 @@ public class Api {
 
   }
 
-  @RequestMapping(value = "/api/game/{gameId}/join/", method = RequestMethod.POST)
-  public ResponseEntity<?> joinGame(HttpServletRequest req, @PathVariable String gameId) {
+  @RequestMapping(value = "/api/game/join/", method = RequestMethod.POST)
+  public ResponseEntity<?> joinGame(HttpServletRequest req, String gameId) {
     if (!isAuthenticated(req)) return new ResponseEntity<String>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
     try {
       Map<String, String> response = new HashMap<>();
