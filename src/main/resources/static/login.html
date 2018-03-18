@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login/Signup</title>
+    <link href="css/main.css" rel="stylesheet" type="text/css"/>
+    <link href="css/form.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+    <header>
+        <a href="index.html" id="title">Wikiracer</a>
+    </header>
+    <ul id="navbar">
+        <li class="navelmt"><a href="index.html">Home</a></li>
+        <li class="navelmt"><a href="game.html">Play Now</a></li>
+        <li class="navelmt"><a href="leaderboard.html">Leaderboards</a></li>   
+        <li class="navelmt"><a href="profile.html">Profile</a></li>
+    </ul>
+
+    <form class="form">
+        <input type="text" name="username" class="form_element" placeholder="Enter a username" required/>
+        <input type="password" name="password" class="form_element" placeholder="Enter a password" required/>
+        <div>
+            <button id="login" name="action" class="btn">Sign in</button>
+            <button id="signup" name="action" class="btn">Sign up</button>
+        </div>
+    </form>
+    <script src="js/api.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/login.js"></script>
+    <footer>
+        <a href='credits.html'>Credits</a>
+    </footer>
+</body>
+</html>

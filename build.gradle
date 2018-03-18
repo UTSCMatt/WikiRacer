@@ -1,0 +1,55 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.10.RELEASE")
+        // If unable to refresh ide project, comment out lines 8 and 17 temporarily
+        classpath 'com.github.mowedgrass:jasypt-gradle-boot-plugin:0.1.33'
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'application'
+apply plugin: 'encrypt'
+
+mainClassName = "kappa.wikiracer.runner.Runner"
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+            exclude 'main/'
+        }
+    }
+}
+
+version = '0.01'
+
+task stage {
+    dependsOn build
+}
+
+jar {
+    baseName = 'wikiracer'
+    version = '0.01'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.springframework.boot:spring-boot-devtools"
+    compile 'com.github.ben-manes.caffeine:caffeine:2.6.2'
+    compile "org.springframework.boot:spring-boot-starter-web"
+    compile "org.json:json"
+    compile group: 'com.github.ulisesbocchio', name: 'jasypt-spring-boot-starter', version: '1.18'
+    compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.6'
+    compile group: 'de.svenkubiak', name: 'jBCrypt', version: '0.4.1'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
+    testCompile 'junit:junit:4.12'
+}	

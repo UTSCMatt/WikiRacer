@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Wikiracer</title>
+    <link href="css/main.css" rel="stylesheet" type="text/css"/>
+    <link href="css/form.css" rel="stylesheet" type="text/css"/>
+    <link href="css/leaderboard.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+    <header>
+        <a href="index.html" id="title">Wikiracer</a>
+    </header>
+    <ul id="navbar">
+        <li class="navelmt"><a href="index.html">Home</a></li>
+        <li class="navelmt"><a href="game.html">Play Now</a></li>
+        <li class="navelmt"><a href="leaderboard.html">Leaderboards</a></li>   
+        <li class="navelmt"><a href="profile.html">Profile</a></li>
+    </ul>
+    <form class="form" id="search_form">
+            <div class="form_title" id="search_title">Enter a game code to search</div>
+            <input type="text" id="code_search" class="form_element" required/>
+            <button type="button" class="btn" id="search_btn">Search Games</button>
+    </form>
+    <form class="form" id="select_game_form">
+        <div class="form_title">Select a Game</div>
+        <ul class="game_list">
+        </ul>
+        <button type="button" class="btn" id="prev_page_btn">Prev Page</button>
+        <button type="button" class="btn" id="next_page_btn">Next Page</button>
+    </form>
+    <form class="hidden" id="stats_form">
+        
+    </form>
+
+    <script src="js/api.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/leaderboard.js"></script>
+    <footer>
+        <a href='credits.html'>Credits</a>
+    </footer>
+</body>
+</html>

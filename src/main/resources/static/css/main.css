@@ -1,0 +1,62 @@
+
+html {overflow: -moz-scrollbars-vertical;}
+body{
+    margin: auto;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 16px;
+    color: black;
+    text-align: center;
+    background: #a4a4a4;
+}
+
+header{
+    margin-top:32px;
+    height: 96px;
+}
+
+#title{
+    color: black;
+    text-decoration: none;
+    width:100%;
+    margin-left: 32px;
+    font-size:64px;
+}
+
+#navbar {
+    display: flex;
+    list-style-type: none;
+    margin: 0px;
+    padding: 0px;
+    overflow: hidden;
+    white-space: nowrap;
+    background-color: #333;
+}
+.navelmt {
+    flex-basis: 100%;
+    float: left;
+    color: white;
+    background-color: #333;
+}
+.navelmt a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 16px;
+    text-decoration: none;
+}
+
+#loginBtn {
+    cursor: pointer;
+}
+
+.navelmt a:hover{
+    background-color: rgb(64, 128, 255);
+}
+
+.hidden{
+    display: none;
+}
+
+.credit_list {
+    list-style-type: none;
+}
