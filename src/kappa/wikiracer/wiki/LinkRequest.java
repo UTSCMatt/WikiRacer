@@ -29,15 +29,16 @@ public class LinkRequest {
     Set<String> titles = new HashSet<>();
     JSONObject continueJson = null;
     do {
-      String request;
-      request = rawRequest;
+      StringBuilder request;
+      request = new StringBuilder(rawRequest);
       if (continueJson != null) {
         for (Object key : continueJson.keySet()) {
           String stringKey = (String) key;
-          request += "&" + stringKey + "=" + continueJson.getString(stringKey);
+          request.append("&").append(stringKey).append("=")
+              .append(continueJson.getString(stringKey));
         }
       }
-      JSONObject json = SendRequest.sendRequest(request, "POST");
+      JSONObject json = SendRequest.sendRequest(request.toString());
       if (json.has(MediaWikiConstants.CONTINUE)) {
         continueJson = json.getJSONObject(MediaWikiConstants.CONTINUE);
       } else {

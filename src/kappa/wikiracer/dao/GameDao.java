@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import kappa.wikiracer.exception.GameException;
 
@@ -310,7 +311,7 @@ public class GameDao extends Dao {
       String username = rs.getString("Username");
       int timeSpend = rs.getInt("TimeSpend");
       int numClicks = rs.getInt("NumClicks");
-      Map currentResult = new HashMap();
+      Map<String, Object> currentResult = new HashMap<>();
       currentResult.put(USERNAME_KEY, username);
       currentResult.put(TIME_SPEND_KEY, timeSpend);
       currentResult.put(NUM_CLICKS_KEY, numClicks);

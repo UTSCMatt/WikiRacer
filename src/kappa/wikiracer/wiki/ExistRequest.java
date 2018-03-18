@@ -18,7 +18,7 @@ public class ExistRequest {
     }
     article = SendRequest.encodeTitles(article);
     String request = "?action=query&format=json&titles=" + article;
-    JSONObject result = SendRequest.sendRequest(request, "POST");
+    JSONObject result = SendRequest.sendRequest(request);
     return !result.getJSONObject(MediaWikiConstants.QUERY).getJSONObject(MediaWikiConstants.PAGES)
         .has(MediaWikiConstants.MISSING_ID);
   }
