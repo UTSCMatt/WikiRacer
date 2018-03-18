@@ -175,7 +175,7 @@
                                     time.setSeconds(res.time);
                                     var finalTime = time.toISOString().substr(11, 8);
                                     alert("You've reached your destination! Your score is: \n Clicks: " + res.clicks + "\n Time: " + finalTime);
-                                    window.location.href = "leaderboard.html";
+                                    window.location.href = "leaderboard.html#" + gameReqs.gameId;
                                 } else {
                                     gameReqs.clicks = res.clicks;
                                     api.getWikiPage(res.current_page, function (err, res) {

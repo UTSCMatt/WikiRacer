@@ -4,7 +4,9 @@
         
         var offset = 0;
         var limit = 10;
-        var query = null;
+        var query = window.location.hash.substring(1);
+
+
 
         api.getGameList(offset, limit, query, function(err, games) {
             if (err) console.log(err);
