@@ -17,6 +17,15 @@ public class GameDao extends Dao {
     super(url, username, password);
   }
 
+  /**
+   * Add a new game to the database.
+   *
+   * @param start the starting article
+   * @param end the ending article
+   * @param gameMode the game mode
+   * @return the game id
+   * @throws SQLException when database has an error
+   */
   public String createGame(String start, String end, String gameMode) throws SQLException {
     getConnection().close();
     String id = generateGameId();
@@ -41,6 +50,15 @@ public class GameDao extends Dao {
 
   }
 
+  /**
+   * A given user joins a given game.
+   *
+   * @param gameId the game's id
+   * @param username the player
+   * @return the article the player begins on
+   * @throws SQLException when database has an error
+   * @throws GameException when user is already in the game
+   */
   public String joinGame(String gameId, String username) throws SQLException, GameException {
     Connection c = getConnection();
     CallableStatement stmt;
@@ -62,6 +80,14 @@ public class GameDao extends Dao {
     }
   }
 
+  /**
+   * Checks if a user is in a given game.
+   *
+   * @param gameId the game's id
+   * @param username the player
+   * @return true if the player is in the game
+   * @throws SQLException when database has an error
+   */
   public Boolean inGame(String gameId, String username) throws SQLException {
     Connection c = getConnection();
     PreparedStatement stmt;
@@ -86,6 +112,14 @@ public class GameDao extends Dao {
 
   }
 
+  /**
+   * Get the current page a user is on for a given game.
+   *
+   * @param gameId the game's id
+   * @param username the player
+   * @return the current page they are on
+   * @throws SQLException when database has an error
+   */
   public String getCurrentPage(String gameId, String username) throws SQLException {
     Connection c = getConnection();
     PreparedStatement stmt;
@@ -110,6 +144,13 @@ public class GameDao extends Dao {
 
   }
 
+  /**
+   * Get the final page for a given game.
+   *
+   * @param gameId the game's id
+   * @return the article name that is the end
+   * @throws SQLException when database has an error
+   */
   public String finalPage(String gameId) throws SQLException {
     Connection c = getConnection();
     PreparedStatement stmt;
@@ -132,6 +173,16 @@ public class GameDao extends Dao {
     return results;
   }
 
+  /**
+   * Change page for a given user's game.
+   *
+   * @param gameId the game id being played
+   * @param username the user who is playing
+   * @param nextPage the page they are going to
+   * @param finished whether the next page is equal to the final page
+   * @return map which maps "clicks" to number of clicks and "time" to time used
+   * @throws SQLException when database has an error
+   */
   public Map<String, Object> changePage(String gameId, String username, String nextPage, Boolean finished) throws SQLException {
     Connection c = getConnection();
     CallableStatement stmt;

@@ -9,6 +9,14 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class LinkRequest {
+
+  /**
+   * Get a set of articles that the given article links to.
+   *
+   * @param article the article to get the set of links from
+   * @return set of articles which the given article links to
+   * @throws InvalidArticleException when article has invalid characters
+   */
   public static Set<String> sendRequest(String article) throws InvalidArticleException {
     if (SendRequest.invalidArticle(article)) {
       throw new InvalidArticleException("Articles has invalid characters");

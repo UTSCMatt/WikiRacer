@@ -15,6 +15,14 @@ public class LinkDao extends Dao {
     super(url, username, password);
   }
 
+  /**
+   * Get links that an article has.
+   * Unused as calling Wikipedia directly is faster than storing links.
+   *
+   * @param title the article title
+   * @return set of articles the given article has links to
+   * @throws SQLException when database has an error
+   */
   public Set<String> getLinks(String title) throws SQLException {
     Connection c = getConnection();
     PreparedStatement stmt;
@@ -39,6 +47,14 @@ public class LinkDao extends Dao {
 
   }
 
+  /**
+   * Add a links that a page has to the database.
+   * Unused as it takes too much time to store links.
+   *
+   * @param parentTitle the article the links belong to
+   * @param links set of articles the parent has links to
+   * @throws SQLException when database has an error
+   */
   public void addLinks(String parentTitle, Set<String> links) throws SQLException {
     Connection c = getConnection();
     CallableStatement stmt;
@@ -59,6 +75,13 @@ public class LinkDao extends Dao {
 
   }
 
+  /**
+   * Add a wikipedia page to the database.
+   *
+   * @param title the article title
+   * @return 0 on success
+   * @throws SQLException when database has an error
+   */
   public Integer addPage(String title) throws SQLException {
     Connection c = getConnection();
     CallableStatement stmt;

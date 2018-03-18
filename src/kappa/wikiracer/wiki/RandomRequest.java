@@ -10,6 +10,12 @@ public class RandomRequest {
     return getRandom("");
   }
 
+  /**
+   * Get a random article from Wikipedia.
+   *
+   * @param notEqual avoid getting a random article equal to the this
+   * @return the random article title
+   */
   public static String getRandom(String notEqual) {
     notEqual = StringUtils.trimToEmpty(notEqual);
     String article;

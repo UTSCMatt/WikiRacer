@@ -71,6 +71,9 @@ public class Api {
   private LoadingCache<String, Boolean> existsCache;
   private LoadingCache<String, String> redirectCache;
 
+  /**
+   * Initialize all the caches.
+   */
   @PostConstruct
   public void initCaches() {
     linkCache = Caffeine.newBuilder().maximumWeight(10000).weigher((String key, Set links) -> links.size()).refreshAfterWrite(5, TimeUnit.MINUTES).build(LinkRequest::sendRequest);
@@ -149,8 +152,15 @@ public class Api {
     return new ResponseEntity<String>(headers, HttpStatus.FOUND);
   }
 
-  /*** API BEGINS ***/
+  /* API BEGINS */
 
+  /**
+   * API to login to the application.
+   *
+   * @param username the username which is case sensitive
+   * @param password the password of the user
+   * @return response from the server and adds session cookies
+   */
   @RequestMapping(value = "/login/", method = RequestMethod.POST)
   public ResponseEntity<String> login(HttpServletRequest req, HttpServletResponse res, String username, String password) {
     try {
@@ -169,6 +179,13 @@ public class Api {
     }
   }
 
+  /**
+   * Signup to the application.
+   *
+   * @param username the username which is case sensitive and must not have been used
+   * @param password the password of the user
+   * @return response from the server and adds logs in for them
+   */
   @RequestMapping(value = "/signup/", method = RequestMethod.POST)
   public ResponseEntity<String> signup(HttpServletRequest req, HttpServletResponse res, String username, String password) {
     username = StringUtils.trimToEmpty(username);
@@ -190,6 +207,11 @@ public class Api {
     }
   }
 
+  /**
+   * Logoff from the application.
+   *
+   * @return successful logoff and deletes cookies
+   */
   @RequestMapping(value = "/logoff/", method = RequestMethod.GET)
   public ResponseEntity<String> logoff(HttpServletRequest req, HttpServletResponse res) {
     invalidateSession(req);
@@ -205,6 +227,15 @@ public class Api {
     return new ResponseEntity<>(JSONObject.quote("Logged off"), HttpStatus.OK);
   }
 
+  /**
+   * Create a new game.
+   *
+   * @param start the starting article, random if undefined
+   * @param end the ending article random if undefined
+   * @param rules JSON string containing rules for the game
+   * @param gameMode the type of game to create
+   * @return response of creating the game
+   */
   @RequestMapping(value = "/api/game/new/", method = RequestMethod.POST)
   public ResponseEntity<?> createGame(HttpServletRequest req, String start, String end, String rules, String gameMode) {
     if (!isAuthenticated(req)) return new ResponseEntity<>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
@@ -264,6 +295,12 @@ public class Api {
 
   }
 
+  /**
+   * Join a given game.
+   *
+   * @param gameId the game's id
+   * @return response of trying to join the game
+   */
   @RequestMapping(value = "/api/game/join/", method = RequestMethod.POST)
   public ResponseEntity<?> joinGame(HttpServletRequest req, String gameId) {
     if (!isAuthenticated(req)) return new ResponseEntity<String>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
@@ -280,6 +317,13 @@ public class Api {
     }
   }
 
+  /**
+   * Go to a new page for a given game.
+   *
+   * @param gameId the id of the game
+   * @param nextPage the page to go to
+   * @return response of trying to go to the page for the given game
+   */
   @RequestMapping(value = "/api/game/{gameId}/goto/", method = RequestMethod.POST)
   public ResponseEntity<?> goToPage(HttpServletRequest req, @PathVariable String gameId, String nextPage) {
     if (!isAuthenticated(req))
@@ -325,6 +369,6 @@ public class Api {
     }
   }
 
-  /*** API ENDS ***/
+  /* API ENDS */
 
 }

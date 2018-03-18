@@ -8,6 +8,15 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class CategoryRequest {
+
+  /**
+   * Checks if an article belongs to any category in a set.
+   *
+   * @param article the article to check with
+   * @param categories the set of categories
+   * @return true if the article belongs at least one of the categories
+   * @throws InvalidArticleException when article has invalid characters
+   */
   public static Boolean inCategory(String article, Set<String> categories) throws InvalidArticleException {
     if (categories.isEmpty()) return false;
     if (SendRequest.invalidArticle(article)) {

@@ -16,6 +16,13 @@ public class RulesDao extends Dao {
     super(url, username, password);
   }
 
+  /**
+   * Ban an array of categories for a given game.
+   *
+   * @param gameId the game's id
+   * @param categories array of categories given from the front end
+   * @throws SQLException when database has an error
+   */
   public void banCategories(String gameId, JSONArray categories) throws SQLException {
     Connection c = getConnection();
     CallableStatement stmt;
@@ -43,6 +50,13 @@ public class RulesDao extends Dao {
     stmt.close();
   }
 
+  /**
+   * Get a set of banned categories for a game.
+   *
+   * @param gameId the game's id
+   * @return set of categories the game has banned
+   * @throws SQLException when database has an error
+   */
   public Set<String> getCategories(String gameId) throws SQLException {
     Connection c = getConnection();
     PreparedStatement stmt;
@@ -66,6 +80,13 @@ public class RulesDao extends Dao {
     return results;
   }
 
+  /**
+   * Ban an array of articles for a given game.
+   *
+   * @param gameId the game's id
+   * @param articles array of articles given from the front end
+   * @throws SQLException when database has an error
+   */
   public void banArticles(String gameId, JSONArray articles) throws SQLException {
     Connection c = getConnection();
     CallableStatement stmt;
@@ -88,6 +109,13 @@ public class RulesDao extends Dao {
     stmt.close();
   }
 
+  /**
+   * Get a set of banned articles for a game.
+   *
+   * @param gameId the game's id
+   * @return set of articles the game has banned
+   * @throws SQLException when database has an error
+   */
   public Set<String> getArticles(String gameId) throws SQLException {
     Connection c = getConnection();
     PreparedStatement stmt;

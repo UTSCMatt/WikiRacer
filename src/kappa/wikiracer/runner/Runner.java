@@ -8,6 +8,9 @@ import org.springframework.context.annotation.ComponentScan;
 @ComponentScan(basePackages = {"kappa.wikiracer.api"})
 public class Runner {
 
+  /**
+   * Run the spring web app.
+   */
   public static void main(String[] args) {
     System.setProperty("spring.devtools.restart.enabled", "true");
     SpringApplication.run(Runner.class, args);

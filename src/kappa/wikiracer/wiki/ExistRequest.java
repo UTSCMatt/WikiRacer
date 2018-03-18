@@ -4,6 +4,14 @@ import kappa.wikiracer.exception.InvalidArticleException;
 import org.json.JSONObject;
 
 public class ExistRequest {
+
+  /**
+   * Check if an article exists on Wikipedia.
+   *
+   * @param article the article title
+   * @return true if the article exists
+   * @throws InvalidArticleException when article has invalid characters
+   */
   public static boolean exists(String article) throws InvalidArticleException {
     if (SendRequest.invalidArticle(article)) {
       throw new InvalidArticleException("Articles has invalid characters");

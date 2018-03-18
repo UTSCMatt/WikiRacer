@@ -13,6 +13,14 @@ public class UserDao extends Dao {
     super(url, username, password);
   }
 
+  /**
+   * Get the salted hash of a user.
+   *
+   * @param username the user's username
+   * @return password which was salted by JBCrypt
+   * @throws SQLException when database has an error
+   * @throws UserNotFoundException if the user is not in the database
+   */
   public String getUserPasswordHash(String username) throws SQLException, UserNotFoundException {
     Connection c = getConnection();
     PreparedStatement stmt;
@@ -38,6 +46,14 @@ public class UserDao extends Dao {
     }
   }
 
+  /**
+   * Create a user on the database.
+   *
+   * @param username the user's chosen username
+   * @param hash JBCrypt salted hash
+   * @return the user's username
+   * @throws SQLException when database has an error
+   */
   public String createUser(String username, String hash) throws SQLException {
     Connection c = getConnection();
     CallableStatement stmt;
