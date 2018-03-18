@@ -20,7 +20,7 @@
             var endPage = document.getElementById("endpage").value.split("/wiki/").slice(-1)[0];
             
             try {
-                //var gameMode = document.querySelector('input[name="game_mode"]:checked').value;
+                var gameMode = document.querySelector('input[name="game_mode"]:checked').value;
                 var rulesCat = document.getElementById("ban_cat").value.replace(/, /g, ",");
                 var rulesArt = document.getElementById("ban_art").value.replace(/, /g, ",");
                 var rules = {
@@ -32,7 +32,7 @@
                 rules.articles = rulesArt.split(",");
                 formBox.style.display = "none";
                 loadingScreen();
-                api.makeGame(startPage, endPage/*, gameMode*/, JSON.stringify(rules), function (err, res) {
+                api.makeGame(startPage, endPage, gameMode, JSON.stringify(rules), function (err, res) {
                     if (err) console.log(err);
                     else {
 

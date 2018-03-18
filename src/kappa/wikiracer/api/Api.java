@@ -252,9 +252,9 @@ public class Api {
     response.put("start", start);
     response.put("end", end);
     try {
-      response.put("id", new GameDao(dbUrl,dbUsername,dbPassword).createGame(start,end));
+      response.put("id", new GameDao(dbUrl,dbUsername,dbPassword).createGame(start,end,gameMode));
       new GameDao(dbUrl,dbUsername,dbPassword).joinGame(response.get("id"),
-          (String) req.getSession().getAttribute("username"), gameMode);
+          (String) req.getSession().getAttribute("username"));
       new RulesDao(dbUrl, dbUsername, dbPassword).banCategories(response.get("id"), bannedCategories);
     } catch (SQLException ex) {
       return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
