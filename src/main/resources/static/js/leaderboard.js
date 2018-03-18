@@ -95,12 +95,15 @@
                                 </tr>`;
             // inserts username, clicks, and time for each user who completed the game
             for (var i = 0; i < gameStats.length; i++) {
+                var time = new Date(null);
+                time.setSeconds(gameStats[i].timeSpend);
+                var finalTime = time.toISOString().substr(11, 8);
                 var row = statsTable.insertRow(-1);
                 var cell0 = row.insertCell(0);
                 var cell1 = row.insertCell(1);
                 var cell2 = row.insertCell(2);
                 cell0.innerHTML = gameStats[i].username;
-                cell1.innerHTML = gameStats[i].timeSpend;
+                cell1.innerHTML = finalTime;
                 cell2.innerHTML = gameStats[i].numClicks;
             }
             statsForm.appendChild(statsTable);

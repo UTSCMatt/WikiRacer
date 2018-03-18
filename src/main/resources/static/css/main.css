@@ -56,3 +56,7 @@ header{
 .hidden{
     display: none;
 }
+
+.credit_list {
+    list-style-type: none;
+}
