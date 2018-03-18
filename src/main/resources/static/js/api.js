@@ -1,7 +1,7 @@
-var api = (function() {
+var api = (function () {
 
     var wikiURL = "https://en.wikipedia.org/w/api.php";
-   
+
 
     // send cross origin requests to mediawiki api
     function sendWikiApi(method, url, data, callback) {
@@ -20,7 +20,7 @@ var api = (function() {
     }
     // send data through Ajax requests
     function send(method, url, data, callback) {
-       
+
         var xhr = new XMLHttpRequest();
         xhr.onload = function () {
             if (xhr.status !== 200) callback("[" + xhr.status + "]" + xhr.responseText, null);
@@ -36,62 +36,58 @@ var api = (function() {
                 var value = data[key];
                 formdata.append(key, value);
             });
-           
+
             xhr.send(formdata);
         }
-        
+
     }
     var module = {};
 
     // reads cookie and returns the username of current user
-    module.getUser = function(){
+    module.getUser = function () {
         var cookies = document.cookie;
         var username = cookies.split("username=")[1];
         return username;
     };
 
-    module.signup = function(username, password, callback) {
-        send("POST", "/signup/", {username: username, password: password}, callback);
+    module.signup = function (username, password, callback) {
+        send("POST", "/signup/", { username: username, password: password }, callback);
     };
 
-    module.signin = function(username, password, callback) {
-        send("POST", "/login/", {username: username, password: password}, callback);
+    module.signin = function (username, password, callback) {
+        send("POST", "/login/", { username: username, password: password }, callback);
     };
 
-    module.signout = function(callback) {
+    module.signout = function (callback) {
         send("GET", "/logoff/", null, callback);
     };
 
-    module.makeGame = function(start, end, gameMode, rules, callback) {
-        send("POST", "/api/game/new/", {start: start, end: end, gameMode: gameMode, rules: rules}, callback);
+    module.makeGame = function (start, end, gameMode, rules, callback) {
+        send("POST", "/api/game/new/", { start: start, end: end, gameMode: gameMode, rules: rules }, callback);
     };
 
-    module.joinGame = function(gameId, callback) {
-        send("POST", "/api/game/join/", {gameId: gameId}, callback);
+    module.joinGame = function (gameId, callback) {
+        send("POST", "/api/game/join/", { gameId: gameId }, callback);
     };
-
-    module.getWikiPage = function(query, callback) {
+    // queries mediawiki api for the page content and properties
+    module.getWikiPage = function (query, callback) {
         sendWikiApi("GET", wikiURL + "?action=parse&format=json&page=" + query + "&origin=*&prop=text%7Clinks%7Ctemplates%7Cimages%7Csections%7Cdisplaytitle%7Ciwlinks%7Cproperties%7Cparsewarnings", null, callback);
     };
 
-    module.checkNewPage = function(gameId, nextPage, callback) {
-        send("POST", "/api/game/" + gameId + "/goto/", {nextPage: nextPage}, callback);
+    module.checkNewPage = function (gameId, nextPage, callback) {
+        send("POST", "/api/game/" + gameId + "/goto/", { nextPage: nextPage }, callback);
     };
 
-    module.getImgUrl = function(filename, callback) {
-    	sendWikiApi("GET", wikiURL + filename, null, callback);
+    module.getGameList = function (offset, limit, search, callback) {
+        var url = "/api/getGameList?offset=" + offset + "&limit=" + limit;
+        if (search) {
+            url += "&search=" + search;
+        }
+        send("GET", url, null, callback);
     };
 
-    module.getGameList = function(offset, limit, search, callback) {
-      var url = "/api/getGameList?offset=" + offset + "&limit=" + limit;
-      if(search) {
-        url += "&search=" + search;
-      }
-    	send("GET", url, null, callback);
-    };
-
-    module.getGameStats = function(gameId, callback) {
-    	send("GET", "/api/getGameStats/" + gameId + "/", null, callback);
+    module.getGameStats = function (gameId, callback) {
+        send("GET", "/api/getGameStats/" + gameId + "/", null, callback);
     };
 
     return module;
