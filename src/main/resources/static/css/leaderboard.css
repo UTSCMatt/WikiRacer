@@ -32,3 +32,19 @@
     grid-row: 3;
     width: auto;
 }
+
+#search_btn {
+
+    grid-row: 3;
+    width: auto;
+}
+
+#code_search {
+    grid-row: 2;
+
+}
+
+#search_title {
+    grid-row: 1;
+
+}
