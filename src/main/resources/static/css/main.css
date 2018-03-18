@@ -52,3 +52,7 @@ header{
 .navelmt a:hover{
     background-color: rgb(64, 128, 256);
 }
+
+.hidden{
+    display: none;
+}
