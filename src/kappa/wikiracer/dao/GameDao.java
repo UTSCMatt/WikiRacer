@@ -224,9 +224,8 @@ public class GameDao extends Dao {
     Connection c = getConnection();
     PreparedStatement stmt;
 
-    String sql = "SELECT users.Username, TIMESTAMPDIFF(second, StartTime, EndTime) AS TimeSpend,"
-        + " NumClicks FROM player_game_map INNER JOIN users ON users.Id = player_game_map.UserId"
-        + " WHERE GameId = (Select Id From Games WHERE GameId = ?) AND Finished = 1";
+    String sql = "CALL Get_Leaderboard(?)";
+
 
     stmt = c.prepareStatement(sql);
     stmt.setString(1, gameId);
