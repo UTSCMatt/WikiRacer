@@ -31,11 +31,12 @@
                 rules.categories = rulesCat.split(",");
                 rules.articles = rulesArt.split(",");
                 formBox.style.display = "none";
+                loadingScreen();
                 api.makeGame(startPage, endPage/*, gameMode*/, JSON.stringify(rules), function (err, res) {
                     if (err) console.log(err);
                     else {
 
-                        gameReqs.gameId = res.gameId;
+                        gameReqs.gameId = res.id;
                         gameReqs.start = res.start;
                         gameReqs.end = res.end;
                         // get the json representation of the starting page
@@ -67,16 +68,17 @@
             e.preventDefault();
             var joinGameId = document.getElementById("gamecode").value;
             formBox.style.display = "none";
+            loadingScreen();
             // join existing game using game code
             api.joinGame(joinGameId, function (err, res) {
                 if (err) console.log(err);
                 else {
-                    gameReqs.gameId = res.gameId;
+                    gameReqs.gameId = res.id;
                     gameReqs.start = res.start;
                     gameReqs.end = res.end;
                     api.getWikiPage(gameReqs.start, function(err, res) {
                         if (err) console.log(err);
-                        else createGameWindow(res, gameReqs.gameId);
+                        else createGameWindow(res, gameReqs);
                     });
                 }
             });
@@ -96,9 +98,24 @@
             frameWrapper.appendChild(frame);
             gameBox.appendChild(frameWrapper);
             gameBox.prepend("Game ID: " + gameReqs.gameId);
-            gameBox.prepend("Start Page: " + gameReqs.start + "End Page: " + gameReqs.end);
-            insertLinks(content, gameReqs.gameId);
+            gameBox.prepend("Start Page: " + gameReqs.start + " End Page: " + gameReqs.end + " ");
+            insertLinks(content, gameReqs);
             frameWrapper.style.visibility = "";
+        };
+
+        function loadingScreen() {
+            // replaces game window with loading screen
+            var gameBox = document.getElementById("gamebox");
+            gameBox.innerHTML = "";
+            var frameWrapper = document.createElement("div");
+            frameWrapper.id = "framewrapper";
+            frameWrapper.style.backgroundColor = "#333333";
+            var loadIcon = document.createElement("img");
+            loadIcon.style.marginTop = "64px";
+            loadIcon.src = "images/loader.gif";
+            frameWrapper.innerHTML = "";
+            frameWrapper.appendChild(loadIcon);
+            gameBox.appendChild(frameWrapper);
         };
 
         function insertLinks(content, gameReqs) {
@@ -117,14 +134,7 @@
                         links[i].addEventListener('click', function (e) {
                             e.preventDefault();
                             try {
-                                // replaces game window with loading screen
-                                var frameWrapper = document.getElementById("framewrapper");
-                                frameWrapper.style.backgroundColor = "#333333";
-                                var loadIcon = document.createElement("img");
-                                loadIcon.style.marginTop = "64px";
-                                loadIcon.src = "images/loader.gif";
-                                frameWrapper.innerHTML = "";
-                                frameWrapper.appendChild(loadIcon);
+                                loadingScreen();
                             } catch (error) {
                                 return error;
                             }
