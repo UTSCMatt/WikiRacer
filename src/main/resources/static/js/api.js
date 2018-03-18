@@ -78,6 +78,22 @@ var api = (function() {
         send("POST", "/api/game/" + gameId + "/goto/", {nextPage: nextPage}, callback);
     }
 
+    module.getImgUrl = function(filename, callback) {
+    	sendWikiApi("GET", wikiURL + filename, null, callback);
+    };
+
+    module.getGameList = function(offset, limit, search, callback) {
+      var url = "/api/getGameList?offset=" + offset + "&limit=" + limit;
+      if(search) {
+        url += "&search=" + search;
+      }
+    	send("GET", url, null, callback);
+    };
+
+    module.getGameStats = function(gameId, callback) {
+    	send("GET", "/api/getGameStats/" + gameId + "/", null, callback);
+    };
+
     return module;
 
 })();

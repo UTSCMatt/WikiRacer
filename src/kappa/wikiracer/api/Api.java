@@ -4,16 +4,20 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.sql.Array;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import javafx.util.Pair;
+import java.util.ArrayList;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -42,6 +46,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import kappa.wikiracer.wiki.LinkRequest;
@@ -60,6 +65,10 @@ public class Api {
 
   private final String CATEGORIES = "categories";
   private final String ARTICLES = "articles";
+
+  public static final String USERNAME_KEY = "username";
+  public static final String TIME_SPEND_KEY = "timeSpend";
+  public static final String NUM_CLICKS_KEY = "numClicks";
 
   private LoadingCache<String, Set<String>> linkCache;
   private LoadingCache<String, Integer> storedPagesCache;
@@ -367,6 +376,29 @@ public class Api {
     } catch (InvalidArticleException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
+  }
+
+  @RequestMapping(value = "/api/getGameList", method = RequestMethod.GET)
+  public ResponseEntity<?> getGameList(HttpServletRequest req, HttpServletResponse res, @RequestParam(value = "search", required = false) String search, @RequestParam("offset") int offset, @RequestParam("limit") int limit) {
+    search = StringUtils.trimToEmpty(search);
+    List<String> response = new ArrayList<String>();
+    try {
+      response = new GameDao(dbUrl, dbUsername, dbPassword).getGameList(search, offset, limit);
+    } catch (SQLException ex) {
+      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+
+  @RequestMapping(value = "/api/getGameStats/{gameId}/", method = RequestMethod.GET)
+  public ResponseEntity<?> getGameStats(HttpServletRequest req, HttpServletResponse res, @PathVariable String gameId) {
+    List<Map> response = new ArrayList<>();
+    try {
+      response = new GameDao(dbUrl, dbUsername, dbPassword).getGameStats(gameId);
+    } catch (SQLException ex) {
+      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
   /* API ENDS */
