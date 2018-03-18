@@ -141,10 +141,23 @@ public class GameDao extends Dao {
     stmt.setString(3, gameId);
     stmt.setString(4, username);
 
-    int result = stmt.executeUpdate();
+    stmt.executeUpdate();
 
+    stmt.close();
+
+    sql = "SELECT NumClicks FROM player_game_map WHERE GameId = (SELECT Id FROM Games WHERE GameId=?) AND UserId = (SELECT Id FROM Users WHERE Username=?)";
+
+    stmt = c.prepareStatement(sql);
+    stmt.setString(1, gameId);
+    stmt.setString(2, username);
+
+    ResultSet rs = stmt.executeQuery();
+
+    rs.next();
+    int result = rs.getInt("NumClicks");
     c.close();
     stmt.close();
+    rs.close();
 
     return result;
 
