@@ -17,7 +17,7 @@
 
 .list_element:hover {
     text-decoration: underline;
-    color: rgb(64, 128, 256);
+    color: rgb(64, 128, 255);
     cursor: pointer;
 }
 
