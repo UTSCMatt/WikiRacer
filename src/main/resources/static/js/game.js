@@ -161,7 +161,7 @@
                             } catch (error) {
                                 return error;
                             }
-                            api.checkNewPage(gameReqs.gameId, linkSplit, function(err, res) {
+                            api.checkNewPage(gameReqs.gameId, linkSplit, function (err, res) {
                                 if (err) {
                                     console.log(err);
                                     alert(err);
@@ -169,19 +169,22 @@
                                     createGameWindow(content, gameReqs);
                                 }
                                 else if (res.finished) {
-                                     // placeholder for actual win 
-                                     alert("You've reached your destination! Your score is: \n Clicks: " + res.clicks + "\n Time: " + res.time);   
+                                    // placeholder for actual win 
+                                    var time = new Date(null);
+                                    date.setSeconds(res.time);
+                                    var finalTime = time.toISOString().substr(11, 8);
+                                    alert("You've reached your destination! Your score is: \n Clicks: " + res.clicks + "\n Time: " + finalTime);
                                 } else {
                                     gameReqs.clicks = res.clicks;
-                                    api.getWikiPage(res.current_page, function(err, res) {
+                                    api.getWikiPage(res.current_page, function (err, res) {
                                         if (err) console.log(err);
                                         else {
                                             createGameWindow(res, gameReqs);
                                         }
-                                    });  
+                                    });
                                 }
                             });
-                            
+
                         });
                     }
                    
