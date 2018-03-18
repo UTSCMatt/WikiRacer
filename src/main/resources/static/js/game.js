@@ -45,7 +45,7 @@
                 rules.articles = rulesArt.split(",");
                 formBox.style.display = "none";
                 loadingScreen();
-                api.makeGame(startPage, endPage/*, gameMode*/, JSON.stringify(rules), function (err, res) {
+                api.makeGame(startPage, endPage, gameMode, JSON.stringify(rules), function (err, res) {
                     if (err) {
                         console.log(err);
                         alert(err);
