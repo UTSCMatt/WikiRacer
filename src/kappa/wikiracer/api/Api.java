@@ -452,7 +452,9 @@ public class Api {
     try {
       response = new GameDao(dbUrl, dbUsername, dbPassword).getGameStats(gameId);
     } catch (SQLException ex) {
-      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (GameException ex) {
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
     return new ResponseEntity<>(response, HttpStatus.OK);
   }

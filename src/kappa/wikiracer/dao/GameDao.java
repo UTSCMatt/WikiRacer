@@ -295,7 +295,7 @@ public class GameDao extends Dao {
    * @return list of stats of people who finished the game
    * @throws SQLException when database has an error
    */
-  public List<Map> getGameStats(String gameId) throws SQLException {
+  public List<Map> getGameStats(String gameId) throws SQLException, GameException {
     Connection c = getConnection();
     PreparedStatement stmt;
 
@@ -308,10 +308,13 @@ public class GameDao extends Dao {
     List<Map> results = new ArrayList<>();
 
     while (rs.next()) {
-      String username = rs.getString("Username");
-      int timeSpend = rs.getInt("TimeSpend");
-      int numClicks = rs.getInt("NumClicks");
       Map<String, Object> currentResult = new HashMap<>();
+      String username = rs.getString(1);
+      int timeSpend = rs.getInt(2);
+      int numClicks = rs.getInt(3);
+      if(timeSpend < 0 | numClicks < 0){
+        throw new GameException(username);
+      }
       currentResult.put(USERNAME_KEY, username);
       currentResult.put(TIME_SPEND_KEY, timeSpend);
       currentResult.put(NUM_CLICKS_KEY, numClicks);
