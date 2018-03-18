@@ -62,8 +62,8 @@ var api = (function() {
         send("GET", "/logoff/", null, callback);
     };
 
-    module.makeGame = function(start, end, /*gameMode, rules,*/ callback) {
-        send("POST", "/api/game/new/", {start: start, end: end/*, gameMode: gameMode, rules: rules*/}, callback);
+    module.makeGame = function(start, end, /*gameMode*/ rules, callback) {
+        send("POST", "/api/game/new/", {start: start, end: end/*, gameMode: gameMode*/, rules: rules}, callback);
     };
 
     module.joinGame = function(gameId, callback) {
@@ -77,10 +77,6 @@ var api = (function() {
     module.checkNewPage = function(gameId, nextPage, callback) {
         send("POST", "/api/game/" + gameId + "/goto/", {nextPage: nextPage}, callback);
     }
-
-    module.getImgUrl = function(filename, callback) {
-    	sendWikiApi("GET", wikiURL + filename, null, callback);
-    };
 
     return module;
 
