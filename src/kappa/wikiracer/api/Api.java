@@ -305,16 +305,16 @@ public class Api {
     return new ResponseEntity<ArrayList<String>>(response, HttpStatus.OK);
   }
 
-//  @RequestMapping(value = "/api/getGameStats/{gameId}/", method = RequestMethod.GET)
-//  public ResponseEntity<?> getGameStats(HttpServletRequest req, HttpServletResponse res, @PathVariable String gameId) {
-//    ArrayList<String> response = new ArrayList<String>();
-//    try {
-//      response = new GameDao(dbUrl, dbUsername, dbPassword).getGameStats();
-//    } catch (SQLException ex) {
-//      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-//    }
-//    return new ResponseEntity<ArrayList<String>>(response, HttpStatus.OK);
-//  }
+  @RequestMapping(value = "/api/getGameStats/{gameId}/", method = RequestMethod.GET)
+  public ResponseEntity<?> getGameStats(HttpServletRequest req, HttpServletResponse res, @PathVariable String gameId) {
+    ArrayList<ArrayList<String>> response = new ArrayList<ArrayList<String>>();
+    try {
+      response = new GameDao(dbUrl, dbUsername, dbPassword).getGameStats(gameId);
+    } catch (SQLException ex) {
+      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    return new ResponseEntity<ArrayList<ArrayList<String>>>(response, HttpStatus.OK);
+  }
     /*** API ENDS ***/
 
 }

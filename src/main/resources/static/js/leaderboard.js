@@ -21,16 +21,48 @@
         document.getElementById('select_game_dropdown').addEventListener('change', function(e){
             // not default, grab the game with the selected game id
             if(document.getElementById('select_game_dropdown').value != 'default'){
-                selectedGame = document.getElementById('select_game_dropdown').value;
-                // gets the game stats of the selected game id TODO
-//                api.getGameStats(selectedGame, function(err, gameStats){
-//                    if(err) console.log(err);
-//                    else{
-//                      // populate game stats
-//                    }
-//                });
+                var selectedGame = document.getElementById('select_game_dropdown').value;
+                // gets the game stats of the selected game id
+                api.getGameStats(selectedGame, function(err, gameStats){
+                    if(err) console.log(err);
+                    else{
+                      // populate game stats
+                      removeTable();
+                      generateTable(gameStats);
+
+                    }
+                });
             }
         });
+
+        function generateTable(gameStats){
+           var elmt = document.createElement('table');
+           elmt.id = "leaderboardTable"
+           elmt.className = "leaderboard";
+           elmt.innerHTML=`<tr>
+                               <th>Username</th>
+                               <th>Time Spend (Minute)</th>
+                               <th>Number of Clicks</th>
+                           </tr>`;
+           for(var index = 0; index < gameStats.length; index++){
+              // creates a row for each element
+              var row = elmt.insertRow(-1);
+              var usernameCell = row.insertCell(0)
+              var timeSpendCell = row.insertCell(1)
+              var numClicksCell = row.insertCell(2)
+              usernameCell.innerHTML = gameStats[index][0];
+              timeSpendCell.innerHTML = gameStats[index][1];
+              numClicksCell.innerHTML = gameStats[index][2];
+           }
+           document.querySelector("#select_game_form").appendChild(elmt);
+        }
+
+        function removeTable(){
+          var elmt = document.querySelector("#leaderboardTable");
+          if(elmt){
+            document.querySelector("#select_game_form").removeChild(elmt);
+          }
+        }
 
     });
 }());

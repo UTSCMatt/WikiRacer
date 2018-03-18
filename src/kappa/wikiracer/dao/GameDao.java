@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.UUID;
 import java.util.ArrayList;
+import java.util.Arrays;
 import kappa.wikiracer.exception.GameException;
 
 public class GameDao extends Dao {
@@ -204,28 +205,33 @@ public class GameDao extends Dao {
     return results;
   }
 
-//  public ArrayList<String> getGameStats(String gameId) throws SQLException {
-//    Connection c = getConnection();
-//    PreparedStatement stmt;
-//
-//    String sql = "SELECT  FROM player_game_map";
-//
-//    stmt = c.prepareStatement(sql);
-//
-//    ResultSet rs = stmt.executeQuery();
-//    rs.next();
-//
-//    ArrayList<String> results = new ArrayList<String>();
-//
-//    while(rs.next()){
-//      results.add(rs.getString("GameId"));
-//
-//    }
-//    c.close();
-//    stmt.close();
-//    rs.close();
-//
-//    return results;
-//  }
+  public ArrayList<ArrayList<String>> getGameStats(String gameId) throws SQLException {
+    Connection c = getConnection();
+    PreparedStatement stmt;
+
+    String sql = "SELECT users.Username, TIMESTAMPDIFF(minute, StartTime, EndTime) AS TimeSpend,"
+        + " NumClicks FROM player_game_map INNER JOIN users ON users.Id = player_game_map.UserId"
+        + " WHERE GameId = (Select Id From Games WHERE GameId = ?) AND Finished = 1";
+
+    stmt = c.prepareStatement(sql);
+    stmt.setString(1, gameId);
+    ResultSet rs = stmt.executeQuery();
+
+    ArrayList<ArrayList<String>> results = new ArrayList<ArrayList<String>>();
+
+    while(rs.next()){
+      String username = rs.getString("Username");
+      int timeSpend = rs.getInt("TimeSpend");
+      int numClicks = rs.getInt("NumClicks");
+      ArrayList<String> currentResult = new ArrayList<String>(Arrays.asList(username, Integer.toString(timeSpend), Integer.toString(numClicks)));
+      results.add(currentResult);
+
+    }
+    c.close();
+    stmt.close();
+    rs.close();
+
+    return results;
+  }
 
 }
