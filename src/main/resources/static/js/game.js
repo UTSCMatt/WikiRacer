@@ -1,9 +1,7 @@
 (function () {
-    "use strict"
+    "use strict";
     window.addEventListener('load', function() {
-        
-        var newGameForm = document.getElementById("new_game_form");
-        var joinGameForm = document.getElementById("join_game_form");
+
         var formBox = document.getElementById("form_container");
 
         var gameReqs = {
@@ -76,10 +74,10 @@
             var optionsMenu = document.getElementById("options_menu");
             if (optionsMenu.className == "hidden") {
                 optionsMenu.className = "";
-                optionsBtn.innerHTML = "Hide Options"
+                optionsBtn.innerHTML = "Hide Options";
             } else {
                 optionsMenu.className = "hidden";
-                optionsBtn.innerHTML = "Show Options"
+                optionsBtn.innerHTML = "Show Options";
             }   
         });
         
@@ -125,7 +123,7 @@
             gameBox.prepend("Start Page: " + gameReqs.start + " End Page: " + gameReqs.end + " Clicks: " + gameReqs.clicks + " ");
             insertLinks(content, gameReqs);
             frameWrapper.style.visibility = "";
-        };
+        }
 
         function loadingScreen() {
             // replaces game window with loading screen
@@ -140,60 +138,61 @@
             frameWrapper.innerHTML = "";
             frameWrapper.appendChild(loadIcon);
             gameBox.appendChild(frameWrapper);
-        };
+        }
 
         function insertLinks(content, gameReqs) {
         
             var links = document.getElementById("framewrapper").getElementsByTagName("a");
             var regex = new RegExp(/Template|#|action=edit|:|external/);
-            for (var i = 0; i < links.length; i++) {
-                (function () {
-                    var linkSplit = links[i].href.split("/wiki/").slice(-1)[0];
-                    // removes external links and template links
-                    if(regex.test(linkSplit) || regex.test(links[i].className)) {
-                        links[i].removeAttribute("href");
-                    }
-                    // replaces internal wiki links with api calls for their respective pages
-                    else {
-                        links[i].addEventListener('click', function (e) {
-                            e.preventDefault();
-                            try {
-                                loadingScreen();
-                            } catch (error) {
-                                return error;
+            function linksAdder(i) {
+                var linkSplit = links[i].href.split("/wiki/").slice(-1)[0];
+                // removes external links and template links
+                if(regex.test(linkSplit) || regex.test(links[i].className)) {
+                    links[i].removeAttribute("href");
+                }
+                // replaces internal wiki links with api calls for their respective pages
+                else {
+                    links[i].addEventListener('click', function (e) {
+                        e.preventDefault();
+                        try {
+                            loadingScreen();
+                        } catch (error) {
+                            return error;
+                        }
+                        api.checkNewPage(gameReqs.gameId, linkSplit, function (err, res) {
+                            if (err) {
+                                console.log(err);
+                                alert(err);
+                                // returns the user to page they were on if the next page is banned or invalid
+                                createGameWindow(content, gameReqs);
                             }
-                            api.checkNewPage(gameReqs.gameId, linkSplit, function (err, res) {
-                                if (err) {
-                                    console.log(err);
-                                    alert(err);
-                                    // returns the user to page they were on if the next page is banned or invalid
-                                    createGameWindow(content, gameReqs);
-                                }
-                                else if (res.finished) {
-                                    // placeholder for actual win 
-                                    var time = new Date(null);
-                                    time.setSeconds(res.time);
-                                    var finalTime = time.toISOString().substr(11, 8);
-                                    alert("You've reached your destination! Your score is: \n Clicks: " + res.clicks + "\n Time: " + finalTime);
-                                    window.location.href = "leaderboard.html#" + gameReqs.gameId;
-                                } else {
-                                    gameReqs.clicks = res.clicks;
-                                    api.getWikiPage(res.current_page, function (err, res) {
-                                        if (err) console.log(err);
-                                        else {
-                                            createGameWindow(res, gameReqs);
-                                        }
-                                    });
-                                }
-                            });
-
+                            else if (res.finished) {
+                                // placeholder for actual win 
+                                var time = new Date(null);
+                                time.setSeconds(res.time);
+                                var finalTime = time.toISOString().substr(11, 8);
+                                alert("You've reached your destination! Your score is: \n Clicks: " + res.clicks + "\n Time: " + finalTime);
+                                window.location.href = "leaderboard.html#" + gameReqs.gameId;
+                            } else {
+                                gameReqs.clicks = res.clicks;
+                                api.getWikiPage(res.current_page, function (err, res) {
+                                    if (err) console.log(err);
+                                    else {
+                                        createGameWindow(res, gameReqs);
+                                    }
+                                });
+                            }
                         });
-                    }
-                   
-                })();
+
+                    });
+                }
+               
+            }
+            for (var i = 0; i < links.length; i++) {
+                linksAdder(i);
             }
             
-        };
+        }
         
     });
 }());

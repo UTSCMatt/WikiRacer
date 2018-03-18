@@ -13,7 +13,7 @@
                     if (err) alert(err);
                     else window.location.href = '/';
                 });
-            };
+            }
         }
         // changes the intended action to signin
         document.getElementById("login").addEventListener('click', function(e) {

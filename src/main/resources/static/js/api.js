@@ -76,7 +76,7 @@ var api = (function() {
 
     module.checkNewPage = function(gameId, nextPage, callback) {
         send("POST", "/api/game/" + gameId + "/goto/", {nextPage: nextPage}, callback);
-    }
+    };
 
     module.getImgUrl = function(filename, callback) {
     	sendWikiApi("GET", wikiURL + filename, null, callback);

@@ -1,5 +1,5 @@
 (function () {
-    "use strict"
+    "use strict";
     window.addEventListener('load', function() {
         
         var offset = 0;
@@ -45,7 +45,7 @@
             offset = offset + limit;
             api.getGameList(offset, limit, query, function(err, games) {
                 if (err) console.log(err);
-                else if (games.length == 0){
+                else if (games.length === 0){
                     offset = offset - limit;
                     alert("No Results");
                 } else {
@@ -68,7 +68,7 @@
                         }
                     });
                 });
-            };
+            }
             // appends each game code to the list
             for (var index = 0; index < games.length; index++) {
                 var listElmt = document.createElement("li");
@@ -78,7 +78,7 @@
                 gameList.appendChild(listElmt);
             }
             
-        };
+        }
 
         function renderStats(gameStats) {
   
@@ -99,14 +99,14 @@
                 var cell0 = row.insertCell(0);
                 var cell1 = row.insertCell(1);
                 var cell2 = row.insertCell(2);
-                cell0.innerHTML = gameStats[i]["username"];
-                cell1.innerHTML = gameStats[i]["timeSpend"];
-                cell2.innerHTML = gameStats[i]["numClicks"];
-            };
+                cell0.innerHTML = gameStats[i].username;
+                cell1.innerHTML = gameStats[i].timeSpend;
+                cell2.innerHTML = gameStats[i].numClicks;
+            }
             statsForm.appendChild(statsTable);
 
             statsForm.className = "form";
-        };
+        }
 
 
     });
