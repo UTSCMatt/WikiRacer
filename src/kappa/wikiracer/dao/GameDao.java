@@ -202,15 +202,16 @@ public class GameDao extends Dao {
     return id;
   }
 
-  public List<String> getGameList(int offset, int limit) throws SQLException {
+  public List<String> getGameList(String search, int offset, int limit) throws SQLException {
     Connection c = getConnection();
     PreparedStatement stmt;
 
-    String sql = "SELECT GameId FROM games LIMIT ? OFFSET ?";
+    String sql = "SELECT GameId FROM games WHERE GameId LIKE ? LIMIT ? OFFSET ?";
 
     stmt = c.prepareStatement(sql);
-    stmt.setInt(1, limit);
-    stmt.setInt(2, offset);
+    stmt.setString(1, search + "%");
+    stmt.setInt(2, limit);
+    stmt.setInt(3, offset);
 
     ResultSet rs = stmt.executeQuery();
 

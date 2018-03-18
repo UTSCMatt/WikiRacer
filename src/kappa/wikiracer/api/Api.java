@@ -336,10 +336,11 @@ public class Api {
   }
 
   @RequestMapping(value = "/api/getGameList", method = RequestMethod.GET)
-  public ResponseEntity<?> getGameList(HttpServletRequest req, HttpServletResponse res, @RequestParam("offset") int offset, @RequestParam("limit") int limit) {
+  public ResponseEntity<?> getGameList(HttpServletRequest req, HttpServletResponse res, @RequestParam(value = "search", required = false) String search, @RequestParam("offset") int offset, @RequestParam("limit") int limit) {
+    search = StringUtils.trimToEmpty(search);
     List<String> response = new ArrayList<String>();
     try {
-      response = new GameDao(dbUrl, dbUsername, dbPassword).getGameList(offset, limit);
+      response = new GameDao(dbUrl, dbUsername, dbPassword).getGameList(search, offset, limit);
     } catch (SQLException ex) {
       return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
