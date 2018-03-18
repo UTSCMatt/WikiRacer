@@ -1,14 +1,17 @@
 package kappa.wikiracer.api;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
+import javafx.util.Pair;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -78,6 +81,24 @@ public class Api {
     }
   }
 
+  private LoadingCache<String, Set<String>> linkCache;
+  private LoadingCache<String, Integer> storedPagesCache;
+  private LoadingCache<String, String> finalPageCache;
+  private LoadingCache<String, Set<String>> bannedCategoriesCache;
+  private LoadingCache<String, Set<String>> bannedArticlesCache;
+  // Pair<gameId, username>
+  private LoadingCache<Pair<String, String>, Boolean> inGameCache;
+
+  @PostConstruct
+  public void initCaches() {
+    linkCache = Caffeine.newBuilder().maximumWeight(10000).weigher((String key, Set links) -> links.size()).refreshAfterWrite(5, TimeUnit.MINUTES).build(LinkRequest::sendRequest);
+    storedPagesCache = Caffeine.newBuilder().maximumSize(10000).build(key -> new LinkDao(dbUrl, dbUsername, dbPassword).addPage(key));
+    finalPageCache = Caffeine.newBuilder().maximumSize(1000).build(key -> new GameDao(dbUrl, dbUsername, dbPassword).finalPage(key));
+    bannedCategoriesCache = Caffeine.newBuilder().maximumWeight(3000).weigher((String key, Set categories) -> categories.size()).build(key -> new RulesDao(dbUrl, dbUsername, dbPassword).getCategories(key));
+    bannedArticlesCache = Caffeine.newBuilder().maximumWeight(1500).weigher((String key, Set articles) -> articles.size()).build(key -> new RulesDao(dbUrl, dbUsername, dbPassword).getArticles(key));
+    inGameCache = Caffeine.newBuilder().maximumSize(5000).build(key -> new GameDao(dbUrl, dbUsername, dbPassword).inGame(key.getKey(), key.getValue()));
+  }
+
   /*** Testing API Ends ***/
 
   private void setSession(HttpServletRequest req, HttpServletResponse res, String username) {
@@ -111,10 +132,10 @@ public class Api {
 //    if (links.contains(childTitle)) {
 //      return true;
 //    } else {
-      Set<String> updatedLinks = LinkRequest.sendRequest(parentTitle);
+      Set<String> updatedLinks = linkCache.get(parentTitle);
       if (updatedLinks.contains(childTitle)) {
-        new LinkDao(dbUrl, dbUsername, dbPassword).addPage(parentTitle);
-        new LinkDao(dbUrl, dbUsername, dbPassword).addPage(childTitle);
+        storedPagesCache.get(parentTitle);
+        storedPagesCache.get(childTitle);
 //        updatedLinks.removeAll(links);
 //        new LinkDao(dbUrl, dbUsername, dbPassword).addLinks(parentTitle, updatedLinks);
         return true;
@@ -125,16 +146,13 @@ public class Api {
   }
 
   private Boolean inGame(String gameId, String username) throws SQLException {
-    return new GameDao(dbUrl,dbUsername,dbPassword).inGame(gameId, username);
+    return inGameCache.get(new Pair<>(gameId, username));
   }
 
   private Boolean isBanned(String gameId, String nextPage)
       throws SQLException, InvalidArticleException {
-    Set<String> bannedCategories = new RulesDao(dbUrl, dbUsername, dbPassword).getCategories(gameId);
-    if (CategoryRequest.inCategory(nextPage, bannedCategories) || new RulesDao(dbUrl, dbUsername, dbPassword).getArticles(gameId).contains(nextPage)) {
-      return true;
-    }
-    return false;
+    return CategoryRequest.inCategory(nextPage, bannedCategoriesCache.get(gameId)) || bannedArticlesCache
+        .get(gameId).contains(nextPage);
   }
 
   private String fixWikiTitles(String title) {
@@ -273,7 +291,7 @@ public class Api {
       Map<String, String> response = new HashMap<>();
       response.put("start", new GameDao(dbUrl,dbUsername,dbPassword).joinGame(gameId, (String) req.getSession().getAttribute("username")));
       response.put("id", gameId);
-      response.put("end", new GameDao(dbUrl, dbUsername, dbPassword).finalPage(gameId));
+      response.put("end", finalPageCache.get(gameId));
       return new ResponseEntity<>(response, HttpStatus.OK);
     } catch (SQLException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -297,7 +315,7 @@ public class Api {
             HttpStatus.NOT_FOUND);
       String currentPage = new GameDao(dbUrl, dbUsername, dbPassword)
           .getCurrentPage(gameId, username);
-      String finalPage = new GameDao(dbUrl, dbUsername, dbPassword).finalPage(gameId);
+      String finalPage = finalPageCache.get(gameId);
       if (currentPage.equals(finalPage))
         return new ResponseEntity<String>(JSONObject.quote("Game already finished"),
             HttpStatus.BAD_REQUEST);
@@ -308,7 +326,7 @@ public class Api {
       String oldPage = nextPage;
       nextPage = ResolveRedirectRequest.resolveRedirect(nextPage);
       if (!nextPage.equals(oldPage)) {
-        new LinkDao(dbUrl, dbUsername, dbPassword).addPage(nextPage);
+        storedPagesCache.get(nextPage);
       }
       Boolean finished = nextPage.equals(finalPage);
       if (!finished && isBanned(gameId, nextPage)) {

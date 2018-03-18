@@ -59,7 +59,7 @@ public class LinkDao extends Dao {
 
   }
 
-  public void addPage(String title) throws SQLException {
+  public Integer addPage(String title) throws SQLException {
     Connection c = getConnection();
     CallableStatement stmt;
 
@@ -73,6 +73,7 @@ public class LinkDao extends Dao {
 
     c.close();
     stmt.close();
+    return 0;
   }
 
 }
