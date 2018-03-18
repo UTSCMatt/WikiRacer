@@ -10,6 +10,7 @@
             gameId: null,
             start: null,
             end: null,
+            clicks: null
         };
         (function(){
             var gameForms = document.getElementById("form_container");
@@ -32,7 +33,7 @@
             var endPage = document.getElementById("endpage").value.split("/wiki/").slice(-1)[0];
             
             try {
-                //var gameMode = document.querySelector('input[name="game_mode"]:checked').value;
+                var gameMode = document.querySelector('input[name="game_mode"]:checked').value;
                 var rulesCat = document.getElementById("ban_cat").value.replace(/, /g, ",");
                 var rulesArt = document.getElementById("ban_art").value.replace(/, /g, ",");
                 var rules = {
@@ -45,12 +46,17 @@
                 formBox.style.display = "none";
                 loadingScreen();
                 api.makeGame(startPage, endPage/*, gameMode*/, JSON.stringify(rules), function (err, res) {
-                    if (err) console.log(err);
+                    if (err) {
+                        console.log(err);
+                        alert(err);
+                        window.location.href = "game.html";
+                    } 
                     else {
 
                         gameReqs.gameId = res.id;
                         gameReqs.start = res.start;
                         gameReqs.end = res.end;
+                        gameReqs.clicks = 0;
                         // get the json representation of the starting page
                         api.getWikiPage(gameReqs.start, function(err, res) {
                             if (err) console.log(err);
@@ -88,6 +94,7 @@
                     gameReqs.gameId = res.id;
                     gameReqs.start = res.start;
                     gameReqs.end = res.end;
+                    gameReqs.clicks = 0;
                     api.getWikiPage(gameReqs.start, function(err, res) {
                         if (err) console.log(err);
                         else createGameWindow(res, gameReqs);
@@ -110,7 +117,7 @@
             frameWrapper.appendChild(frame);
             gameBox.appendChild(frameWrapper);
             gameBox.prepend("Game ID: " + gameReqs.gameId);
-            gameBox.prepend("Start Page: " + gameReqs.start + " End Page: " + gameReqs.end + " ");
+            gameBox.prepend("Start Page: " + gameReqs.start + " End Page: " + gameReqs.end + " Clicks: " + gameReqs.clicks + " ");
             insertLinks(content, gameReqs);
             frameWrapper.style.visibility = "";
         };
@@ -161,6 +168,7 @@
                                      // placeholder for actual win 
                                      alert("a winner is you!");   
                                 } else {
+                                    gameReqs.clicks = res.clicks;
                                     api.getWikiPage(res.current_page, function(err, res) {
                                         if (err) console.log(err);
                                         else {

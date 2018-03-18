@@ -43,7 +43,7 @@ repositories {
 }
 
 dependencies {
-    compile "org.springframework.boot:spring-boot-devtools"
+    //compile "org.springframework.boot:spring-boot-devtools"
 	compile "org.springframework.boot:spring-boot-starter-web"
 	compile "org.json:json"
 	compile group: 'com.github.ulisesbocchio', name: 'jasypt-spring-boot-starter', version: '1.18'
