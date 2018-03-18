@@ -88,6 +88,8 @@ public class Api {
   private LoadingCache<String, Set<String>> bannedArticlesCache;
   // Pair<gameId, username>
   private LoadingCache<Pair<String, String>, Boolean> inGameCache;
+  private LoadingCache<String, Boolean> existsCache;
+  private LoadingCache<String, String> redirectCache;
 
   @PostConstruct
   public void initCaches() {
@@ -97,6 +99,9 @@ public class Api {
     bannedCategoriesCache = Caffeine.newBuilder().maximumWeight(3000).weigher((String key, Set categories) -> categories.size()).build(key -> new RulesDao(dbUrl, dbUsername, dbPassword).getCategories(key));
     bannedArticlesCache = Caffeine.newBuilder().maximumWeight(1500).weigher((String key, Set articles) -> articles.size()).build(key -> new RulesDao(dbUrl, dbUsername, dbPassword).getArticles(key));
     inGameCache = Caffeine.newBuilder().maximumSize(5000).build(key -> new GameDao(dbUrl, dbUsername, dbPassword).inGame(key.getKey(), key.getValue()));
+    existsCache = Caffeine.newBuilder().maximumSize(10000).refreshAfterWrite(1, TimeUnit.HOURS).build(
+        ExistRequest::exists);
+    redirectCache = Caffeine.newBuilder().maximumSize(10000).refreshAfterWrite(1, TimeUnit.HOURS).build(ResolveRedirectRequest::resolveRedirect);
   }
 
   /*** Testing API Ends ***/
@@ -235,33 +240,20 @@ public class Api {
     if (start.isEmpty()) {
       start = RandomRequest.getRandom(end);
     } else {
-      try {
-        if (!ExistRequest.exists(start)) {
-          return new ResponseEntity<>(JSONObject.quote(start + " does not exist"), HttpStatus.NOT_FOUND);
-        }
-      } catch (InvalidArticleException ex) {
-        return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
+      if (!existsCache.get(start)) {
+        return new ResponseEntity<>(JSONObject.quote(start + " does not exist"), HttpStatus.NOT_FOUND);
       }
     }
     if (end.isEmpty()) {
       end = RandomRequest.getRandom(start);
     } else {
-      try {
-        if (!ExistRequest.exists(end)) {
-          return new ResponseEntity<>(JSONObject.quote(end + " does not exist"), HttpStatus.NOT_FOUND);
-        }
-      } catch (InvalidArticleException ex) {
-        return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
+      if (!existsCache.get(end)) {
+        return new ResponseEntity<>(JSONObject.quote(end + " does not exist"), HttpStatus.NOT_FOUND);
       }
     }
 
-    try {
-      start = ResolveRedirectRequest.resolveRedirect(start);
-      end = ResolveRedirectRequest.resolveRedirect(end);
-    } catch (InvalidArticleException ex) {
-      // Internal server error because this should not happen due to user error
-      return new ResponseEntity<>(JSONObject.quote("Start: " + start + ", End: " + end), HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    start = redirectCache.get(start);
+    end = redirectCache.get(end);
 
     Map<String, String> response = new HashMap<>();
 
@@ -310,7 +302,7 @@ public class Api {
         return new ResponseEntity<String>(JSONObject.quote("Join game first"), HttpStatus.UNAUTHORIZED);
       nextPage = StringUtils.trimToEmpty(nextPage);
       nextPage = fixWikiTitles(nextPage);
-      if (!ExistRequest.exists(nextPage))
+      if (!existsCache.get(nextPage))
         return new ResponseEntity<String>(JSONObject.quote(nextPage + " does not exist"),
             HttpStatus.NOT_FOUND);
       String currentPage = new GameDao(dbUrl, dbUsername, dbPassword)
@@ -324,7 +316,7 @@ public class Api {
             JSONObject.quote("No link to '" + nextPage + "' found in '" + currentPage + "'"),
             HttpStatus.NOT_FOUND);
       String oldPage = nextPage;
-      nextPage = ResolveRedirectRequest.resolveRedirect(nextPage);
+      nextPage = redirectCache.get(nextPage);
       if (!nextPage.equals(oldPage)) {
         storedPagesCache.get(nextPage);
       }
