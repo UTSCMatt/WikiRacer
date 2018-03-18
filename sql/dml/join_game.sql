@@ -1,6 +1,6 @@
 ﻿DELIMITER //
 
-CREATE PROCEDURE Join_Game (newGameId VARCHAR(255), player VARCHAR(255))
+CREATE PROCEDURE Join_Game (newGameId VARCHAR(255), player VARCHAR(255), selectedGameMode VARCHAR(255))
 BEGIN
 	CASE
 		WHEN (SELECT COUNT(Id) FROM Games WHERE GameId=newGameId) < 1 THEN
@@ -8,6 +8,8 @@ BEGIN
 		WHEN (SELECT COUNT(GameId) FROM player_game_map
 		WHERE GameId = (SELECT Id FROM Games WHERE GameId=newGameId) AND UserId = (SELECT Id FROM Users WHERE Username=player)) > 0 THEN
 			SELECT -1, 'Game already joined';
+		WHEN (SELECT COUNT(Id) FROM game_mode WHERE GameMode=selectedGameMode) < 1 THEN
+    			SELECT -1, 'Game mode not found';
 		ELSE
 			INSERT INTO player_game_map (GameId, UserId, CurrentPage) VALUES
 			((SELECT Id FROM Games WHERE GameId=newGameId),
@@ -17,5 +19,8 @@ BEGIN
 			(SELECT Id FROM Games WHERE GameId=newGameId)
 			AND m.UserId =
 			(SELECT Id FROM Users WHERE Username=player);
+			INSERT INTO game_mode_map (GameId, GameModeId) VALUES
+      			((SELECT Id FROM Games WHERE GameId=newGameId),
+      			(SELECT Id FROM game_mode WHERE GameMode=selectedGameMode));
 	END CASE;
 END //

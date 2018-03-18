@@ -38,15 +38,16 @@ public class GameDao extends Dao {
 
   }
 
-  public String joinGame(String gameId, String username) throws SQLException, GameException {
+  public String joinGame(String gameId, String username, String gameMode) throws SQLException, GameException {
     Connection c = getConnection();
     CallableStatement stmt;
 
-    String sql = "CALL Join_Game(?,?)";
+    String sql = "CALL Join_Game(?,?,?)";
 
     stmt = c.prepareCall(sql);
     stmt.setString(1, gameId);
     stmt.setString(2, username);
+    stmt.setString(3, gameMode);
 
     ResultSet rs = stmt.executeQuery();
 

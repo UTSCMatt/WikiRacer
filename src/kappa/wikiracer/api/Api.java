@@ -184,7 +184,7 @@ public class Api {
   }
 
   @RequestMapping(value = "/api/game/new/", method = RequestMethod.POST)
-  public ResponseEntity<?> createGame(HttpServletRequest req, String start, String end) {
+  public ResponseEntity<?> createGame(HttpServletRequest req, String start, String end, String gameMode) {
     if (!isAuthenticated(req)) return new ResponseEntity<>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
     start = StringUtils.trimToEmpty(start);
     end = StringUtils.trimToEmpty(end);
@@ -231,7 +231,7 @@ public class Api {
     try {
       response.put("id", new GameDao(dbUrl,dbUsername,dbPassword).createGame(start,end));
       new GameDao(dbUrl,dbUsername,dbPassword).joinGame(response.get("id"),
-          (String) req.getSession().getAttribute("username"));
+          (String) req.getSession().getAttribute("username"), gameMode);
     } catch (SQLException ex) {
       return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     } catch (GameException ex) {
