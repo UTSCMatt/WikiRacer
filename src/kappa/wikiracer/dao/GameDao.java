@@ -6,6 +6,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import kappa.wikiracer.exception.GameException;
 
@@ -130,32 +132,26 @@ public class GameDao extends Dao {
     return results;
   }
 
-  public int changePage(String gameId, String username, String nextPage, Boolean finished) throws SQLException {
+  public Map<String, Object> changePage(String gameId, String username, String nextPage, Boolean finished) throws SQLException {
     Connection c = getConnection();
-    PreparedStatement stmt;
+    CallableStatement stmt;
 
-    String sql = "UPDATE player_game_map SET NumClicks = NumClicks + 1, CurrentPage=(SELECT Id FROM wiki_pages WHERE Title=?), EndTime=CURRENT_TIMESTAMP, Finished=? WHERE GameId = (SELECT Id FROM Games WHERE GameId=?) AND UserId = (SELECT Id FROM Users WHERE Username=?)";
+    String sql = "CALL change_page(?,?,?,?)";
 
-    stmt = c.prepareStatement(sql);
-    stmt.setString(1, nextPage);
-    stmt.setBoolean(2, finished);
-    stmt.setString(3, gameId);
-    stmt.setString(4, username);
-
-    stmt.executeUpdate();
-
-    stmt.close();
-
-    sql = "SELECT NumClicks FROM player_game_map WHERE GameId = (SELECT Id FROM Games WHERE GameId=?) AND UserId = (SELECT Id FROM Users WHERE Username=?)";
-
-    stmt = c.prepareStatement(sql);
+    stmt = c.prepareCall(sql);
     stmt.setString(1, gameId);
     stmt.setString(2, username);
+    stmt.setString(3, nextPage);
+    stmt.setBoolean(4, finished);
 
     ResultSet rs = stmt.executeQuery();
 
     rs.next();
-    int result = rs.getInt("NumClicks");
+
+    Map<String, Object> result = new HashMap<>();
+    result.put("clicks", rs.getString("NumClicks"));
+    result.put("time", rs.getInt("usedTime"));
+
     c.close();
     stmt.close();
     rs.close();

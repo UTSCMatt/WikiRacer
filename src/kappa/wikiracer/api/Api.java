@@ -315,8 +315,8 @@ public class Api {
         return new ResponseEntity<String>(JSONObject.quote("Attempt page is banned by rules"),
             HttpStatus.UNAUTHORIZED);
       }
-      Map<String, Object> response = new HashMap<>();
-      response.put("clicks", new GameDao(dbUrl, dbUsername, dbPassword).changePage(gameId, username, nextPage, finished));
+      Map<String, Object> response = new HashMap<>(new GameDao(dbUrl, dbUsername, dbPassword)
+          .changePage(gameId, username, nextPage, finished));
       response.put("finished", finished);
       response.put("current_page", nextPage);
       return new ResponseEntity<>(response, HttpStatus.OK);
