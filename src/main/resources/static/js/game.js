@@ -91,7 +91,7 @@
             api.joinGame(joinGameId, function (err, res) {
                 if (err) {
                     console.log(err);
-                    alert.log(err);
+                    alert(err);
                     window.location.href = "game.html";
                 } 
                 else {
