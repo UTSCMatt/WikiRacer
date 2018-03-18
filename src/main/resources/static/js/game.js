@@ -7,9 +7,9 @@
         var formBox = document.getElementById("form_container");
 
         var gameReqs = {
-            gameId = null,
-            start = null,
-            end = null,
+            gameId: null,
+            start: null,
+            end: null,
         };
 
         document.getElementById("start_btn").addEventListener("click", function (e) {
