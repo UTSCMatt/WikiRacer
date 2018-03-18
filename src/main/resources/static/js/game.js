@@ -15,6 +15,7 @@
         (function(){
             var gameForms = document.getElementById("form_container");
             var loginPrompt = document.getElementById("login_notify");
+            // hides the game creation/join forms if the user is not logged in
             if (api.getUser()) {
                 gameForms.className = "";
                 loginPrompt.className = "hidden";

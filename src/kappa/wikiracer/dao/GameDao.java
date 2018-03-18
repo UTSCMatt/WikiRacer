@@ -8,7 +8,10 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 import java.util.UUID;
+import java.util.ArrayList;
+import java.util.Arrays;
 import kappa.wikiracer.exception.GameException;
 
 public class GameDao extends Dao {
@@ -187,6 +190,59 @@ public class GameDao extends Dao {
       rs.close();
     } while (invalid);
     return id;
+  }
+
+  public List<String> getGameList(int offset, int limit) throws SQLException {
+    Connection c = getConnection();
+    PreparedStatement stmt;
+
+    String sql = "SELECT GameId FROM games LIMIT ? OFFSET ?";
+
+    stmt = c.prepareStatement(sql);
+    stmt.setInt(1, limit);
+    stmt.setInt(2, offset);
+
+    ResultSet rs = stmt.executeQuery();
+
+    ArrayList<String> results = new ArrayList<String>();
+
+    while(rs.next()){
+      results.add(rs.getString("GameId"));
+
+    }
+    c.close();
+    stmt.close();
+    rs.close();
+
+    return results;
+  }
+
+  public List<List<String>> getGameStats(String gameId) throws SQLException {
+    Connection c = getConnection();
+    PreparedStatement stmt;
+
+    String sql = "CALL Get_Leaderboard(?)";
+
+
+    stmt = c.prepareStatement(sql);
+    stmt.setString(1, gameId);
+    ResultSet rs = stmt.executeQuery();
+
+    List<List<String>> results = new ArrayList<>();
+
+    while(rs.next()){
+      String username = rs.getString("Username");
+      int timeSpend = rs.getInt("TimeSpend");
+      int numClicks = rs.getInt("NumClicks");
+      List<String> currentResult = new ArrayList<String>(Arrays.asList(username, Integer.toString(timeSpend), Integer.toString(numClicks)));
+      results.add(currentResult);
+
+    }
+    c.close();
+    stmt.close();
+    rs.close();
+
+    return results;
   }
 
 }
