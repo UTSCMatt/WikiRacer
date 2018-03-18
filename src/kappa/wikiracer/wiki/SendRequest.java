@@ -11,7 +11,7 @@ import javax.net.ssl.HttpsURLConnection;
 import kappa.wikiracer.exception.InvalidArticleException;
 import org.json.JSONObject;
 
-class SendRequest {
+public class SendRequest {
 
   private static final String URL = "https://en.wikipedia.org/w/api.php";
 
@@ -40,7 +40,7 @@ class SendRequest {
     return new JSONObject(jsonString.toString());
   }
 
-  protected static boolean invalidArticle(String article) {
+  public static boolean invalidArticle(String article) {
     return !article.matches("^[^#<>\\[\\]\\|\\{\\}]+$");
   }
 

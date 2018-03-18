@@ -29,6 +29,7 @@ import kappa.wikiracer.wiki.CategoryRequest;
 import kappa.wikiracer.wiki.ExistRequest;
 import kappa.wikiracer.wiki.RandomRequest;
 import kappa.wikiracer.wiki.ResolveRedirectRequest;
+import kappa.wikiracer.wiki.SendRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -81,6 +82,8 @@ public class Api {
     }
   }
 
+  /*** Testing API Ends ***/
+
   private LoadingCache<String, Set<String>> linkCache;
   private LoadingCache<String, Integer> storedPagesCache;
   private LoadingCache<String, String> finalPageCache;
@@ -103,8 +106,6 @@ public class Api {
         ExistRequest::exists);
     redirectCache = Caffeine.newBuilder().maximumSize(10000).refreshAfterWrite(1, TimeUnit.HOURS).build(ResolveRedirectRequest::resolveRedirect);
   }
-
-  /*** Testing API Ends ***/
 
   private void setSession(HttpServletRequest req, HttpServletResponse res, String username) {
     req.getSession().setAttribute("username", username);
@@ -240,13 +241,22 @@ public class Api {
     if (start.isEmpty()) {
       start = RandomRequest.getRandom(end);
     } else {
+      if (SendRequest.invalidArticle(start)) {
+        return new ResponseEntity<>(JSONObject.quote("Articles has invalid characters"), HttpStatus.BAD_REQUEST);
+      }
+
       if (!existsCache.get(start)) {
-        return new ResponseEntity<>(JSONObject.quote(start + " does not exist"), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(JSONObject.quote(start + " does not exist"),
+            HttpStatus.NOT_FOUND);
       }
     }
     if (end.isEmpty()) {
       end = RandomRequest.getRandom(start);
     } else {
+      if (SendRequest.invalidArticle(end)) {
+        return new ResponseEntity<>(JSONObject.quote("Articles has invalid characters"), HttpStatus.BAD_REQUEST);
+      }
+
       if (!existsCache.get(end)) {
         return new ResponseEntity<>(JSONObject.quote(end + " does not exist"), HttpStatus.NOT_FOUND);
       }
