@@ -11,6 +11,18 @@
             start: null,
             end: null,
         };
+        (function(){
+            var gameForms = document.getElementById("form_container");
+            var loginPrompt = document.getElementById("login_notify");
+            if (api.getUser()) {
+                gameForms.className = "";
+                loginPrompt.className = "hidden";
+            } else {
+                gameForms.className = "hidden";
+                loginPrompt.className = "";
+            }
+        })();
+              
 
         document.getElementById("start_btn").addEventListener("click", function (e) {
             e.preventDefault();
@@ -141,7 +153,7 @@
                             api.checkNewPage(gameReqs.gameId, linkSplit, function(err, res) {
                                 if (err) {
                                     console.log(err);
-                                    alert("link not allowed");
+                                    alert(err);
                                     // returns the user to page they were on if the next page is banned or invalid
                                     createGameWindow(content, gameReqs);
                                 }
