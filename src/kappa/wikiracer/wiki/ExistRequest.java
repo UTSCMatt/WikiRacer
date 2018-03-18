@@ -5,9 +5,10 @@ import org.json.JSONObject;
 
 public class ExistRequest {
   public static boolean exists(String article) throws InvalidArticleException {
-    if (article.contains("|")) {
-      throw new InvalidArticleException("Articles cannot contain '|'");
+    if (SendRequest.invalidArticle(article)) {
+      throw new InvalidArticleException("Articles has invalid characters");
     }
+    article = SendRequest.encodeTitles(article);
     String request = "?action=query&format=json&titles=" + article;
     JSONObject result = SendRequest.sendRequest(request, "POST");
     return !result.getJSONObject(MediaWikiConstants.QUERY).getJSONObject(MediaWikiConstants.PAGES).has(MediaWikiConstants.MISSING_ID);

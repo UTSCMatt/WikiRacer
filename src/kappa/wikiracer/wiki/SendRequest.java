@@ -2,8 +2,10 @@ package kappa.wikiracer.wiki;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 
+import java.net.URLEncoder;
 import javax.net.ssl.HttpsURLConnection;
 
 import kappa.wikiracer.exception.InvalidArticleException;
@@ -36,5 +38,17 @@ class SendRequest {
       System.out.println(e);
     }
     return new JSONObject(jsonString.toString());
+  }
+
+  protected static boolean invalidArticle(String article) {
+    return !article.matches("^[^#<>\\[\\]\\|\\{\\}]+$");
+  }
+
+  protected static String encodeTitles(String title) {
+    try {
+      return URLEncoder.encode(title, "UTF-8");
+    } catch (UnsupportedEncodingException ex) {
+      return title;
+    }
   }
 }

@@ -10,9 +10,10 @@ import org.json.JSONObject;
 
 public class LinkRequest {
   public static Set<String> sendRequest(String article) throws InvalidArticleException {
-    if (article.contains("|")) {
-      throw new InvalidArticleException("Articles cannot contain '|'");
+    if (SendRequest.invalidArticle(article)) {
+      throw new InvalidArticleException("Articles has invalid characters");
     }
+    article = SendRequest.encodeTitles(article);
     String request = "?action=query&pllimit=max&format=json&prop=links&titles=" + article + "&plnamespace=0";
     return continueRequest(request);
   }

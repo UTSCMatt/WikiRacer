@@ -54,7 +54,25 @@ public class LinkDao extends Dao {
     }
 
     stmt.executeBatch();
+    c.close();
+    stmt.close();
 
+  }
+
+  public void addPage(String title) throws SQLException {
+    Connection c = getConnection();
+    CallableStatement stmt;
+
+    String sql = "CALL Add_Page(?)";
+
+    stmt = c.prepareCall(sql);
+
+    stmt.setString(1, title);
+
+    stmt.execute();
+
+    c.close();
+    stmt.close();
   }
 
 }

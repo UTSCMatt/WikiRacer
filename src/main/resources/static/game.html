@@ -27,7 +27,18 @@
                 <button type="button" id="options_btn" class="btn">Show Options</button>
                 <button type="submit" id="start_btn" class="btn">Start Game</button>
             </div>
-            <div id="options_wrapper"></div>
+
+            <div id="options_menu" class="hidden">
+                <input type="radio" id="opt_time" name="game_mode" value="Timed"> Time based scoring
+                <br>
+                <input type="radio" id="opt_clicks" name="game_mode" value="Clicks"> Click based scoring
+                <br>
+                <div class="form_title">Enter Banned Categories</div>
+                <input type="text" id="ban_cat" class="form_element" placeholder="Separate categories by comma" />
+                <div class="form_title">Enter Banned Articles</div>
+                <input type="text" id="ban_art" class="form_element" placeholder="Separate articles by comma" />
+            </div>
+           
         </form>
         Or
         <form class="form" if="join_game_form">
