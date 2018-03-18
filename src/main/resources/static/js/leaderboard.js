@@ -41,7 +41,7 @@
            elmt.className = "leaderboard";
            elmt.innerHTML=`<tr>
                                <th>Username</th>
-                               <th>Time Spend (Minute)</th>
+                               <th>Time Spend (Seconds)</th>
                                <th>Number of Clicks</th>
                            </tr>`;
            for(var index = 0; index < gameStats.length; index++){

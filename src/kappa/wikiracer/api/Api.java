@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -331,24 +332,24 @@ public class Api {
 
   @RequestMapping(value = "/api/getGameList/", method = RequestMethod.GET)
   public ResponseEntity<?> getGameList(HttpServletRequest req, HttpServletResponse res) {
-    ArrayList<String> response = new ArrayList<String>();
+    List<String> response = new ArrayList<String>();
     try {
       response = new GameDao(dbUrl, dbUsername, dbPassword).getGameList();
     } catch (SQLException ex) {
       return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return new ResponseEntity<ArrayList<String>>(response, HttpStatus.OK);
+    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
   @RequestMapping(value = "/api/getGameStats/{gameId}/", method = RequestMethod.GET)
   public ResponseEntity<?> getGameStats(HttpServletRequest req, HttpServletResponse res, @PathVariable String gameId) {
-    ArrayList<ArrayList<String>> response = new ArrayList<ArrayList<String>>();
+    List<List<String>> response = new ArrayList<>();
     try {
       response = new GameDao(dbUrl, dbUsername, dbPassword).getGameStats(gameId);
     } catch (SQLException ex) {
       return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return new ResponseEntity<ArrayList<ArrayList<String>>>(response, HttpStatus.OK);
+    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
   /*** API ENDS ***/

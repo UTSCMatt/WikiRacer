@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.UUID;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -195,7 +196,7 @@ public class GameDao extends Dao {
     return id;
   }
 
-  public ArrayList<String> getGameList() throws SQLException {
+  public List<String> getGameList() throws SQLException {
     Connection c = getConnection();
     PreparedStatement stmt;
 
@@ -219,11 +220,11 @@ public class GameDao extends Dao {
     return results;
   }
 
-  public ArrayList<ArrayList<String>> getGameStats(String gameId) throws SQLException {
+  public List<List<String>> getGameStats(String gameId) throws SQLException {
     Connection c = getConnection();
     PreparedStatement stmt;
 
-    String sql = "SELECT users.Username, TIMESTAMPDIFF(minute, StartTime, EndTime) AS TimeSpend,"
+    String sql = "SELECT users.Username, TIMESTAMPDIFF(second, StartTime, EndTime) AS TimeSpend,"
         + " NumClicks FROM player_game_map INNER JOIN users ON users.Id = player_game_map.UserId"
         + " WHERE GameId = (Select Id From Games WHERE GameId = ?) AND Finished = 1";
 
@@ -231,13 +232,13 @@ public class GameDao extends Dao {
     stmt.setString(1, gameId);
     ResultSet rs = stmt.executeQuery();
 
-    ArrayList<ArrayList<String>> results = new ArrayList<ArrayList<String>>();
+    List<List<String>> results = new ArrayList<>();
 
     while(rs.next()){
       String username = rs.getString("Username");
       int timeSpend = rs.getInt("TimeSpend");
       int numClicks = rs.getInt("NumClicks");
-      ArrayList<String> currentResult = new ArrayList<String>(Arrays.asList(username, Integer.toString(timeSpend), Integer.toString(numClicks)));
+      List<String> currentResult = new ArrayList<String>(Arrays.asList(username, Integer.toString(timeSpend), Integer.toString(numClicks)));
       results.add(currentResult);
 
     }
