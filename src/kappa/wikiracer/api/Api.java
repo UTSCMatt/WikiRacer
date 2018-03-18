@@ -61,31 +61,6 @@ public class Api {
   private final String CATEGORIES = "categories";
   private final String ARTICLES = "articles";
 
-  /*** Testing API Begins ***/
-
-  @RequestMapping(value = "/api/test/", method = RequestMethod.GET)
-  public String test(HttpServletRequest req) {
-    HttpSession session = req.getSession(false);
-    if (session != null) {
-      return (String) session.getAttribute("username");
-    } else {
-      return null;
-    }
-  }
-
-  @RequestMapping(value = "/api/test/", method = RequestMethod.POST)
-  public ResponseEntity<String> test(String parent, String child) {
-    try {
-      return new ResponseEntity<String>(hasLink(parent, child).toString(), HttpStatus.OK);
-    } catch (SQLException | UnsupportedEncodingException ex) {
-      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-    } catch (InvalidArticleException ex) {
-      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  /*** Testing API Ends ***/
-
   private LoadingCache<String, Set<String>> linkCache;
   private LoadingCache<String, Integer> storedPagesCache;
   private LoadingCache<String, String> finalPageCache;
