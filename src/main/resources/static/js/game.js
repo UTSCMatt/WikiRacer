@@ -10,7 +10,7 @@
             gameId: null,
             start: null,
             end: null,
-            clicks: null
+            clicks: null,
         };
         (function(){
             var gameForms = document.getElementById("form_container");
@@ -89,7 +89,11 @@
             loadingScreen();
             // join existing game using game code
             api.joinGame(joinGameId, function (err, res) {
-                if (err) console.log(err);
+                if (err) {
+                    console.log(err);
+                    alert.log(err);
+                    window.location.href = "game.html";
+                } 
                 else {
                     gameReqs.gameId = res.id;
                     gameReqs.start = res.start;
@@ -166,7 +170,7 @@
                                 }
                                 else if (res.finished) {
                                      // placeholder for actual win 
-                                     alert("a winner is you!");   
+                                     alert("You've reached your destination! Your score is: \n Clicks: " + res.clicks + "\n Time: " + res.time);   
                                 } else {
                                     gameReqs.clicks = res.clicks;
                                     api.getWikiPage(res.current_page, function(err, res) {
