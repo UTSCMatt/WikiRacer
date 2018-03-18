@@ -4,12 +4,10 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
-import javax.annotation.PostConstruct;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -52,7 +50,7 @@ public class Api {
   @Value("${spring.datasource.password}")
   private String dbPassword;
 
-  private final String CATEOGORIES = "categories";
+  private final String CATEGORIES = "categories";
   private final String ARTICLES = "articles";
 
   /*** Testing API Begins ***/
@@ -210,7 +208,7 @@ public class Api {
     start = StringUtils.trimToEmpty(start);
     end = StringUtils.trimToEmpty(end);
     JSONObject parsedRules = new JSONObject(rules);
-    JSONArray bannedCategories = parsedRules.getJSONArray(CATEOGORIES);
+    JSONArray bannedCategories = parsedRules.getJSONArray(CATEGORIES);
     JSONArray bannedArticles = parsedRules.getJSONArray(ARTICLES);
     start = fixWikiTitles(start);
     end = fixWikiTitles(end);
