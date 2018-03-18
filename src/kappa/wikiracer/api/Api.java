@@ -257,6 +257,7 @@ public class Api {
       new GameDao(dbUrl,dbUsername,dbPassword).joinGame(response.get("id"),
           (String) req.getSession().getAttribute("username"));
       new RulesDao(dbUrl, dbUsername, dbPassword).banCategories(response.get("id"), bannedCategories);
+      new RulesDao(dbUrl, dbUsername, dbPassword).banArticles(response.get("id"), bannedArticles);
     } catch (SQLException ex) {
       return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     } catch (GameException ex) {
