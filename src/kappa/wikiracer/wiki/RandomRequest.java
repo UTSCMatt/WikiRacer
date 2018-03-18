@@ -20,7 +20,7 @@ public class RandomRequest {
           .getJSONArray(MediaWikiConstants.RANDOM).getJSONObject(0)
           .getString(MediaWikiConstants.TITLE);
     } while (article.equals(notEqual));
-
+    article = article.replaceAll("&", "%26");
     return article;
   }
 

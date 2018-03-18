@@ -6,6 +6,25 @@
         var joinGameForm = document.getElementById("join_game_form");
         var formBox = document.getElementById("form_container");
 
+        var gameReqs = {
+            gameId: null,
+            start: null,
+            end: null,
+            clicks: null
+        };
+        (function(){
+            var gameForms = document.getElementById("form_container");
+            var loginPrompt = document.getElementById("login_notify");
+            if (api.getUser()) {
+                gameForms.className = "";
+                loginPrompt.className = "hidden";
+            } else {
+                gameForms.className = "hidden";
+                loginPrompt.className = "";
+            }
+        })();
+              
+
         document.getElementById("start_btn").addEventListener("click", function (e) {
             e.preventDefault();
             // if the user enters a wikipedia url instead of the page title, splits the string and 
@@ -14,18 +33,34 @@
             var endPage = document.getElementById("endpage").value.split("/wiki/").slice(-1)[0];
             
             try {
-                //var gameMode = document.querySelector('input[name="game_mode"]:checked').value;
-                api.makeGame(startPage, endPage/*, gameMode, "test"*/, function (err, res) {
-                    if (err) console.log(err);
+                var gameMode = document.querySelector('input[name="game_mode"]:checked').value;
+                var rulesCat = document.getElementById("ban_cat").value.replace(/, /g, ",");
+                var rulesArt = document.getElementById("ban_art").value.replace(/, /g, ",");
+                var rules = {
+                    "categories" : [],
+                    "articles" : []
+                };
+                // splits the user input by commas into an array
+                rules.categories = rulesCat.split(",");
+                rules.articles = rulesArt.split(",");
+                formBox.style.display = "none";
+                loadingScreen();
+                api.makeGame(startPage, endPage, gameMode, JSON.stringify(rules), function (err, res) {
+                    if (err) {
+                        console.log(err);
+                        alert(err);
+                        window.location.href = "game.html";
+                    } 
                     else {
-                        formBox.style.display = "none";
-                        startPage = res.start;
-                        endPage = res.end;
-                        var gameId = res.id;
+
+                        gameReqs.gameId = res.id;
+                        gameReqs.start = res.start;
+                        gameReqs.end = res.end;
+                        gameReqs.clicks = 0;
                         // get the json representation of the starting page
-                        api.getWikiPage(res.start, function(err, res) {
+                        api.getWikiPage(gameReqs.start, function(err, res) {
                             if (err) console.log(err);
-                            else processNewPage(res, gameId);
+                            else createGameWindow(res, gameReqs);
                         });
                     }
                 });
@@ -34,48 +69,42 @@
             }
         });
 
+        // used to toggle the options menu
         document.getElementById("options_btn").addEventListener("click", function(e) {
             var optionsBtn = document.getElementById("options_btn");
             var optionsMenu = document.getElementById("options_menu");
-            if (optionsMenu) {
-                if (optionsMenu.style.display == "none") {
-                    optionsMenu.style.display = "";
-                    optionsBtn.innerHTML = "Hide Options"
-                } else {
-                    optionsMenu.style.display = "none";
-                    optionsBtn.innerHTML = "Show Options"
-                }
-            } else {
-                var optionsMenu = document.createElement("div");
-                optionsMenu.id = "options_menu";
-                optionsMenu.innerHTML = `<input type="radio" id="opt_time" name="game_mode" value="Timed"> 
-                                    Time based scoring<br>
-                                    <input type="radio" id="opt_clicks" name="game_mode" value="Clicks">
-                                    Click based scoring`;
-                document.getElementById("options_wrapper").appendChild(optionsMenu);
+            if (optionsMenu.className == "hidden") {
+                optionsMenu.className = "";
                 optionsBtn.innerHTML = "Hide Options"
-                
-            }
-            
+            } else {
+                optionsMenu.className = "hidden";
+                optionsBtn.innerHTML = "Show Options"
+            }   
         });
-
+        
         document.getElementById("join_btn").addEventListener("click", function (e) {
             e.preventDefault();
             var joinGameId = document.getElementById("gamecode").value;
+            formBox.style.display = "none";
+            loadingScreen();
+            // join existing game using game code
             api.joinGame(joinGameId, function (err, res) {
                 if (err) console.log(err);
                 else {
-                    formBox.style.display = "none";
-                    processNewPage(res);
+                    gameReqs.gameId = res.id;
+                    gameReqs.start = res.start;
+                    gameReqs.end = res.end;
+                    gameReqs.clicks = 0;
+                    api.getWikiPage(gameReqs.start, function(err, res) {
+                        if (err) console.log(err);
+                        else createGameWindow(res, gameReqs);
+                    });
                 }
             });
         });
 
-        function processNewPage(content, gameId) {
-            createGameWindow(content, gameId);
-        }
         // creates the structure for displaying the game
-        function createGameWindow(content, gameId) {
+        function createGameWindow(content, gameReqs) {
             var gameBox = document.getElementById("gamebox");
             gameBox.innerHTML = "";
             var frameWrapper = document.createElement("div");
@@ -87,12 +116,28 @@
             frameWrapper.style.visibility = "hidden";
             frameWrapper.appendChild(frame);
             gameBox.appendChild(frameWrapper);
-            gameBox.prepend("Game ID: " + gameId);
-            insertLinks(gameId);
+            gameBox.prepend("Game ID: " + gameReqs.gameId);
+            gameBox.prepend("Start Page: " + gameReqs.start + " End Page: " + gameReqs.end + " Clicks: " + gameReqs.clicks + " ");
+            insertLinks(content, gameReqs);
             frameWrapper.style.visibility = "";
         };
 
-        function insertLinks(gameId) {
+        function loadingScreen() {
+            // replaces game window with loading screen
+            var gameBox = document.getElementById("gamebox");
+            gameBox.innerHTML = "";
+            var frameWrapper = document.createElement("div");
+            frameWrapper.id = "framewrapper";
+            frameWrapper.style.backgroundColor = "#333333";
+            var loadIcon = document.createElement("img");
+            loadIcon.style.marginTop = "64px";
+            loadIcon.src = "images/loader.gif";
+            frameWrapper.innerHTML = "";
+            frameWrapper.appendChild(loadIcon);
+            gameBox.appendChild(frameWrapper);
+        };
+
+        function insertLinks(content, gameReqs) {
         
             var links = document.getElementById("framewrapper").getElementsByTagName("a");
             var regex = new RegExp(/Template|#|action=edit|:|external/);
@@ -108,26 +153,26 @@
                         links[i].addEventListener('click', function (e) {
                             e.preventDefault();
                             try {
-                                var frameWrapper = document.getElementById("framewrapper");
-                                frameWrapper.style.backgroundColor = "#333333";
-                                var loadIcon = document.createElement("img");
-                                loadIcon.src = "images/loader.gif";
-                                loadIcon.style.margin = "auto";
-                                frameWrapper.innerHTML = "";
-                                frameWrapper.appendChild(loadIcon);
+                                loadingScreen();
                             } catch (error) {
                                 return error;
                             }
-                            api.checkNewPage(gameId, linkSplit, function(err, res) {
-                                if (err) console.log(err);
+                            api.checkNewPage(gameReqs.gameId, linkSplit, function(err, res) {
+                                if (err) {
+                                    console.log(err);
+                                    alert(err);
+                                    // returns the user to page they were on if the next page is banned or invalid
+                                    createGameWindow(content, gameReqs);
+                                }
                                 else if (res.finished) {
-                                    alert("a winner is you!");
+                                     // placeholder for actual win 
+                                     alert("a winner is you!");   
                                 } else {
-                                    
+                                    gameReqs.clicks = res.clicks;
                                     api.getWikiPage(res.current_page, function(err, res) {
                                         if (err) console.log(err);
                                         else {
-                                            processNewPage(res, gameId);
+                                            createGameWindow(res, gameReqs);
                                         }
                                     });  
                                 }

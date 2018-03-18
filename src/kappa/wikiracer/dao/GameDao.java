@@ -17,19 +17,20 @@ public class GameDao extends Dao {
     super(url, username, password);
   }
 
-  public String createGame(String start, String end) throws SQLException {
+  public String createGame(String start, String end, String gameMode) throws SQLException {
     getConnection().close();
     String id = generateGameId();
 
     Connection c = newConnection();
     CallableStatement stmt;
 
-    String sql = "CALL Create_Game(?,?,?)";
+    String sql = "CALL Create_Game(?,?,?,?)";
 
     stmt = c.prepareCall(sql);
     stmt.setString(1, id);
     stmt.setString(2, start);
     stmt.setString(3, end);
+    stmt.setString(4, gameMode);
 
     stmt.execute();
 
@@ -135,18 +136,31 @@ public class GameDao extends Dao {
     Connection c = getConnection();
     PreparedStatement stmt;
 
-    String sql = finished ? "UPDATE player_game_map SET CurrentPage=(SELECT Id FROM wiki_pages WHERE Title=?), EndTime=CURRENT_TIMESTAMP, Finished=TRUE" : "UPDATE player_game_map SET CurrentPage=(SELECT Id FROM wiki_pages WHERE Title=?)";
-    sql += " WHERE GameId = (SELECT Id FROM Games WHERE GameId=?) AND UserId = (SELECT Id FROM Users WHERE Username=?)";
+    String sql = "UPDATE player_game_map SET NumClicks = NumClicks + 1, CurrentPage=(SELECT Id FROM wiki_pages WHERE Title=?), EndTime=CURRENT_TIMESTAMP, Finished=? WHERE GameId = (SELECT Id FROM Games WHERE GameId=?) AND UserId = (SELECT Id FROM Users WHERE Username=?)";
 
     stmt = c.prepareStatement(sql);
     stmt.setString(1, nextPage);
-    stmt.setString(2, gameId);
-    stmt.setString(3, username);
+    stmt.setBoolean(2, finished);
+    stmt.setString(3, gameId);
+    stmt.setString(4, username);
 
-    int result = stmt.executeUpdate();
+    stmt.executeUpdate();
 
+    stmt.close();
+
+    sql = "SELECT NumClicks FROM player_game_map WHERE GameId = (SELECT Id FROM Games WHERE GameId=?) AND UserId = (SELECT Id FROM Users WHERE Username=?)";
+
+    stmt = c.prepareStatement(sql);
+    stmt.setString(1, gameId);
+    stmt.setString(2, username);
+
+    ResultSet rs = stmt.executeQuery();
+
+    rs.next();
+    int result = rs.getInt("NumClicks");
     c.close();
     stmt.close();
+    rs.close();
 
     return result;
 

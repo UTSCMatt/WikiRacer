@@ -1,0 +1,5 @@
+CREATE TABLE game_mode (
+	Id INT NOT NULL AUTO_INCREMENT,
+	GameMode VARCHAR(255) NOT NULL,
+	PRIMARY KEY (Id, GameMode)
+);
