@@ -39,6 +39,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import kappa.wikiracer.wiki.LinkRequest;
@@ -330,11 +331,11 @@ public class Api {
     }
   }
 
-  @RequestMapping(value = "/api/getGameList/", method = RequestMethod.GET)
-  public ResponseEntity<?> getGameList(HttpServletRequest req, HttpServletResponse res) {
+  @RequestMapping(value = "/api/getGameList", method = RequestMethod.GET)
+  public ResponseEntity<?> getGameList(HttpServletRequest req, HttpServletResponse res, @RequestParam("offset") int offset, @RequestParam("limit") int limit) {
     List<String> response = new ArrayList<String>();
     try {
-      response = new GameDao(dbUrl, dbUsername, dbPassword).getGameList();
+      response = new GameDao(dbUrl, dbUsername, dbPassword).getGameList(offset, limit);
     } catch (SQLException ex) {
       return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }

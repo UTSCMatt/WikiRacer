@@ -196,16 +196,17 @@ public class GameDao extends Dao {
     return id;
   }
 
-  public List<String> getGameList() throws SQLException {
+  public List<String> getGameList(int offset, int limit) throws SQLException {
     Connection c = getConnection();
     PreparedStatement stmt;
 
-    String sql = "SELECT GameId FROM games";
+    String sql = "SELECT GameId FROM games LIMIT ? OFFSET ?";
 
     stmt = c.prepareStatement(sql);
+    stmt.setInt(1, limit);
+    stmt.setInt(2, offset);
 
     ResultSet rs = stmt.executeQuery();
-    rs.next();
 
     ArrayList<String> results = new ArrayList<String>();
 
