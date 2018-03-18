@@ -9,6 +9,7 @@ import org.springframework.context.annotation.ComponentScan;
 public class Runner {
 
   public static void main(String[] args) {
+    System.setProperty("spring.devtools.restart.enabled", "true");
     SpringApplication.run(Runner.class, args);
 
   }
