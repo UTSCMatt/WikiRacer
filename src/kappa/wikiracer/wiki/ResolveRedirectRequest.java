@@ -19,7 +19,7 @@ public class ResolveRedirectRequest {
     }
     article = SendRequest.encodeTitles(article);
     String request = "?action=query&format=json&titles=" + article + "&redirects=1";
-    JSONObject result = SendRequest.sendRequest(request, "POST");
+    JSONObject result = SendRequest.sendRequest(request);
     result = result.getJSONObject(MediaWikiConstants.QUERY).getJSONObject(MediaWikiConstants.PAGES);
     String pageId = (String) result.keys().next();
     result = result.getJSONObject(pageId);

@@ -13,15 +13,15 @@ public class SendRequest {
 
   private static final String URL = "https://en.wikipedia.org/w/api.php";
 
-  protected static JSONObject sendRequest(String request, String method) {
+  protected static JSONObject sendRequest(String request) {
     request = request.replaceAll(" ", "%20");
-    StringBuffer jsonString = new StringBuffer();
+    StringBuilder jsonString = new StringBuilder();
     try {
       URL url = new URL(URL + request);
       HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
       connection.setDoInput(true);
       connection.setDoOutput(true);
-      connection.setRequestMethod(method);
+      connection.setRequestMethod("POST");
       connection.setRequestProperty("Accept", "text/plain");
       connection.setRequestProperty("Content-Type", "multipart/form-data");
       BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -31,15 +31,15 @@ public class SendRequest {
       }
       br.close();
       connection.disconnect();
-    } catch (Exception e) {
+    } catch (Exception ex) {
       // TODO Logging
-      System.out.println(e);
+      ex.printStackTrace();
     }
     return new JSONObject(jsonString.toString());
   }
 
   public static boolean invalidArticle(String article) {
-    return !article.matches("^[^#<>\\[\\]\\|\\{\\}]+$");
+    return !article.matches("^[^#<>\\[\\]|{}]+$");
   }
 
   protected static String encodeTitles(String title) {

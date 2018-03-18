@@ -32,8 +32,9 @@ public class CategoryRequest {
       }
       category = SendRequest.encodeTitles(category);
       request.append(category);
+      first = false;
     }
-    JSONObject result = SendRequest.sendRequest(request.toString(), "POST");
+    JSONObject result = SendRequest.sendRequest(request.toString());
     result = result.getJSONObject(MediaWikiConstants.QUERY).getJSONObject(MediaWikiConstants.PAGES);
     String pageId = (String) result.keys().next();
     return result.getJSONObject(pageId).has(MediaWikiConstants.CATEGORIES);
