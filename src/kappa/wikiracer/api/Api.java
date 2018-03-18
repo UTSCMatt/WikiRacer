@@ -82,6 +82,7 @@ public class Api {
 
   private void setSession(HttpServletRequest req, HttpServletResponse res, String username) {
     req.getSession().setAttribute("username", username);
+    req.getSession().setMaxInactiveInterval(60*60*24);
     Calendar expireTime = Calendar.getInstance();
     expireTime.add(Calendar.MONTH, 1);
     SimpleDateFormat cookieDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
