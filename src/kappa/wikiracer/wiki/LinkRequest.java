@@ -1,7 +1,5 @@
 package kappa.wikiracer.wiki;
 
-import java.util.ArrayList;
-
 import java.util.HashSet;
 import java.util.Set;
 import kappa.wikiracer.exception.InvalidArticleException;
@@ -22,7 +20,8 @@ public class LinkRequest {
       throw new InvalidArticleException("Articles has invalid characters");
     }
     article = SendRequest.encodeTitles(article);
-    String request = "?action=query&pllimit=max&format=json&prop=links&titles=" + article + "&plnamespace=0";
+    String request =
+        "?action=query&pllimit=max&format=json&prop=links&titles=" + article + "&plnamespace=0";
     return continueRequest(request);
   }
 

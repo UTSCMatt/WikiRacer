@@ -61,7 +61,9 @@ public class RulesDao extends Dao {
     Connection c = getConnection();
     PreparedStatement stmt;
 
-    String sql = "SELECT c.Category FROM Wiki_Categories c INNER JOIN banned_categories b ON b.CategoryId=c.Id WHERE GameId=(SELECT Id FROM Games WHERE GameId = ?)";
+    String sql = "SELECT c.Category FROM Wiki_Categories c "
+        + "INNER JOIN banned_categories b ON b.CategoryId=c.Id "
+        + "WHERE GameId=(SELECT Id FROM Games WHERE GameId = ?)";
 
     stmt = c.prepareStatement(sql);
     stmt.setString(1, gameId);
@@ -120,7 +122,9 @@ public class RulesDao extends Dao {
     Connection c = getConnection();
     PreparedStatement stmt;
 
-    String sql = "SELECT p.Title FROM Wiki_Pages p INNER JOIN banned_articles b ON b.ArticleId=p.Id WHERE GameId=(SELECT Id FROM Games WHERE GameId = ?)";
+    String sql = "SELECT p.Title FROM Wiki_Pages p "
+        + "INNER JOIN banned_articles b ON b.ArticleId=p.Id "
+        + "WHERE GameId=(SELECT Id FROM Games WHERE GameId = ?)";
 
     stmt = c.prepareStatement(sql);
     stmt.setString(1, gameId);

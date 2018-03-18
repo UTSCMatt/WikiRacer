@@ -4,12 +4,11 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.sql.Array;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -17,7 +16,6 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import javafx.util.Pair;
-import java.util.ArrayList;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -33,6 +31,7 @@ import kappa.wikiracer.exception.UserNotFoundException;
 import kappa.wikiracer.util.UserVerification;
 import kappa.wikiracer.wiki.CategoryRequest;
 import kappa.wikiracer.wiki.ExistRequest;
+import kappa.wikiracer.wiki.LinkRequest;
 import kappa.wikiracer.wiki.RandomRequest;
 import kappa.wikiracer.wiki.ResolveRedirectRequest;
 import kappa.wikiracer.wiki.SendRequest;
@@ -49,27 +48,20 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import kappa.wikiracer.wiki.LinkRequest;
-
 @RestController
 public class Api {
-  
-  @Value("${spring.datasource.username}")
-  private String dbUsername;
-  
-  @Value("${spring.datasource.url}")
-  private String dbUrl;
-  
-  @Value("${spring.datasource.password}")
-  private String dbPassword;
-
-  private final String CATEGORIES = "categories";
-  private final String ARTICLES = "articles";
 
   public static final String USERNAME_KEY = "username";
   public static final String TIME_SPEND_KEY = "timeSpend";
   public static final String NUM_CLICKS_KEY = "numClicks";
-
+  private static final String CATEGORIES = "categories";
+  private static final String ARTICLES = "articles";
+  @Value("${spring.datasource.username}")
+  private String dbUsername;
+  @Value("${spring.datasource.url}")
+  private String dbUrl;
+  @Value("${spring.datasource.password}")
+  private String dbPassword;
   private LoadingCache<String, Set<String>> linkCache;
   private LoadingCache<String, Integer> storedPagesCache;
   private LoadingCache<String, String> finalPageCache;
@@ -85,27 +77,41 @@ public class Api {
    */
   @PostConstruct
   public void initCaches() {
-    linkCache = Caffeine.newBuilder().maximumWeight(10000).weigher((String key, Set links) -> links.size()).refreshAfterWrite(5, TimeUnit.MINUTES).build(LinkRequest::sendRequest);
-    storedPagesCache = Caffeine.newBuilder().maximumSize(10000).build(key -> new LinkDao(dbUrl, dbUsername, dbPassword).addPage(key));
-    finalPageCache = Caffeine.newBuilder().maximumSize(1000).build(key -> new GameDao(dbUrl, dbUsername, dbPassword).finalPage(key));
-    bannedCategoriesCache = Caffeine.newBuilder().maximumWeight(3000).weigher((String key, Set categories) -> categories.size()).build(key -> new RulesDao(dbUrl, dbUsername, dbPassword).getCategories(key));
-    bannedArticlesCache = Caffeine.newBuilder().maximumWeight(1500).weigher((String key, Set articles) -> articles.size()).build(key -> new RulesDao(dbUrl, dbUsername, dbPassword).getArticles(key));
-    inGameCache = Caffeine.newBuilder().maximumSize(5000).build(key -> new GameDao(dbUrl, dbUsername, dbPassword).inGame(key.getKey(), key.getValue()));
-    existsCache = Caffeine.newBuilder().maximumSize(10000).refreshAfterWrite(1, TimeUnit.HOURS).build(
-        ExistRequest::exists);
-    redirectCache = Caffeine.newBuilder().maximumSize(10000).refreshAfterWrite(1, TimeUnit.HOURS).build(ResolveRedirectRequest::resolveRedirect);
+    linkCache = Caffeine.newBuilder().maximumWeight(10000)
+        .weigher((String key, Set links) -> links.size()).refreshAfterWrite(5, TimeUnit.MINUTES)
+        .build(LinkRequest::sendRequest);
+    storedPagesCache = Caffeine.newBuilder().maximumSize(10000)
+        .build(key -> new LinkDao(dbUrl, dbUsername, dbPassword).addPage(key));
+    finalPageCache = Caffeine.newBuilder().maximumSize(1000)
+        .build(key -> new GameDao(dbUrl, dbUsername, dbPassword).finalPage(key));
+    bannedCategoriesCache = Caffeine.newBuilder().maximumWeight(3000)
+        .weigher((String key, Set categories) -> categories.size())
+        .build(key -> new RulesDao(dbUrl, dbUsername, dbPassword).getCategories(key));
+    bannedArticlesCache = Caffeine.newBuilder().maximumWeight(1500)
+        .weigher((String key, Set articles) -> articles.size())
+        .build(key -> new RulesDao(dbUrl, dbUsername, dbPassword).getArticles(key));
+    inGameCache = Caffeine.newBuilder().maximumSize(5000).build(
+        key -> new GameDao(dbUrl, dbUsername, dbPassword).inGame(key.getKey(), key.getValue()));
+    existsCache = Caffeine.newBuilder().maximumSize(10000).refreshAfterWrite(1, TimeUnit.HOURS)
+        .build(
+            ExistRequest::exists);
+    redirectCache = Caffeine.newBuilder().maximumSize(10000).refreshAfterWrite(1, TimeUnit.HOURS)
+        .build(ResolveRedirectRequest::resolveRedirect);
   }
 
   private void setSession(HttpServletRequest req, HttpServletResponse res, String username) {
     req.getSession().setAttribute("username", username);
-    req.getSession().setMaxInactiveInterval(60*60*24);
+    req.getSession().setMaxInactiveInterval(60 * 60 * 24);
     Calendar expireTime = Calendar.getInstance();
     expireTime.add(Calendar.MONTH, 1);
-    SimpleDateFormat cookieDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+    SimpleDateFormat cookieDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z",
+        Locale.US);
     cookieDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     String expireString = cookieDateFormat.format(expireTime.getTime());
-    res.setHeader("Set-Cookie", "JSESSIONID=" + req.getSession().getId() + "; HttpOnly; SameSite=strict; Secure; Path=/; Expires=" + expireString);
-    res.addHeader("Set-Cookie", "username=" + username+ "; SameSite=strict; Secure; Path=/; Expires=" + expireString);
+    res.setHeader("Set-Cookie", "JSESSIONID=" + req.getSession().getId()
+        + "; HttpOnly; SameSite=strict; Secure; Path=/; Expires=" + expireString);
+    res.addHeader("Set-Cookie",
+        "username=" + username + "; SameSite=strict; Secure; Path=/; Expires=" + expireString);
 
   }
 
@@ -123,21 +129,21 @@ public class Api {
 
   private Boolean hasLink(String parentTitle, String childTitle)
       throws SQLException, InvalidArticleException, UnsupportedEncodingException {
-//    Set<String> links = new LinkDao(dbUrl, dbUsername, dbPassword).getLinks(parentTitle);
-//    if (links.contains(childTitle)) {
-//      return true;
-//    } else {
-      Set<String> updatedLinks = linkCache.get(parentTitle);
-      if (updatedLinks.contains(URLDecoder.decode(childTitle, "UTF-8"))) {
-        storedPagesCache.get(parentTitle);
-        storedPagesCache.get(childTitle);
-//        updatedLinks.removeAll(links);
-//        new LinkDao(dbUrl, dbUsername, dbPassword).addLinks(parentTitle, updatedLinks);
-        return true;
-      } else {
-        return false;
-      }
-//    }
+    // Set<String> links = new LinkDao(dbUrl, dbUsername, dbPassword).getLinks(parentTitle);
+    // if (links.contains(childTitle)) {
+    // return true;
+    // } else {
+    Set<String> updatedLinks = linkCache.get(parentTitle);
+    if (updatedLinks.contains(URLDecoder.decode(childTitle, "UTF-8"))) {
+      storedPagesCache.get(parentTitle);
+      storedPagesCache.get(childTitle);
+      // updatedLinks.removeAll(links);
+      // new LinkDao(dbUrl, dbUsername, dbPassword).addLinks(parentTitle, updatedLinks);
+      return true;
+    } else {
+      return false;
+    }
+    // }
   }
 
   private Boolean inGame(String gameId, String username) throws SQLException {
@@ -146,7 +152,8 @@ public class Api {
 
   private Boolean isBanned(String gameId, String nextPage)
       throws SQLException, InvalidArticleException {
-    return CategoryRequest.inCategory(nextPage, bannedCategoriesCache.get(gameId)) || bannedArticlesCache
+    return CategoryRequest.inCategory(nextPage, bannedCategoriesCache.get(gameId))
+        || bannedArticlesCache
         .get(gameId).contains(nextPage);
   }
 
@@ -154,7 +161,7 @@ public class Api {
     title = title.replaceAll("&", "%26");
     return title.replaceAll("_", " ");
   }
-  
+
   private ResponseEntity<String> redirectToHome() {
     HttpHeaders headers = new HttpHeaders();
     headers.add("Location", "/");
@@ -171,7 +178,8 @@ public class Api {
    * @return response from the server and adds session cookies
    */
   @RequestMapping(value = "/login/", method = RequestMethod.POST)
-  public ResponseEntity<String> login(HttpServletRequest req, HttpServletResponse res, String username, String password) {
+  public ResponseEntity<String> login(HttpServletRequest req, HttpServletResponse res,
+      String username, String password) {
     try {
       String hash = new UserDao(dbUrl, dbUsername, dbPassword).getUserPasswordHash(username);
       if (UserVerification.checkPassword(password, hash)) {
@@ -179,12 +187,15 @@ public class Api {
         setSession(req, res, username);
         return new ResponseEntity<String>(JSONObject.quote("User signed in"), HttpStatus.OK);
       } else {
-        return new ResponseEntity<String>(JSONObject.quote("Invalid username or password"), HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<String>(JSONObject.quote("Invalid username or password"),
+            HttpStatus.UNAUTHORIZED);
       }
     } catch (UserNotFoundException ex) {
-      return new ResponseEntity<String>(JSONObject.quote("Invalid username or password"), HttpStatus.UNAUTHORIZED);
+      return new ResponseEntity<String>(JSONObject.quote("Invalid username or password"),
+          HttpStatus.UNAUTHORIZED);
     } catch (SQLException ex) {
-      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()),
+          HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -196,11 +207,13 @@ public class Api {
    * @return response from the server and adds logs in for them
    */
   @RequestMapping(value = "/signup/", method = RequestMethod.POST)
-  public ResponseEntity<String> signup(HttpServletRequest req, HttpServletResponse res, String username, String password) {
+  public ResponseEntity<String> signup(HttpServletRequest req, HttpServletResponse res,
+      String username, String password) {
     username = StringUtils.trimToEmpty(username);
     password = StringUtils.trimToEmpty(password);
     if (!UserVerification.usernameIsValid(username)) {
-      return new ResponseEntity<String>(JSONObject.quote("Username invalid"), HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<String>(JSONObject.quote("Username invalid"),
+          HttpStatus.BAD_REQUEST);
     }
     try {
       new UserDao(dbUrl, dbUsername, dbPassword)
@@ -212,7 +225,8 @@ public class Api {
       if (ex.getMessage().equals("Username already in use")) {
         return new ResponseEntity<String>(JSONObject.quote("Username in use"), HttpStatus.CONFLICT);
       }
-      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()),
+          HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -225,7 +239,7 @@ public class Api {
   public ResponseEntity<String> logoff(HttpServletRequest req, HttpServletResponse res) {
     invalidateSession(req);
     Cookie[] cookies = req.getCookies();
-      if (cookies != null) {
+    if (cookies != null) {
       for (Cookie cookie : cookies) {
         cookie.setMaxAge(0);
         cookie.setValue(null);
@@ -246,8 +260,11 @@ public class Api {
    * @return response of creating the game
    */
   @RequestMapping(value = "/api/game/new/", method = RequestMethod.POST)
-  public ResponseEntity<?> createGame(HttpServletRequest req, String start, String end, String rules, String gameMode) {
-    if (!isAuthenticated(req)) return new ResponseEntity<>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
+  public ResponseEntity<?> createGame(HttpServletRequest req, String start, String end,
+      String rules, String gameMode) {
+    if (!isAuthenticated(req)) {
+      return new ResponseEntity<>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
+    }
     start = StringUtils.trimToEmpty(start);
     end = StringUtils.trimToEmpty(end);
     JSONObject parsedRules = new JSONObject(rules);
@@ -259,7 +276,8 @@ public class Api {
       start = RandomRequest.getRandom(end);
     } else {
       if (SendRequest.invalidArticle(start)) {
-        return new ResponseEntity<>(JSONObject.quote("Articles has invalid characters"), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(JSONObject.quote("Articles has invalid characters"),
+            HttpStatus.BAD_REQUEST);
       }
 
       if (!existsCache.get(start)) {
@@ -271,11 +289,13 @@ public class Api {
       end = RandomRequest.getRandom(start);
     } else {
       if (SendRequest.invalidArticle(end)) {
-        return new ResponseEntity<>(JSONObject.quote("Articles has invalid characters"), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(JSONObject.quote("Articles has invalid characters"),
+            HttpStatus.BAD_REQUEST);
       }
 
       if (!existsCache.get(end)) {
-        return new ResponseEntity<>(JSONObject.quote(end + " does not exist"), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(JSONObject.quote(end + " does not exist"),
+            HttpStatus.NOT_FOUND);
       }
     }
 
@@ -284,19 +304,24 @@ public class Api {
 
     Map<String, String> response = new HashMap<>();
 
-
-    if (start.equals(end)) return new ResponseEntity<String>(JSONObject.quote("Cannot start and end in same article"), HttpStatus.BAD_REQUEST);
+    if (start.equals(end)) {
+      return new ResponseEntity<String>(JSONObject.quote("Cannot start and end in same article"),
+          HttpStatus.BAD_REQUEST);
+    }
 
     response.put("start", start);
     response.put("end", end);
     try {
-      response.put("id", new GameDao(dbUrl,dbUsername,dbPassword).createGame(start,end,gameMode));
-      new GameDao(dbUrl,dbUsername,dbPassword).joinGame(response.get("id"),
+      response
+          .put("id", new GameDao(dbUrl, dbUsername, dbPassword).createGame(start, end, gameMode));
+      new GameDao(dbUrl, dbUsername, dbPassword).joinGame(response.get("id"),
           (String) req.getSession().getAttribute("username"));
-      new RulesDao(dbUrl, dbUsername, dbPassword).banCategories(response.get("id"), bannedCategories);
+      new RulesDao(dbUrl, dbUsername, dbPassword)
+          .banCategories(response.get("id"), bannedCategories);
       new RulesDao(dbUrl, dbUsername, dbPassword).banArticles(response.get("id"), bannedArticles);
     } catch (SQLException ex) {
-      return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<>(JSONObject.quote(ex.getMessage()),
+          HttpStatus.INTERNAL_SERVER_ERROR);
     } catch (GameException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
@@ -312,15 +337,19 @@ public class Api {
    */
   @RequestMapping(value = "/api/game/join/", method = RequestMethod.POST)
   public ResponseEntity<?> joinGame(HttpServletRequest req, String gameId) {
-    if (!isAuthenticated(req)) return new ResponseEntity<String>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
+    if (!isAuthenticated(req)) {
+      return new ResponseEntity<String>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
+    }
     try {
       Map<String, String> response = new HashMap<>();
-      response.put("start", new GameDao(dbUrl,dbUsername,dbPassword).joinGame(gameId, (String) req.getSession().getAttribute("username")));
+      response.put("start", new GameDao(dbUrl, dbUsername, dbPassword)
+          .joinGame(gameId, (String) req.getSession().getAttribute("username")));
       response.put("id", gameId);
       response.put("end", finalPageCache.get(gameId));
       return new ResponseEntity<>(response, HttpStatus.OK);
     } catch (SQLException ex) {
-      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()),
+          HttpStatus.INTERNAL_SERVER_ERROR);
     } catch (GameException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
@@ -334,28 +363,35 @@ public class Api {
    * @return response of trying to go to the page for the given game
    */
   @RequestMapping(value = "/api/game/{gameId}/goto/", method = RequestMethod.POST)
-  public ResponseEntity<?> goToPage(HttpServletRequest req, @PathVariable String gameId, String nextPage) {
-    if (!isAuthenticated(req))
+  public ResponseEntity<?> goToPage(HttpServletRequest req, @PathVariable String gameId,
+      String nextPage) {
+    if (!isAuthenticated(req)) {
       return new ResponseEntity<String>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
+    }
     String username = (String) req.getSession().getAttribute("username");
     try {
-      if (!inGame(gameId, username))
-        return new ResponseEntity<String>(JSONObject.quote("Join game first"), HttpStatus.UNAUTHORIZED);
+      if (!inGame(gameId, username)) {
+        return new ResponseEntity<String>(JSONObject.quote("Join game first"),
+            HttpStatus.UNAUTHORIZED);
+      }
       nextPage = StringUtils.trimToEmpty(nextPage);
       nextPage = fixWikiTitles(nextPage);
-      if (!existsCache.get(nextPage))
+      if (!existsCache.get(nextPage)) {
         return new ResponseEntity<String>(JSONObject.quote(nextPage + " does not exist"),
             HttpStatus.NOT_FOUND);
+      }
       String currentPage = new GameDao(dbUrl, dbUsername, dbPassword)
           .getCurrentPage(gameId, username);
       String finalPage = finalPageCache.get(gameId);
-      if (currentPage.equals(finalPage))
+      if (currentPage.equals(finalPage)) {
         return new ResponseEntity<String>(JSONObject.quote("Game already finished"),
             HttpStatus.BAD_REQUEST);
-      if (!hasLink(currentPage, nextPage))
+      }
+      if (!hasLink(currentPage, nextPage)) {
         return new ResponseEntity<String>(
             JSONObject.quote("No link to '" + nextPage + "' found in '" + currentPage + "'"),
             HttpStatus.NOT_FOUND);
+      }
       String oldPage = nextPage;
       nextPage = redirectCache.get(nextPage);
       if (!nextPage.equals(oldPage)) {
@@ -372,14 +408,27 @@ public class Api {
       response.put("current_page", nextPage);
       return new ResponseEntity<>(response, HttpStatus.OK);
     } catch (SQLException | UnsupportedEncodingException ex) {
-      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()),
+          HttpStatus.INTERNAL_SERVER_ERROR);
     } catch (InvalidArticleException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
   }
 
+  /**
+   * Get a list of games.
+   *
+   * @param search optional parameter to search for games that begin with start
+   * @param offset how many games to skip, default 0
+   * @param limit how many games to return, default 10, max 50
+   * @return response a list of games
+   */
   @RequestMapping(value = "/api/getGameList", method = RequestMethod.GET)
-  public ResponseEntity<?> getGameList(HttpServletRequest req, HttpServletResponse res, @RequestParam(value = "search", required = false) String search, @RequestParam("offset") int offset, @RequestParam("limit") int limit) {
+  public ResponseEntity<?> getGameList(HttpServletRequest req, HttpServletResponse res,
+      @RequestParam(value = "search", required = false) String search,
+      @RequestParam(value = "offset", defaultValue = "0") int offset,
+      @RequestParam(value = "limit", defaultValue = "10") int limit) {
+    limit = Math.min(limit, 50);
     search = StringUtils.trimToEmpty(search);
     List<String> response = new ArrayList<String>();
     try {
@@ -390,8 +439,15 @@ public class Api {
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
+  /**
+   * Get the stats of a given game.
+   *
+   * @param gameId the game's id
+   * @return the stats of the game
+   */
   @RequestMapping(value = "/api/getGameStats/{gameId}/", method = RequestMethod.GET)
-  public ResponseEntity<?> getGameStats(HttpServletRequest req, HttpServletResponse res, @PathVariable String gameId) {
+  public ResponseEntity<?> getGameStats(HttpServletRequest req, HttpServletResponse res,
+      @PathVariable String gameId) {
     List<Map> response = new ArrayList<>();
     try {
       response = new GameDao(dbUrl, dbUsername, dbPassword).getGameStats(gameId);

@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public abstract class Dao {
-  
+
   private Connection connection;
 
   private String url;
@@ -13,7 +13,7 @@ public abstract class Dao {
   private String username;
 
   private String password;
-  
+
   protected Dao(String url, String username, String password) throws SQLException {
     this.url = url;
     this.username = username;
@@ -29,5 +29,5 @@ public abstract class Dao {
   protected Connection getConnection() {
     return connection;
   }
-  
+
 }

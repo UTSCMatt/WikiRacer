@@ -1,6 +1,5 @@
 package kappa.wikiracer.wiki;
 
-import kappa.wikiracer.exception.InvalidArticleException;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
