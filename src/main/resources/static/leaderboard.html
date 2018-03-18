@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title>Wikiracer</title>
     <link href="css/main.css" rel="stylesheet" type="text/css"/>
+    <link href="css/form.css" rel="stylesheet" type="text/css"/>
+    <link href="css/leaderboard.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
     <header>
@@ -16,10 +18,12 @@
         <li class="navelmt"><a href="profile.html">Profile</a></li>
     </ul>
 
-    <form class="" id="select_game_form">
-        <select id="select_game_dropdown">
-            <option hidden value="default">select a game to view</option>
-        </select>
+    <form class="form" id="select_game_form">
+        <div class="form_title">Select a Game</div>
+        <ul class="game_list">
+        </ul>
+        <button type="button" class="btn" id="prev_page_btn" >Prev Page</button>
+        <button type="button" class="btn" id="next_page_btn" >Next Page</button>
     </form>
 
     <script src="js/api.js"></script>

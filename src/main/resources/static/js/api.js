@@ -82,8 +82,8 @@ var api = (function() {
     	sendWikiApi("GET", wikiURL + filename, null, callback);
     };
 
-    module.getGameList = function(callback) {
-    	send("GET", "/api/getGameList/", null, callback);
+    module.getGameList = function(offset, limit, callback) {
+    	send("GET", "/api/getGameList/?offset=" + offset + "&limit=" + limit, null, callback);
     };
 
     module.getGameStats = function(gameId, callback) {
