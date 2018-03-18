@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import javax.net.ssl.HttpsURLConnection;
 
@@ -46,6 +47,7 @@ public class SendRequest {
 
   protected static String encodeTitles(String title) {
     try {
+      title = URLDecoder.decode(title, "UTF-8");
       return URLEncoder.encode(title, "UTF-8");
     } catch (UnsupportedEncodingException ex) {
       return title;

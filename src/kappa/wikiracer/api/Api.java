@@ -2,6 +2,8 @@ package kappa.wikiracer.api;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -75,7 +77,7 @@ public class Api {
   public ResponseEntity<String> test(String parent, String child) {
     try {
       return new ResponseEntity<String>(hasLink(parent, child).toString(), HttpStatus.OK);
-    } catch (SQLException ex) {
+    } catch (SQLException | UnsupportedEncodingException ex) {
       return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     } catch (InvalidArticleException ex) {
       return new ResponseEntity<String>(ex.getMessage(), HttpStatus.BAD_REQUEST);
@@ -133,13 +135,13 @@ public class Api {
   }
 
   private Boolean hasLink(String parentTitle, String childTitle)
-      throws SQLException, InvalidArticleException {
+      throws SQLException, InvalidArticleException, UnsupportedEncodingException {
 //    Set<String> links = new LinkDao(dbUrl, dbUsername, dbPassword).getLinks(parentTitle);
 //    if (links.contains(childTitle)) {
 //      return true;
 //    } else {
       Set<String> updatedLinks = linkCache.get(parentTitle);
-      if (updatedLinks.contains(childTitle)) {
+      if (updatedLinks.contains(URLDecoder.decode(childTitle, "UTF-8"))) {
         storedPagesCache.get(parentTitle);
         storedPagesCache.get(childTitle);
 //        updatedLinks.removeAll(links);
@@ -341,7 +343,7 @@ public class Api {
       response.put("finished", finished);
       response.put("current_page", nextPage);
       return new ResponseEntity<>(response, HttpStatus.OK);
-    } catch (SQLException ex) {
+    } catch (SQLException | UnsupportedEncodingException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     } catch (InvalidArticleException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
