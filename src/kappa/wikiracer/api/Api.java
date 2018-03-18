@@ -82,6 +82,7 @@ public class Api {
 
   private void setSession(HttpServletRequest req, HttpServletResponse res, String username) {
     req.getSession().setAttribute("username", username);
+    req.getSession().setMaxInactiveInterval(60*60*24);
     Calendar expireTime = Calendar.getInstance();
     expireTime.add(Calendar.MONTH, 1);
     SimpleDateFormat cookieDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
@@ -314,8 +315,8 @@ public class Api {
         return new ResponseEntity<String>(JSONObject.quote("Attempt page is banned by rules"),
             HttpStatus.UNAUTHORIZED);
       }
-      new GameDao(dbUrl, dbUsername, dbPassword).changePage(gameId, username, nextPage, finished);
       Map<String, Object> response = new HashMap<>();
+      response.put("clicks", new GameDao(dbUrl, dbUsername, dbPassword).changePage(gameId, username, nextPage, finished));
       response.put("finished", finished);
       response.put("current_page", nextPage);
       return new ResponseEntity<>(response, HttpStatus.OK);
