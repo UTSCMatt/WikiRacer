@@ -12,7 +12,7 @@ BEGIN
 	SET newStartID = (SELECT Id FROM Wiki_Pages WHERE Title=startTitle);
 	SET newEndId = (SELECT Id FROM Wiki_Pages WHERE Title=endTitle);
 	INSERT INTO Games (GameId, StartId, EndId) Values (newGameId, newStartID, newEndId);
-  INSERT INTO game_mode_map (GameId, GameModeId) VALUES
+  INSERT INTO game_mode_map (GameId, ModeId) VALUES
         ((SELECT Id FROM Games WHERE GameId=newGameId),
         (SELECT Id FROM game_mode WHERE GameMode=selectedGameMode));
 END //
