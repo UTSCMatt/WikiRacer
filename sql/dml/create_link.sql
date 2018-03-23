@@ -11,7 +11,7 @@ BEGIN
 	END IF;
 	SET parentID = (SELECT Id FROM Wiki_Pages WHERE Title=parentTitle);
 	SET childId = (SELECT Id FROM Wiki_Pages WHERE Title=childTitle);
-	IF (SELECT COUNT(Parent) FROM Wiki_Links WHERE Parent=parentID AND Child=childId) < 1 THEN 
-		INSERT INTO Wiki_Links (Parent, Child) Values (parentID, childId);
+	IF (SELECT COUNT(Parent) FROM wiki_links WHERE Parent=parentID AND Child=childId) < 1 THEN
+		INSERT INTO wiki_links (Parent, Child) Values (parentID, childId);
 	END IF;
 END //
