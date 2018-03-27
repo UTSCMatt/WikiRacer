@@ -167,7 +167,7 @@ public class GameDao extends Dao {
     PreparedStatement stmt;
 
     String sql = "SELECT w.Title FROM "
-        + "games g INNER JOIN Wiki_Pages w ON g.EndId=w.Id WHERE g.GameId = ?";
+        + "Games g INNER JOIN Wiki_Pages w ON g.EndId=w.Id WHERE g.GameId = ?";
 
     stmt = c.prepareStatement(sql);
     stmt.setString(1, gameId);
@@ -200,7 +200,7 @@ public class GameDao extends Dao {
     Connection c = getConnection();
     CallableStatement stmt;
 
-    String sql = "CALL change_page(?,?,?,?)";
+    String sql = "CALL Change_Page(?,?,?,?)";
 
     stmt = c.prepareCall(sql);
     stmt.setString(1, gameId);
@@ -266,7 +266,7 @@ public class GameDao extends Dao {
     Connection c = getConnection();
     PreparedStatement stmt;
 
-    String sql = "SELECT GameId FROM games WHERE GameId LIKE ? LIMIT ? OFFSET ?";
+    String sql = "SELECT GameId FROM Games WHERE GameId LIKE ? LIMIT ? OFFSET ?";
 
     stmt = c.prepareStatement(sql);
     stmt.setString(1, search + "%");

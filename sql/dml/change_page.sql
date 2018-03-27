@@ -10,7 +10,7 @@ BEGIN
 	ELSE
 		SET timeForEnd = NULL;
 	END IF;
-	UPDATE player_game_map SET NumClicks = NumClicks + 1, CurrentPage=(SELECT Id FROM wiki_pages WHERE Title=nextPage), EndTime=timeForEnd, Finished=isFinished WHERE GameId = (SELECT Id FROM Games WHERE GameId=newGameId) AND UserId = (SELECT Id FROM Users WHERE Username=player);
+	UPDATE player_game_map SET NumClicks = NumClicks + 1, CurrentPage=(SELECT Id FROM Wiki_Pages WHERE Title=nextPage), EndTime=timeForEnd, Finished=isFinished WHERE GameId = (SELECT Id FROM Games WHERE GameId=newGameId) AND UserId = (SELECT Id FROM Users WHERE Username=player);
 	
 	SELECT NumClicks, (TIMESTAMPDIFF(SECOND,player_game_map.StartTime,currentTime)) usedTime FROM player_game_map WHERE GameId = (SELECT Id FROM Games WHERE GameId=newGameId) AND UserId = (SELECT Id FROM Users WHERE Username=player);
 END //
