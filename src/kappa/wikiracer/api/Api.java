@@ -38,10 +38,12 @@ import kappa.wikiracer.wiki.SendRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -71,6 +73,9 @@ public class Api {
   private LoadingCache<Pair<String, String>, Boolean> inGameCache;
   private LoadingCache<String, Boolean> existsCache;
   private LoadingCache<String, String> redirectCache;
+
+  @Autowired
+  private SimpMessagingTemplate simpMessagingTemplate;
 
   /**
    * Initialize all the caches.
@@ -166,6 +171,16 @@ public class Api {
     HttpHeaders headers = new HttpHeaders();
     headers.add("Location", "/");
     return new ResponseEntity<String>(headers, HttpStatus.FOUND);
+  }
+
+  @RequestMapping(value = "/test/", method = RequestMethod.POST)
+  public ResponseEntity<String> test(String message, String id) {
+    try {
+      simpMessagingTemplate.convertAndSend("/socket/test/" + id, JSONObject.quote(message));
+    } catch (NullPointerException ex) {
+      return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    return new ResponseEntity<>("Success", HttpStatus.OK);
   }
 
   /* API BEGINS */
