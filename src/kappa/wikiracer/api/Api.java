@@ -173,16 +173,6 @@ public class Api {
     return new ResponseEntity<String>(headers, HttpStatus.FOUND);
   }
 
-  @RequestMapping(value = "/test/", method = RequestMethod.POST)
-  public ResponseEntity<String> test(String message, String id) {
-    try {
-      simpMessagingTemplate.convertAndSend("/socket/test/" + id, JSONObject.quote(message));
-    } catch (NullPointerException ex) {
-      return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-    return new ResponseEntity<>("Success", HttpStatus.OK);
-  }
-
   /* API BEGINS */
 
   /**
