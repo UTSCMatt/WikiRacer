@@ -12,6 +12,7 @@ import kappa.wikiracer.exception.UserNotFoundException;
 public class SyncGamesManager {
   
   private static final String JOINED = "joined";
+  private static final String LEFT = "left";
   private static final String LOBBY_CLOSED = "lobby_closed";
   private static final String TIMED_OUT = "timed_out";
   private static final int MAX_GAMES = 1000;
@@ -79,7 +80,8 @@ public class SyncGamesManager {
       games.remove(gameId);
       lobbyClosed = true;
     }
-    Map<String, Boolean> payload = new HashMap<>();
+    Map<String, Object> payload = new HashMap<>();
+    payload.put(LEFT, player);
     payload.put(LOBBY_CLOSED, lobbyClosed);
     simpMessagingTemplate.convertAndSend(WebSocketConfig.SOCKET_DEST + gameId, payload);
     return lobbyClosed;
