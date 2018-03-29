@@ -378,7 +378,7 @@ public class Api {
     }
   }
   
-  @RequestMapping(value = "/api/game/{gameId}/leave/", method = RequestMethod.DELETE)
+  @RequestMapping(value = "/api/game/{gameId}/leave/", method = RequestMethod.GET)
   public ResponseEntity<?> leaveGame(HttpServletRequest req, @PathVariable String gameId) {
     if (!isAuthenticated(req)) {
       return new ResponseEntity<String>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
