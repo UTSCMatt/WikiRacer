@@ -266,7 +266,7 @@ public class Api {
    */
   @RequestMapping(value = "/api/game/new/", method = RequestMethod.POST)
   public ResponseEntity<?> createGame(HttpServletRequest req, String start, String end,
-      String rules, String gameMode) {
+      String rules, String gameMode, Boolean isSync) {
     if (!isAuthenticated(req)) {
       return new ResponseEntity<>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
     }
@@ -318,7 +318,7 @@ public class Api {
     response.put("end", end);
     try {
       response
-          .put("id", new GameDao(dbUrl, dbUsername, dbPassword).createGame(start, end, gameMode));
+          .put("id", new GameDao(dbUrl, dbUsername, dbPassword).createGame(start, end, gameMode, isSync));
       new GameDao(dbUrl, dbUsername, dbPassword).joinGame(response.get("id"),
           (String) req.getSession().getAttribute("username"));
       new RulesDao(dbUrl, dbUsername, dbPassword)

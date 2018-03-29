@@ -1,3 +1,5 @@
+DROP PROCEDURE IF EXISTS Create_Game;
+
 ﻿DELIMITER //
 
 CREATE PROCEDURE Create_Game (newGameId VARCHAR(255), startTitle VARCHAR(255), endTitle VARCHAR(255), selectedGameMode VARCHAR(255), sync BOOL)

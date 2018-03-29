@@ -32,20 +32,21 @@ public class GameDao extends Dao {
    * @return the game id
    * @throws SQLException when database has an error
    */
-  public String createGame(String start, String end, String gameMode) throws SQLException {
+  public String createGame(String start, String end, String gameMode, Boolean isSync) throws SQLException {
     getConnection().close();
     String id = generateGameId();
 
     Connection c = newConnection();
     CallableStatement stmt;
 
-    String sql = "CALL Create_Game(?,?,?,?)";
+    String sql = "CALL Create_Game(?,?,?,?,?)";
 
     stmt = c.prepareCall(sql);
     stmt.setString(1, id);
     stmt.setString(2, start);
     stmt.setString(3, end);
     stmt.setString(4, gameMode);
+    stmt.setBoolean(5, isSync);
 
     stmt.execute();
 
