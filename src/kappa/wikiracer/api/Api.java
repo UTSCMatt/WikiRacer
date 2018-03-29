@@ -73,6 +73,7 @@ public class Api {
   private LoadingCache<Pair<String, String>, Boolean> inGameCache;
   private LoadingCache<String, Boolean> existsCache;
   private LoadingCache<String, String> redirectCache;
+  private LoadingCache<String, Boolean> isSyncCache;
 
   @Autowired
   private SimpMessagingTemplate simpMessagingTemplate;
@@ -104,6 +105,8 @@ public class Api {
             ExistRequest::exists);
     redirectCache = Caffeine.newBuilder().maximumSize(10000).refreshAfterWrite(1, TimeUnit.HOURS)
         .build(ResolveRedirectRequest::resolveRedirect);
+    isSyncCache = Caffeine.newBuilder().maximumSize(1000)
+        .build(key -> new GameDao(dbUrl, dbUsername, dbPassword).isSync(key));
   }
   
   @PostConstruct
@@ -356,11 +359,16 @@ public class Api {
       return new ResponseEntity<String>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
     }
     try {
-      Map<String, String> response = new HashMap<>();
+      final Boolean isSync = isSyncCache.get(gameId);
+      if (isSync) {
+        syncGamesManager.joinGame(gameId, (String) req.getSession().getAttribute("username"));
+      }
+      Map<String, Object> response = new HashMap<>();
       response.put("start", new GameDao(dbUrl, dbUsername, dbPassword)
           .joinGame(gameId, (String) req.getSession().getAttribute("username")));
       response.put("id", gameId);
       response.put("end", finalPageCache.get(gameId));
+      response.put("is_sync", isSync);
       return new ResponseEntity<>(response, HttpStatus.OK);
     } catch (SQLException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()),

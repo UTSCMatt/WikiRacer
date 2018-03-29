@@ -328,5 +328,27 @@ public class GameDao extends Dao {
 
     return results;
   }
+  
+  public Boolean isSync(String gameId) throws SQLException {
+    Connection c = getConnection();
+    PreparedStatement stmt;
+    
+    String sql = "SELECT IsSync FROM Games WHERE GameId LIKE ?";
+    
+    stmt = c.prepareStatement(sql);
+    stmt.setString(1, gameId);
+    
+    ResultSet rs = stmt.executeQuery();
+    
+    rs.next();
+    
+    final Boolean result = rs.getBoolean("IsSync");
+    
+    c.close();
+    stmt.close();
+    rs.close();
+    
+    return result;
+  }
 
 }

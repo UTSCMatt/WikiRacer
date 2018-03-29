@@ -1,9 +1,12 @@
 package kappa.wikiracer.api;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import kappa.wikiracer.exception.GameException;
 import kappa.wikiracer.exception.UserNotFoundException;
@@ -13,6 +16,10 @@ public class SyncGame {
   private String host;
   private Boolean started;
   private Map<String, Boolean> finished;
+  private Date creationTime;
+  
+  // Minutes
+  private static final int TIMEOUT = 60;
   
   public SyncGame(String host) {
     this.host = host;
@@ -21,6 +28,7 @@ public class SyncGame {
     players.add(host);
     finished = new HashMap<>();
     finished.put(host, false);
+    creationTime = Calendar.getInstance().getTime();
   }
   
   public Boolean addPlayer(String player) {
@@ -59,6 +67,14 @@ public class SyncGame {
   
   public Boolean isFinished() {
     return !finished.containsValue(false);
+  }
+  
+  public Boolean isTimedOut() {
+    return TimeUnit.MINUTES.convert(Calendar.getInstance().getTime().getTime() - creationTime.getTime(), TimeUnit.MILLISECONDS) >= TIMEOUT;
+  }
+  
+  public Boolean inGame(String player) {
+    return players.contains(player);
   }
   
 }

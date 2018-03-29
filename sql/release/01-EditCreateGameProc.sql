@@ -13,7 +13,7 @@ BEGIN
 	END IF;
 	SET newStartID = (SELECT Id FROM Wiki_Pages WHERE Title=startTitle);
 	SET newEndId = (SELECT Id FROM Wiki_Pages WHERE Title=endTitle);
-	INSERT INTO Games (GameId, StartId, EndId, isSync) Values (newGameId, newStartID, newEndId, sync);
+	INSERT INTO Games (GameId, StartId, EndId, IsSync) Values (newGameId, newStartID, newEndId, sync);
   INSERT INTO game_mode_map (GameId, ModeId) VALUES
         ((SELECT Id FROM Games WHERE GameId=newGameId),
         (SELECT Id FROM game_mode WHERE GameMode=selectedGameMode));
