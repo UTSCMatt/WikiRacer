@@ -377,6 +377,19 @@ public class Api {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
   }
+  
+  @RequestMapping(value = "/api/game/{gameId}/leave/", method = RequestMethod.DELETE)
+  public ResponseEntity<?> leaveGame(HttpServletRequest req, @PathVariable String gameId) {
+    if (!isAuthenticated(req)) {
+      return new ResponseEntity<String>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
+    }
+    try {
+      syncGamesManager.leaveGame(gameId, (String) req.getSession().getAttribute("username"));
+      return new ResponseEntity<String>(JSONObject.quote("success"), HttpStatus.OK);
+    } catch (GameException | UserNotFoundException ex) {
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+  }
 
   /**
    * Go to a new page for a given game.
