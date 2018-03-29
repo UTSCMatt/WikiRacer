@@ -76,6 +76,8 @@ public class Api {
 
   @Autowired
   private SimpMessagingTemplate simpMessagingTemplate;
+  
+  private SyncGamesManager syncGamesManager;
 
   /**
    * Initialize all the caches.
@@ -102,6 +104,11 @@ public class Api {
             ExistRequest::exists);
     redirectCache = Caffeine.newBuilder().maximumSize(10000).refreshAfterWrite(1, TimeUnit.HOURS)
         .build(ResolveRedirectRequest::resolveRedirect);
+  }
+  
+  @PostConstruct
+  public void initManagers() {
+    syncGamesManager = new SyncGamesManager(simpMessagingTemplate);
   }
 
   private void setSession(HttpServletRequest req, HttpServletResponse res, String username) {
@@ -321,6 +328,9 @@ public class Api {
           .put("id", new GameDao(dbUrl, dbUsername, dbPassword).createGame(start, end, gameMode, isSync));
       new GameDao(dbUrl, dbUsername, dbPassword).joinGame(response.get("id"),
           (String) req.getSession().getAttribute("username"));
+      if (isSync) {
+        syncGamesManager.createGame(response.get("id"), (String) req.getSession().getAttribute("username"));
+      }
       new RulesDao(dbUrl, dbUsername, dbPassword)
           .banCategories(response.get("id"), bannedCategories);
       new RulesDao(dbUrl, dbUsername, dbPassword).banArticles(response.get("id"), bannedArticles);
