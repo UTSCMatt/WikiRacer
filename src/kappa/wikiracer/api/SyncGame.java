@@ -20,6 +20,7 @@ public class SyncGame {
   
   // Minutes
   private static final int TIMEOUT = 60;
+  private static final int MAX_PLAYERS = 4;
   
   public SyncGame(String host) {
     this.host = host;
@@ -31,7 +32,10 @@ public class SyncGame {
     creationTime = Calendar.getInstance().getTime();
   }
   
-  public Boolean addPlayer(String player) {
+  public Boolean addPlayer(String player) throws GameException {
+    if (players.size() > MAX_PLAYERS) {
+      throw new GameException("Lobby full");
+    }
     finished.put(player, false);
     return players.add(player);
   }
