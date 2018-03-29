@@ -23,7 +23,7 @@ public class RulesDao extends Dao {
    * @param categories array of categories given from the front end
    * @throws SQLException when database has an error
    */
-  public void banCategories(String gameId, JSONArray categories) throws SQLException {
+  public void banCategories(String gameId, Set<String> categories) throws SQLException {
     Connection c = getConnection();
     CallableStatement stmt;
 
@@ -31,8 +31,7 @@ public class RulesDao extends Dao {
 
     stmt = c.prepareCall(sql);
 
-    for (int i = 0; i < categories.length(); i++) {
-      String category = categories.getString(i);
+    for (String category : categories) {
       String fixedCategory = category.replaceAll(":", "%3A");
       if (!category.startsWith("Category")) {
         fixedCategory = "Category%3A" + fixedCategory;
@@ -89,7 +88,7 @@ public class RulesDao extends Dao {
    * @param articles array of articles given from the front end
    * @throws SQLException when database has an error
    */
-  public void banArticles(String gameId, JSONArray articles) throws SQLException {
+  public void banArticles(String gameId, Set<String> articles) throws SQLException {
     Connection c = getConnection();
     CallableStatement stmt;
 
@@ -97,8 +96,7 @@ public class RulesDao extends Dao {
 
     stmt = c.prepareCall(sql);
 
-    for (int i = 0; i < articles.length(); i++) {
-      String article = articles.getString(i);
+    for (String article : articles){
       String fixedArticle = StringUtils.trimToEmpty(article);
       if (!fixedArticle.isEmpty()) {
         stmt.setString(1, gameId);
