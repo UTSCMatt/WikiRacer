@@ -90,6 +90,10 @@ var api = (function () {
         send("GET", "/api/getGameStats/" + gameId + "/", null, callback);
     };
 
+    module.leaveSyncGame = function (gameId, callback) {
+        send("GET", "/api/game/" + gameId + "/leave/", null, callback);
+    };
+
     return module;
 
 })();

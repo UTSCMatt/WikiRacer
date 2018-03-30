@@ -15,6 +15,18 @@ var websocket = (function () {
   module.connect = function (gameId, callback) {
     connect(gameId, callback);
   };
+  
+  module.disconnect = function (gameId, callback) {
+    if (stompClient !== null) {
+      api.leaveSyncGame(gameId, function (err, res) {
+        if (err) callback(err, null);
+        else {
+          stompClient.disconnect();
+          callback(null, res);
+        }
+      });
+    }
+  };
 
   return module;
 
