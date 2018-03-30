@@ -14,12 +14,12 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer {
 
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
-    registry.addEndpoint("/gs-guide-websocket").withSockJS();
+    registry.addEndpoint("/wikiracer-websocket").withSockJS();
   }
 
   @Override
   public void configureMessageBroker(MessageBrokerRegistry config) {
     config.enableSimpleBroker(SOCKET_DEST);
-    config.setApplicationDestinationPrefixes("/");
+    config.setApplicationDestinationPrefixes("/socket");
   }
 }
