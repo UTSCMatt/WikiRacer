@@ -10,7 +10,7 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 @EnableWebSocketMessageBroker
 public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer {
   
-  public static final String SOCKET_DEST = "/socket";
+  public static final String SOCKET_DEST = "/socket/";
 
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -19,7 +19,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer {
 
   @Override
   public void configureMessageBroker(MessageBrokerRegistry config) {
-    config.enableSimpleBroker(SOCKET_DEST);
+    config.enableSimpleBroker(SOCKET_DEST.substring(0, SOCKET_DEST.length() - 1));
     config.setApplicationDestinationPrefixes("/socket");
   }
 }
