@@ -332,7 +332,7 @@ public class Api {
       new GameDao(dbUrl, dbUsername, dbPassword).joinGame(response.get("id"),
           (String) req.getSession().getAttribute("username"));
       if (isSync) {
-        syncGamesManager.createGame(response.get("id"), (String) req.getSession().getAttribute("username"));
+        syncGamesManager.createGame(response.get("id"), (String) req.getSession().getAttribute("username"), start, gameMode);
       }
       new RulesDao(dbUrl, dbUsername, dbPassword)
           .banCategories(response.get("id"), bannedCategories);

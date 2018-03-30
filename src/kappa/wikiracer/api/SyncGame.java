@@ -8,21 +8,27 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import kappa.wikiracer.api.gameMode.GameModeStrategy;
 import kappa.wikiracer.exception.GameException;
 import kappa.wikiracer.exception.UserNotFoundException;
 
 public class SyncGame {
   private Set<String> players;
   private String host;
+  private String start;
   private Boolean started;
   private Map<String, Boolean> finished;
+  private Map<String, StringBuilder> path;
+  private Map<String, Integer> time;
+  private Map<String, Integer> clicks;
   private Date creationTime;
+  private GameModeStrategy gameMode;
   
   // Minutes
   private static final int TIMEOUT = 60;
   private static final int MAX_PLAYERS = 4;
   
-  public SyncGame(String host) {
+  public SyncGame(String host, String startingArticle, GameModeStrategy gameMode) {
     this.host = host;
     started = false;
     players = new HashSet<>();
@@ -30,6 +36,14 @@ public class SyncGame {
     finished = new HashMap<>();
     finished.put(host, false);
     creationTime = Calendar.getInstance().getTime();
+    path = new HashMap<>();
+    path.put(host, new StringBuilder(startingArticle));
+    time = new HashMap<>();
+    time.put(host, 0);
+    clicks = new HashMap<>();
+    clicks.put(host, 0);
+    this.start = startingArticle;
+    this.gameMode = gameMode;
   }
   
   public Boolean addPlayer(String player) throws GameException {
@@ -37,12 +51,18 @@ public class SyncGame {
       throw new GameException("Lobby full");
     }
     finished.put(player, false);
+    path.put(player, new StringBuilder(start));
+    time.put(player, 0);
+    clicks.put(player, 0);
     return players.add(player);
   }
   
   public Boolean removePlayer(String player) throws UserNotFoundException {
     if (players.remove(player)) {
       finished.remove(player);
+      path.remove(player);
+      time.remove(player);
+      clicks.remove(player);
       return host.equals(player);
     }
     throw new UserNotFoundException(player + " not in game");
@@ -79,6 +99,33 @@ public class SyncGame {
   
   public Boolean inGame(String player) {
     return players.contains(player);
+  }
+
+  public void goToPage(String player, Map<String, Object> info) throws UserNotFoundException {
+    if (!players.contains(player)) {
+      throw new UserNotFoundException(player + " not in game");
+    }
+    finished.put(player, (Boolean) info.get("finished"));
+    path.get(player).append(" -> ").append(info.get("current_page"));
+    time.put(player, (Integer) info.get("time"));
+    clicks.put(player, (Integer) info.get("clicks"));
+  }
+
+  public Map<String, Object> getEndInfo() {
+    Map<String, Object> payload = new HashMap<>();
+    for (String player : players) {
+      Map<String, Object> playerInfo = new HashMap<>();
+      playerInfo.put("path", path.get(player).toString());
+      playerInfo.put("clicks", clicks.get(player));
+      playerInfo.put("time", time.get(player));
+      payload.put(player, playerInfo);
+      Map<String, Integer> info = new HashMap<>();
+      info.put("clicks", clicks.get(player));
+      info.put("time", time.get(player));
+      gameMode.addInfo(player, info);
+    }
+    payload.put("rankings", gameMode.getRankings());
+    return payload;
   }
   
 }
