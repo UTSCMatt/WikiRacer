@@ -154,9 +154,11 @@
             lobbyStartBtn.id = "lobby_leave_btn";
             lobbyStartBtn.innerHTML = "Leave Lobby";
             lobbyLeaveBtn.addEventListener('click', function(e) {
-                api.leaveSyncGame(gameReqs.gameId, function(err, res) {
+                websocket.disconnect(gameReqs.gameId, function(err, res) {
                     if (err) console.log(err);
-                    window.location.href = "game.html"
+                    else {
+                        window.location.href = "game.html";
+                    }
                 });
             });
             var userList = document.createElement("ul");
@@ -177,7 +179,14 @@
             lobbyForm.appendChild(userBox);
             lobbyForm.appendChild(lobbyStartBtn);
             lobbyBox.appendChild(lobbyForm);
+
+            websocket.connect(gameReqs.gameId, receiveWebsocket);
+
         }
+
+        function receiveWebsocket(socketInfo) {
+            console.log(socketInfo);
+        };
 
 
         // creates the structure for displaying the game
