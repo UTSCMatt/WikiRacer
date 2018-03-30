@@ -370,7 +370,7 @@ public class Api {
           .joinGame(gameId, (String) req.getSession().getAttribute("username")));
       response.put("id", gameId);
       response.put("end", finalPageCache.get(gameId));
-      response.put("is_sync", isSync);
+      response.put("isSync", isSync);
       return new ResponseEntity<>(response, HttpStatus.OK);
     } catch (SQLException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()),
