@@ -98,7 +98,7 @@
             e.preventDefault();
             var joinGameId = document.getElementById("gamecode").value;
             formBox.style.display = "none";
-            loadingScreen();
+            
             // join existing game using game code
             api.joinGame(joinGameId, function (err, res) {
                 if (err) {
@@ -116,6 +116,7 @@
                         makeLobby(gameReqs);
                     }
                     else{
+                        loadingScreen();
                         api.getWikiPage(gameReqs.start, function(err, res) {
                             if (err) console.log(err);
                             else createGameWindow(res, gameReqs);
@@ -149,10 +150,10 @@
                 });
             });
             var lobbyLeaveBtn = document.createElement("button");
-            lobbyStartBtn.type = "button";
-            lobbyStartBtn.className = "btn";
-            lobbyStartBtn.id = "lobby_leave_btn";
-            lobbyStartBtn.innerHTML = "Leave Lobby";
+            lobbyLeaveBtn.type = "button";
+            lobbyLeaveBtn.className = "btn";
+            lobbyLeaveBtn.id = "lobby_leave_btn";
+            lobbyLeaveBtn.innerHTML = "Leave Lobby";
             lobbyLeaveBtn.addEventListener('click', function(e) {
                 websocket.disconnect(gameReqs.gameId, function(err, res) {
                     if (err) console.log(err);
@@ -165,19 +166,24 @@
             var lobbyUsers = api.getLobbyUsers(gameReqs.gameId, function(err, users) {
                 if (err) console.log(err);
                 else {
-                    for (var i = 0; i < userList.length; i++) {
-                        // adds list of users to show in lobby
+                    function addUsernames(i){
                         var userNode = document.createElement("li");
                         userNode.innerHTML = users[i];
                         userList.appendChild(userNode);
+                    }
+                    for (var i = 0; i < userList.length; i++) {
+                        // adds list of users to show in lobby
+                        addUsernames(i);
                     }
                     userBox.appendChild(userList);
                 }
             });
 
-
+            var buttonDiv = document.createElement("div");
+            buttonDiv.appendChild(lobbyLeaveBtn);
+            buttonDiv.appendChild(lobbyStartBtn);
             lobbyForm.appendChild(userBox);
-            lobbyForm.appendChild(lobbyStartBtn);
+            lobbyForm.appendChild(buttonDiv);
             lobbyBox.appendChild(lobbyForm);
 
             websocket.connect(gameReqs.gameId, receiveWebsocket);
@@ -185,7 +191,7 @@
         }
 
         function receiveWebsocket(socketInfo) {
-            console.log(socketInfo);
+            console.log(JSON.parse(socketInfo.body));
         };
 
 

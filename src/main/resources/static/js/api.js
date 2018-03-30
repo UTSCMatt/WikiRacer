@@ -95,7 +95,7 @@ var api = (function () {
     };
 
     module.getLobbyUsers = function(gameId, callback) {
-        send("GET", "/api/game/realtime/" + gameId + "/players", null, callback);
+        send("GET", "/api/game/realtime/" + gameId + "/players/", null, callback);
     };
 
     return module;
