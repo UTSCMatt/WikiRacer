@@ -387,13 +387,13 @@ public class Api {
         return new ResponseEntity<String>(JSONObject.quote("Game already finished"),
             HttpStatus.BAD_REQUEST);
       }
+      String oldPage = nextPage;
+      nextPage = redirectCache.get(nextPage);
       if (!hasLink(currentPage, nextPage)) {
         return new ResponseEntity<String>(
             JSONObject.quote("No link to '" + nextPage + "' found in '" + currentPage + "'"),
             HttpStatus.NOT_FOUND);
       }
-      String oldPage = nextPage;
-      nextPage = redirectCache.get(nextPage);
       if (!nextPage.equals(oldPage)) {
         storedPagesCache.get(nextPage);
       }
