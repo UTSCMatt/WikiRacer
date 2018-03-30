@@ -159,7 +159,8 @@ public class Api {
   }
 
   private String fixWikiTitles(String title) {
-    title = title.replaceAll("&", "%26");
+    title = title = title.replaceAll("&", "%26");
+    title = title = title.replaceAll("\\+", "%2B");
     return title.replaceAll("_", " ");
   }
 
@@ -401,7 +402,7 @@ public class Api {
       }
       String oldPage = nextPage;
       nextPage = redirectCache.get(nextPage);
-      if (!hasLink(currentPage, nextPage)) {
+      if (!hasLink(currentPage, oldPage)) {
         return new ResponseEntity<String>(
             JSONObject.quote("No link to '" + nextPage + "' found in '" + currentPage + "'"),
             HttpStatus.NOT_FOUND);
@@ -414,6 +415,7 @@ public class Api {
         return new ResponseEntity<String>(JSONObject.quote("Attempt page is banned by rules"),
             HttpStatus.UNAUTHORIZED);
       }
+      nextPage = fixWikiTitles(nextPage);
       Map<String, Object> response = new HashMap<>(new GameDao(dbUrl, dbUsername, dbPassword)
           .changePage(gameId, username, nextPage, finished));
       response.put("finished", finished);
