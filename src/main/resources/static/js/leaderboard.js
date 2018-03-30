@@ -70,43 +70,10 @@
         function getPage (games) {
             var gameList = document.querySelector('.game_list');
             gameList.innerHTML = "";
-
-            // appends each game code to the list
-//            for (var index = 0; index < games.length; index++) {
-//                var listElmt = document.createElement("li");
-//                listElmt.className = "list_element";
-//                listElmt.innerHTML = games[index];
-//                addLinks(listElmt);
-//                gameList.appendChild(listElmt);
-//            }
-
-            // makes a table with game code, start/end page, and game mode
-//            var configTable = document.createElement("table");
-//            configTable.id = "config_table";
-//            configTable.className = "table";
-//            configTable.innerHTML = `<tr>
-//                                <th>Game Code</th>
-//                                <th>Start Page</th>
-//                                <th>End Page</th>
-//                                <th>Game Mode</th>
-//                                </tr>`;
-//            for (var index = 0; index < games.length; index++) {
-//              var row = configTable.insertRow(-1);
-//              var cell0 = row.insertCell(0);
-//              var cell1 = row.insertCell(1);
-//              var cell2 = row.insertCell(2);
-//              var cell3 = row.insertCell(3);
-//              cell0.innerHTML = games[index][0];
-//              cell1.innerHTML = games[index][1];
-//              cell2.innerHTML = games[index][2];
-//              cell3.innerHTML = games[index][3];
-//              addLinks(cell0);
-//              cell0.className = "list_element";
-//            }
-//            gameList.appendChild(configTable);
             generateConfigTable(games, gameList, true);
         }
 
+        // generate a table to display the game code, start/end page, and game mode
         function generateConfigTable(data, placement, link){
             var configTable = document.createElement("table");
             configTable.className = "table";
@@ -149,26 +116,6 @@
             var configForm = document.getElementById("config_form");
             configForm.innerHTML = "";
 
-            // makes a table with game code, start/end page, and game mode
-//            var configTable = document.createElement("table");
-//            configTable.id = "config_table_TO_BE_REMOVE";
-//            configTable.className = "table";
-//            configTable.innerHTML = `<tr>
-//                                <th>Game Code</th>
-//                                <th>Start Page</th>
-//                                <th>End Page</th>
-//                                <th>Game Mode</th>
-//                                </tr>`;
-//            var row = configTable.insertRow();
-//            var cell0 = row.insertCell(0);
-//            var cell1 = row.insertCell(1);
-//            var cell2 = row.insertCell(2);
-//            var cell3 = row.insertCell(3);
-//            cell0.innerHTML = gameStats[0].gameCode;
-//            cell1.innerHTML = gameStats[0].startPage;
-//            cell2.innerHTML = gameStats[0].endPage;
-//            cell3.innerHTML = gameStats[0].gameMode;
-//            configForm.appendChild(configTable);
             generateConfigTable(gameStats[0], configForm, false);
             configForm.className = "form";
 
