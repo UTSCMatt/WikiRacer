@@ -9,6 +9,7 @@
             start: null,
             end: null,
             clicks: null,
+            isSync: false
         };
         (function(){
             var gameForms = document.getElementById("form_container");
@@ -33,6 +34,7 @@
             
             try {
                 var gameMode = document.querySelector('input[name="game_mode"]:checked').value;
+                var syncOpt = document.querySelector('input[name="game_sync"]').checked;
                 var rulesCat = document.getElementById("ban_cat").value.replace(/, /g, ",");
                 var rulesArt = document.getElementById("ban_art").value.replace(/, /g, ",");
                 var rules = {
@@ -43,8 +45,11 @@
                 rules.categories = rulesCat.split(",");
                 rules.articles = rulesArt.split(",");
                 formBox.style.display = "none";
-                loadingScreen();
-                api.makeGame(startPage, endPage, gameMode, JSON.stringify(rules), function (err, res) {
+                if (!syncOpt) {
+                    loadingScreen();
+                }
+                
+                api.makeGame(startPage, endPage, gameMode, JSON.stringify(rules), syncOpt, function (err, res) {
                     if (err) {
                         console.log(err);
                         alert(err);
@@ -56,17 +61,25 @@
                         gameReqs.start = res.start;
                         gameReqs.end = res.end;
                         gameReqs.clicks = 0;
-                        // get the json representation of the starting page
-                        api.getWikiPage(gameReqs.start, function(err, res) {
-                            if (err) console.log(err);
-                            else createGameWindow(res, gameReqs);
-                        });
+                        gameReqs.isSync = res.isSync;
+
+                        if(gameReqs.isSync) {
+                            makeLobby(gameReqs);
+                        } else {
+                            // get the json representation of the starting page
+                            api.getWikiPage(gameReqs.start, function(err, res) {
+                                if (err) console.log(err);
+                                else createGameWindow(res, gameReqs);
+                            });
+                        }
+                      
                     }
                 });
             } catch (error) {
                 alert("Please select a game mode");
             }
         });
+
 
         // used to toggle the options menu
         document.getElementById("options_btn").addEventListener("click", function(e) {
@@ -98,13 +111,74 @@
                     gameReqs.start = res.start;
                     gameReqs.end = res.end;
                     gameReqs.clicks = 0;
-                    api.getWikiPage(gameReqs.start, function(err, res) {
-                        if (err) console.log(err);
-                        else createGameWindow(res, gameReqs);
-                    });
+                    gameReqs.isSync = res.isSync;
+                    if (gameReqs.isSync) {
+                        makeLobby(gameReqs);
+                    }
+                    else{
+                        api.getWikiPage(gameReqs.start, function(err, res) {
+                            if (err) console.log(err);
+                            else createGameWindow(res, gameReqs);
+                        });
+                    }
+                    
                 }
             });
         });
+
+        function makeLobby(gameReqs) {
+            var lobbyBox = document.getElementById("lobbybox");
+            var lobbyForm = document.createElement("form");
+            lobbyForm.className = "form";
+            lobbyForm.id = "lobby_form";
+
+            var userBox = document.createElement("fieldset");
+            userBox.id = "user_box";
+            userBox.innerHTML = `<legend>Users:</legend>`;
+
+            var lobbyStartBtn = document.createElement("button");
+            lobbyStartBtn.type = "button";
+            lobbyStartBtn.className = "btn";
+            lobbyStartBtn.id = "lobby_start_btn";
+            lobbyStartBtn.innerHTML = "Start Game";
+            lobbyStartBtn.addEventListener('click', function(e) {
+                loadingScreen();
+                api.getWikiPage(gameReqs.start, function(err, res) {
+                    if (err) console.log(err);
+                    else createGameWindow(res, gameReqs);
+                });
+            });
+            var lobbyLeaveBtn = document.createElement("button");
+            lobbyStartBtn.type = "button";
+            lobbyStartBtn.className = "btn";
+            lobbyStartBtn.id = "lobby_leave_btn";
+            lobbyStartBtn.innerHTML = "Leave Lobby";
+            lobbyLeaveBtn.addEventListener('click', function(e) {
+                api.leaveSyncGame(gameReqs.gameId, function(err, res) {
+                    if (err) console.log(err);
+                    window.location.href = "game.html"
+                });
+            });
+            var userList = document.createElement("ul");
+            var lobbyUsers = api.getLobbyUsers(gameReqs.gameId, function(err, users) {
+                if (err) console.log(err);
+                else {
+                    for (var i = 0; i < userList.length; i++) {
+                        // adds list of users to show in lobby
+                        var userNode = document.createElement("li");
+                        userNode.innerHTML = users[i];
+                        userList.appendChild(userNode);
+                    }
+                    userBox.appendChild(userList);
+                }
+            });
+
+
+            lobbyForm.appendChild(userBox);
+            lobbyForm.appendChild(lobbyStartBtn);
+            lobbyBox.appendChild(lobbyForm);
+        }
+
 
         // creates the structure for displaying the game
         function createGameWindow(content, gameReqs) {
