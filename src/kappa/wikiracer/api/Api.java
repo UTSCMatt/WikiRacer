@@ -451,6 +451,21 @@ public class Api {
     }
   }
 
+  @RequestMapping(value = "/api/game/realtime/{gameId}/", method = RequestMethod.GET)
+  public ResponseEntity<?> gameLobbyPlayers(HttpServletRequest req, @PathVariable String gameId) {
+    if (!isAuthenticated(req)) {
+      return new ResponseEntity<String>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
+    }
+    String username = (String) req.getSession().getAttribute("username");
+    try {
+      return new ResponseEntity<>(syncGamesManager.getPlayers(username, gameId), HttpStatus.OK);
+    } catch (GameException ex) {
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    } catch (UserNotFoundException ex) {
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.UNAUTHORIZED);
+    }
+  }
+
   /**
    * Get a list of games.
    *

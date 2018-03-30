@@ -1,6 +1,7 @@
 package kappa.wikiracer.api;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import kappa.wikiracer.api.gameMode.ClicksGameModeStrategy;
@@ -129,5 +130,17 @@ public class SyncGamesManager {
       simpMessagingTemplate.convertAndSend(WebSocketConfig.SOCKET_DEST + gameId, payload);
       games.remove(gameId);
     }
+  }
+
+  public List<String> getPlayers(String username, String gameId)
+      throws GameException, UserNotFoundException {
+    SyncGame game = games.get(gameId);
+    if (game == null) {
+      throw new GameException(gameId + " not found");
+    }
+    if (!game.hasPlayer(username)) {
+      throw new UserNotFoundException("Cannot check players of a game user is not in");
+    }
+    return game.getPlayers();
   }
 }

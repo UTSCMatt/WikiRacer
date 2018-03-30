@@ -1,9 +1,11 @@
 package kappa.wikiracer.api;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -127,5 +129,13 @@ public class SyncGame {
     payload.put("rankings", gameMode.getRankings());
     return payload;
   }
-  
+
+  public Boolean hasPlayer(String player) {
+    return players.contains(player);
+  }
+
+  public List<String> getPlayers() {
+    return new ArrayList<>(players);
+  }
+
 }
