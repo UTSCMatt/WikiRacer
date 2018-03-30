@@ -25,6 +25,7 @@ import javax.servlet.http.HttpSession;
 import kappa.wikiracer.dao.GameDao;
 import kappa.wikiracer.dao.LinkDao;
 import kappa.wikiracer.dao.RulesDao;
+import kappa.wikiracer.dao.StatsDao;
 import kappa.wikiracer.dao.UserDao;
 import kappa.wikiracer.exception.GameException;
 import kappa.wikiracer.exception.InvalidArticleException;
@@ -263,6 +264,8 @@ public class Api {
   @RequestMapping(value = "/api/game/new/", method = RequestMethod.POST)
   public ResponseEntity<?> createGame(HttpServletRequest req, String start, String end,
       String rules, String gameMode) {
+    Boolean incrementStart = false;
+    Boolean incrementEnd = false;
     if (!isAuthenticated(req)) {
       return new ResponseEntity<>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
     }
@@ -296,6 +299,7 @@ public class Api {
         return new ResponseEntity<>(JSONObject.quote(start + " does not exist"),
             HttpStatus.NOT_FOUND);
       }
+      incrementStart = true;
     }
     if (end.isEmpty()) {
       end = RandomRequest.getRandom(start);
@@ -309,6 +313,7 @@ public class Api {
         return new ResponseEntity<>(JSONObject.quote(end + " does not exist"),
             HttpStatus.NOT_FOUND);
       }
+      incrementEnd = true;
     }
 
     start = redirectCache.get(start);
@@ -331,6 +336,11 @@ public class Api {
       new RulesDao(dbUrl, dbUsername, dbPassword)
           .banCategories(response.get("id"), bannedCategoriesSet);
       new RulesDao(dbUrl, dbUsername, dbPassword).banArticles(response.get("id"), bannedArticlesSet);
+      if (incrementStart) {
+        new StatsDao(dbUrl, dbUsername, dbPassword).incrementWikiPageUse(start);
+      }if (incrementEnd) {
+        new StatsDao(dbUrl, dbUsername, dbPassword).incrementWikiPageUse(end);
+      }
     } catch (SQLException ex) {
       return new ResponseEntity<>(JSONObject.quote(ex.getMessage()),
           HttpStatus.INTERNAL_SERVER_ERROR);
