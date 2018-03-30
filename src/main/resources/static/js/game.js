@@ -44,10 +44,7 @@
                 // splits the user input by commas into an array
                 rules.categories = rulesCat.split(",");
                 rules.articles = rulesArt.split(",");
-                formBox.style.display = "none";
-                if (!syncOpt) {
-                    loadingScreen();
-                }
+                formBox.innerHTML = `LOADING`;
                 
                 api.makeGame(startPage, endPage, gameMode, JSON.stringify(rules), syncOpt, function (err, res) {
                     if (err) {
@@ -56,7 +53,7 @@
                         window.location.href = "game.html";
                     } 
                     else {
-
+                        formBox.className = "form hidden";
                         gameReqs.gameId = res.id;
                         gameReqs.start = res.start;
                         gameReqs.end = res.end;
@@ -97,8 +94,8 @@
         document.getElementById("join_btn").addEventListener("click", function (e) {
             e.preventDefault();
             var joinGameId = document.getElementById("gamecode").value;
-            formBox.style.display = "none";
-            
+            formBox.innerHTML = `LOADING`;
+
             // join existing game using game code
             api.joinGame(joinGameId, function (err, res) {
                 if (err) {
@@ -107,6 +104,7 @@
                     window.location.href = "game.html";
                 } 
                 else {
+                    formBox.className = "form hidden";
                     gameReqs.gameId = res.id;
                     gameReqs.start = res.start;
                     gameReqs.end = res.end;
@@ -128,15 +126,16 @@
         });
 
         function makeLobby(gameReqs) {
-            var lobbyBox = document.getElementById("lobbybox");
+            var lobbyBox = document.getElementById("lobbybox");  
             var lobbyForm = document.createElement("form");
             lobbyForm.className = "form";
             lobbyForm.id = "lobby_form";
-
+            lobbyForm.innerHTML = `Game ID:` + gameReqs.gameId;
+            // creates field to display users in lobby
             var userBox = document.createElement("fieldset");
             userBox.id = "user_box";
             userBox.innerHTML = `<legend>Users:</legend>`;
-
+            // adds start button
             var lobbyStartBtn = document.createElement("button");
             lobbyStartBtn.type = "button";
             lobbyStartBtn.className = "btn";
@@ -149,6 +148,7 @@
                     else createGameWindow(res, gameReqs);
                 });
             });
+            // adds leave button
             var lobbyLeaveBtn = document.createElement("button");
             lobbyLeaveBtn.type = "button";
             lobbyLeaveBtn.className = "btn";
@@ -162,18 +162,19 @@
                     }
                 });
             });
+
             var userList = document.createElement("ul");
+            userList.id = "user_list";
+            // gets list of users from backend, displays in lobby 
             var lobbyUsers = api.getLobbyUsers(gameReqs.gameId, function(err, users) {
                 if (err) console.log(err);
                 else {
-                    function addUsernames(i){
+                  
+                    for (var i = 0; i < users.length; i++) {
+                        // adds list of users to show in lobby
                         var userNode = document.createElement("li");
                         userNode.innerHTML = users[i];
                         userList.appendChild(userNode);
-                    }
-                    for (var i = 0; i < userList.length; i++) {
-                        // adds list of users to show in lobby
-                        addUsernames(i);
                     }
                     userBox.appendChild(userList);
                 }
@@ -191,7 +192,13 @@
         }
 
         function receiveWebsocket(socketInfo) {
-            console.log(JSON.parse(socketInfo.body));
+            var socketProps = JSON.parse(socketInfo.body);
+            if (socketProps.joined) {
+                var userList = document.getElementById("user_list");
+                var userNode = document.createElement("li");
+                userNode.innerHTML = socketProps.joined;
+                userList.prepend(userNode);
+            }
         };
 
 

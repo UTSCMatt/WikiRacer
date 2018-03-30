@@ -1,6 +1,6 @@
 
 html {overflow: -moz-scrollbars-vertical;}
-body{
+body {
     margin: auto;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
     font-size: 16px;
@@ -9,12 +9,12 @@ body{
     background: #a4a4a4;
 }
 
-header{
+header {
     margin-top:32px;
     height: 96px;
 }
 
-#title{
+#title {
     color: black;
     text-decoration: none;
     width:100%;
@@ -60,3 +60,4 @@ header{
 .credit_list {
     list-style-type: none;
 }
+
