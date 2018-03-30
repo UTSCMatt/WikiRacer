@@ -21,6 +21,7 @@ public class SyncGamesManager {
   private static final String TIMED_OUT = "timed_out";
   private static final String PLAYER = "player";
   private static final String GAME_FINISHED = "game_finished";
+  private static final String STARTED = "started";
   private static final int MAX_GAMES = 1000;
   
   private Map<String, SyncGame> games;
@@ -108,6 +109,9 @@ public class SyncGamesManager {
       throw new GameException("Only host can begin game");
     }
     game.startGame();
+    Map<String, Object> payload = new HashMap<>();
+    payload.put(STARTED, true);
+    simpMessagingTemplate.convertAndSend(WebSocketConfig.SOCKET_DEST + gameId, payload);
   }
 
   public void goToPage(String gameId, String player, Map<String, Object> info)

@@ -442,16 +442,21 @@ public class Api {
           .changePage(gameId, username, nextPage, finished));
       response.put("finished", finished);
       response.put("current_page", nextPage);
+      if (isSyncCache.get(gameId)) {
+        syncGamesManager.goToPage(gameId, username, response);
+      }
       return new ResponseEntity<>(response, HttpStatus.OK);
     } catch (SQLException | UnsupportedEncodingException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()),
           HttpStatus.INTERNAL_SERVER_ERROR);
-    } catch (InvalidArticleException ex) {
+    } catch (InvalidArticleException | GameException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    } catch (UserNotFoundException ex) {
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.UNAUTHORIZED);
     }
   }
 
-  @RequestMapping(value = "/api/game/realtime/{gameId}/", method = RequestMethod.GET)
+  @RequestMapping(value = "/api/game/realtime/{gameId}/players/", method = RequestMethod.GET)
   public ResponseEntity<?> gameLobbyPlayers(HttpServletRequest req, @PathVariable String gameId) {
     if (!isAuthenticated(req)) {
       return new ResponseEntity<String>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
@@ -463,6 +468,20 @@ public class Api {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
     } catch (UserNotFoundException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.UNAUTHORIZED);
+    }
+  }
+
+  @RequestMapping(value = "api/game/realtime/{gameId}/start/", method = RequestMethod.PATCH)
+  public ResponseEntity<?> startGame(HttpServletRequest req, @PathVariable String gameId) {
+    if (!isAuthenticated(req)) {
+      return new ResponseEntity<String>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
+    }
+    String username = (String) req.getSession().getAttribute("username");
+    try {
+      syncGamesManager.startGame(gameId, username);
+      return new ResponseEntity<>("success", HttpStatus.OK);
+    } catch (GameException ex) {
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
   }
 
