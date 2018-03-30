@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -285,6 +286,17 @@ public class Api {
     JSONObject parsedRules = new JSONObject(rules);
     JSONArray bannedCategories = parsedRules.getJSONArray(CATEGORIES);
     JSONArray bannedArticles = parsedRules.getJSONArray(ARTICLES);
+
+    Set<String> bannedCategoriesSet = new HashSet<>();
+    for (int i = 0; i < bannedCategories.length(); i++) {
+      bannedCategoriesSet.add(bannedCategories.getString(i));
+    }
+
+    Set<String> bannedArticlesSet = new HashSet<>();
+    for (int i = 0; i < bannedArticles.length(); i++) {
+      bannedArticlesSet.add(bannedArticles.getString(i));
+    }
+
     start = fixWikiTitles(start);
     end = fixWikiTitles(end);
     if (start.isEmpty()) {
@@ -335,8 +347,8 @@ public class Api {
         syncGamesManager.createGame(response.get("id"), (String) req.getSession().getAttribute("username"));
       }
       new RulesDao(dbUrl, dbUsername, dbPassword)
-          .banCategories(response.get("id"), bannedCategories);
-      new RulesDao(dbUrl, dbUsername, dbPassword).banArticles(response.get("id"), bannedArticles);
+          .banCategories(response.get("id"), bannedCategoriesSet);
+      new RulesDao(dbUrl, dbUsername, dbPassword).banArticles(response.get("id"), bannedArticlesSet);
     } catch (SQLException ex) {
       return new ResponseEntity<>(JSONObject.quote(ex.getMessage()),
           HttpStatus.INTERNAL_SERVER_ERROR);
