@@ -54,6 +54,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class Api {
 
+  public static final String GAME_CODE_KEY = "gameCode";
+  public static final String START_PAGE_KEY = "startPage";
+  public static final String END_PAGE_KEY = "endPage";
+  public static final String GAME_MODE_KEY = "gameMode";
   public static final String USERNAME_KEY = "username";
   public static final String TIME_SPEND_KEY = "timeSpend";
   public static final String NUM_CLICKS_KEY = "numClicks";
@@ -478,7 +482,7 @@ public class Api {
       @RequestParam(value = "limit", defaultValue = "10") int limit) {
     limit = Math.min(limit, 50);
     search = StringUtils.trimToEmpty(search);
-    List<String> response = new ArrayList<String>();
+    List<List<String>> response = new ArrayList<>();
     try {
       response = new GameDao(dbUrl, dbUsername, dbPassword).getGameList(search, offset, limit);
     } catch (SQLException ex) {
