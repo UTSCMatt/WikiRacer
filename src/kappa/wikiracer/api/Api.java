@@ -317,7 +317,7 @@ public class Api {
     start = redirectCache.get(start);
     end = redirectCache.get(end);
 
-    Map<String, String> response = new HashMap<>();
+    Map<String, Object> response = new HashMap<>();
 
     if (start.equals(end)) {
       return new ResponseEntity<String>(JSONObject.quote("Cannot start and end in same article"),
@@ -329,20 +329,22 @@ public class Api {
     try {
       response
           .put("id", new GameDao(dbUrl, dbUsername, dbPassword).createGame(start, end, gameMode, isSync));
-      new GameDao(dbUrl, dbUsername, dbPassword).joinGame(response.get("id"),
+      String gameId = (String) response.get("id");
+      new GameDao(dbUrl, dbUsername, dbPassword).joinGame(gameId ,
           (String) req.getSession().getAttribute("username"));
       if (isSync) {
-        syncGamesManager.createGame(response.get("id"), (String) req.getSession().getAttribute("username"), start, gameMode);
+        syncGamesManager.createGame(gameId, (String) req.getSession().getAttribute("username"), start, gameMode);
       }
       new RulesDao(dbUrl, dbUsername, dbPassword)
-          .banCategories(response.get("id"), bannedCategories);
-      new RulesDao(dbUrl, dbUsername, dbPassword).banArticles(response.get("id"), bannedArticles);
+          .banCategories(gameId, bannedCategories);
+      new RulesDao(dbUrl, dbUsername, dbPassword).banArticles(gameId, bannedArticles);
     } catch (SQLException ex) {
       return new ResponseEntity<>(JSONObject.quote(ex.getMessage()),
           HttpStatus.INTERNAL_SERVER_ERROR);
     } catch (GameException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
+    response.put("isSync", isSync);
     return new ResponseEntity<>(response, HttpStatus.OK);
 
   }
