@@ -90,6 +90,23 @@ public class UserDao extends Dao {
     stmt.close();
   }
 
+  public void deleteImage(String username) throws SQLException {
+    Connection c = getConnection();
+    PreparedStatement stmt;
+
+    String sql = "UPDATE Users SET ProfilePicture=? WHERE Username=?";
+
+    stmt = c.prepareStatement(sql);
+
+    stmt.setString(1, null);
+    stmt.setString(2, username);
+
+    stmt.executeUpdate();
+
+    c.close();
+    stmt.close();
+  }
+
   public String getImage(String username) throws SQLException {
     Connection c = getConnection();
     PreparedStatement stmt;

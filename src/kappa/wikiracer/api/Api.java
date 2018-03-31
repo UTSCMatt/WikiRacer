@@ -20,6 +20,7 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import javafx.util.Pair;
 import javax.annotation.PostConstruct;
+import javax.jws.soap.SOAPBinding.Use;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -280,8 +281,8 @@ public class Api {
     return new ResponseEntity<>(JSONObject.quote("Logged off"), HttpStatus.OK);
   }
 
-  @RequestMapping(value = "/profile/image/", method = RequestMethod.POST)
-  public ResponseEntity<?> upload(HttpServletRequest req, MultipartFile file) {
+  @RequestMapping(value = "/api/profile/image/", method = RequestMethod.POST)
+  public ResponseEntity<?> uploadProfileImage(HttpServletRequest req, MultipartFile file) {
     if (!isAuthenticated(req)) {
       return new ResponseEntity<>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
     }
@@ -298,7 +299,7 @@ public class Api {
   }
 
   @RequestMapping(value = "/profile/{user}/image/", method = RequestMethod.GET)
-  public ResponseEntity<?> getImage(@PathVariable String user) {
+  public ResponseEntity<?> getProfileImage(@PathVariable String user) {
     try {
       HttpHeaders res = new HttpHeaders();
       String url = new UserDao(dbUrl, dbUsername, dbPassword).getImage(user);
@@ -308,9 +309,30 @@ public class Api {
       res.add("content-type", "image/jpeg");
       return new ResponseEntity<>(s3Client.getImage(url), res, HttpStatus.OK);
     } catch (IOException | SQLException ex) {
-      return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     } catch (AmazonS3Exception ex) {
-      return new ResponseEntity<>("Image not found", HttpStatus.NOT_FOUND);
+      return new ResponseEntity<>(JSONObject.quote("Image not found"), HttpStatus.NOT_FOUND);
+    }
+  }
+
+  @RequestMapping(value = "/api/profile/image/", method = RequestMethod.DELETE)
+  public ResponseEntity<?> deleteProfileImage(HttpServletRequest req) {
+    if (!isAuthenticated(req)) {
+      return new ResponseEntity<>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
+    }
+    String username = (String) req.getSession().getAttribute("username");
+    try {
+      String url = new UserDao(dbUrl, dbUsername, dbPassword).getImage(username);
+      if (url.isEmpty()) {
+        return new ResponseEntity<>(JSONObject.quote("Image not found"), HttpStatus.NOT_FOUND);
+      }
+      s3Client.deleteImage(url);
+      new UserDao(dbUrl, dbUsername, dbPassword).deleteImage(username);
+      return new ResponseEntity<>(JSONObject.quote("Success"), HttpStatus.OK);
+    } catch (SQLException ex) {
+      return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (AmazonS3Exception ex) {
+      return new ResponseEntity<>(JSONObject.quote("Image not found"), HttpStatus.NOT_FOUND);
     }
   }
 

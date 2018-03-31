@@ -6,6 +6,7 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
@@ -57,6 +58,10 @@ public class S3Client {
   public byte[] getImage(String fileName) throws IOException {
     S3Object object = s3client.getObject(new GetObjectRequest(bucketName, fileName));
     return IOUtils.toByteArray(object.getObjectContent());
+  }
+
+  public void deleteImage(String url) {
+    s3client.deleteObject(new DeleteObjectRequest(bucketName, url));
   }
 
   private void uploadToBucket(String fileName, File file)
