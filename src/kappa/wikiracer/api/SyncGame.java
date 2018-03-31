@@ -114,18 +114,20 @@ public class SyncGame {
   }
 
   public Map<String, Object> getEndInfo() {
-    Map<String, Object> payload = new HashMap<>();
+    Map<String, Object> playersInfo = new HashMap<>();
     for (String player : players) {
       Map<String, Object> playerInfo = new HashMap<>();
       playerInfo.put("path", path.get(player).toString());
       playerInfo.put("clicks", clicks.get(player));
       playerInfo.put("time", time.get(player));
-      payload.put(player, playerInfo);
+      playersInfo.put(player, playerInfo);
       Map<String, Integer> info = new HashMap<>();
       info.put("clicks", clicks.get(player));
       info.put("time", time.get(player));
       gameMode.addInfo(player, info);
     }
+    Map<String, Object> payload = new HashMap<>();
+    payload.put("player_info", playersInfo);
     payload.put("rankings", gameMode.getRankings());
     return payload;
   }
