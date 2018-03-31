@@ -186,11 +186,12 @@
             clicksRow.innerHTML = `<th>Clicks:</th>`
 
             var statusRow = document.createElement("tr");
-            statusRow.id = "table_row";
+            statusRow.id = "status_row";
             statusRow.innerHTML = "<th>Status:</th>";
 
             userTable.appendChild(userRow);
             userTable.appendChild(clicksRow);
+            userTable.appendChild(statusRow);
 
             // gets list of users from backend, displays in lobby 
             var lobbyUsers = api.getLobbyUsers(gameReqs.gameId, function(err, users) {
@@ -234,6 +235,7 @@
 
         function receiveWebsocket(socketInfo) {
             var socketProps = JSON.parse(socketInfo.body);
+            var userTable = document.getElementById("user_table");
             var userRow = document.getElementById("user_row");
             var clicksRow = document.getElementById("clicks_row");
             var statusRow = document.getElementById("status_row");
@@ -285,24 +287,17 @@
                 updateCells[1].innerHTML = '';
                 updateCells[1].appendChild(updatedClicks);
                 if (socketProps.finished) {
-                    // update finished status
-                    var updatedFinish = document.createTextNode("Finished!");
-                    updateCells[2].innerHTML = '';
-                    updateCells[2].appendChild(updatedFinish);
-
                     
-                    var timeRow = document.createElement("tr");
-                    timeRow.className = socketProps.player;
-                    timeRow.innerHTML = `<th>Time Taken:</th>`;
                     // converts time in seconds to hh:mm:ss
                     var time = new Date(null);
                     time.setSeconds(socketProps.time);
                     var finalTime = time.toISOString().substr(11, 8);
-                    // adds final time to table
-                    var timeNode = document.createTextNode(finalTime);
-                    var newTimeCell = document.createElement("td");
-                    newTimeCell.appendChild(timeNode);
-                    timeRow.appendChild(newTimeCell);
+
+                    // update finished status
+                    var updatedFinish = document.createTextNode("Finished in: " + finalTime);
+                    updateCells[2].innerHTML = '';
+                    updateCells[2].appendChild(updatedFinish);
+                    
                 }
             }
 
@@ -391,7 +386,7 @@
                                 var finalTime = time.toISOString().substr(11, 8);
                                 alert("You've reached your destination! Your score is: \n Clicks: " + res.clicks + "\n Time: " + finalTime);
 
-                                if (res.isSync) {
+                                if (!res.isSync) {
                                     window.location.href = "leaderboard.html#" + gameReqs.gameId;
                                 }
                                 
