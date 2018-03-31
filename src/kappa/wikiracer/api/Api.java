@@ -90,15 +90,15 @@ public class Api {
   private LoadingCache<String, byte[]> pictureCache;
 
 
-  @Autowired
-  private S3Client s3Client;
+  private final S3Client s3Client;
   private final SimpMessagingTemplate simpMessagingTemplate;
   
   private SyncGamesManager syncGamesManager;
 
   @Autowired
-  public Api(SimpMessagingTemplate simpMessagingTemplate) {
+  public Api(SimpMessagingTemplate simpMessagingTemplate, S3Client s3Client) {
     this.simpMessagingTemplate = simpMessagingTemplate;
+    this.s3Client = s3Client;
   }
 
   /**
@@ -129,7 +129,7 @@ public class Api {
     isSyncCache = Caffeine.newBuilder().maximumSize(1000)
         .build(key -> new GameDao(dbUrl, dbUsername, dbPassword).isSync(key));
     profilePictureUrlCache = Caffeine.newBuilder().maximumSize(5000).build(key -> new UserDao(dbUrl, dbUsername, dbPassword).getImage(key));
-    pictureCache = Caffeine.newBuilder().maximumWeight(10000).weigher((String key, byte[] file) -> file.length).build(key -> s3Client.getImage(key));
+    pictureCache = Caffeine.newBuilder().maximumWeight(10000000).weigher((String key, byte[] file) -> file.length).build(key -> s3Client.getImage(key));
   }
   
   @PostConstruct
