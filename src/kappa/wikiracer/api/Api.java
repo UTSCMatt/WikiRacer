@@ -528,6 +528,24 @@ public class Api {
     }
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
+
+  /**
+   * Get a list of pages that are most used as start/end pages
+   *
+   * @param limit how many pages to return, default 10, max 50
+   * @return response a list of games
+   */
+  @RequestMapping(value = "/api/article/mostused", method = RequestMethod.GET)
+  public ResponseEntity<?> topPages(HttpServletRequest req, HttpServletResponse res,
+      @RequestParam(value = "limit", defaultValue = "10") int limit) {
+    List<String> response = new ArrayList<String>();
+    try {
+      response = new StatsDao(dbUrl, dbUsername, dbPassword).topPages(limit);
+    } catch (SQLException ex) {
+      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    return new ResponseEntity<>(response, HttpStatus.OK);
+  }
   /* API ENDS */
 
 }

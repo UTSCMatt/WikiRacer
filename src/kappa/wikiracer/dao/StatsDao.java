@@ -114,4 +114,34 @@ public class StatsDao extends Dao {
     return results;
   }
 
+  /**
+   * Get a list of pages that are most used as start/end pages.
+   * Will not return pages that was never set as start/end
+   *
+   * @param limit the number of results
+   * @return list of pages
+   * @throws SQLException when database has an error
+   */
+  public List<String> topPages(int limit) throws SQLException {
+    Connection c = getConnection();
+    PreparedStatement stmt;
+
+    String sql = "SELECT Title FROM Wiki_Pages WHERE Used != 0 ORDER BY Used DESC LIMIT ?";
+
+    stmt = c.prepareStatement(sql);
+    stmt.setInt(1, limit);
+
+    ResultSet rs = stmt.executeQuery();
+
+    ArrayList<String> results = new ArrayList<String>();
+
+    while (rs.next()) {
+      results.add(rs.getString("Title"));
+    }
+    c.close();
+    stmt.close();
+    rs.close();
+
+    return results;
+  }
 }

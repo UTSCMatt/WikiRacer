@@ -97,6 +97,10 @@ var api = (function () {
     module.userGamePath = function (gameId, username, callback) {
         send("GET", "/api/game/" + gameId + "/player/" + username + "/path/", null, callback);
     };
+
+    module.topStartEndPage = function (limit, callback){
+        send("GET", "/api/article/mostused?limit=" + limit, null, callback);
+    };
     return module;
 
 })();
