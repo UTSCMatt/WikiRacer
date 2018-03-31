@@ -54,34 +54,71 @@
             });
         });
 
+        // adds behaviour to game codes to show stats table when clicked
+        function addLinks(listElmt) {
+            listElmt.addEventListener('click', function (e) {
+                api.getGameStats(listElmt.innerHTML, function (err, gameStats) {
+                    if (err) console.log(err);
+                    else {
+                        renderStats(gameStats);
+                    }
+                });
+            });
+        }
+
         // renders list of game codes
         function getPage (games) {
             var gameList = document.querySelector('.game_list');
             gameList.innerHTML = "";
-            // adds behaviour to game codes to show stats table when clicked
-            function addLinks(listElmt) {
-                listElmt.addEventListener('click', function (e) {
-                    api.getGameStats(listElmt.innerHTML, function (err, gameStats) {
-                        if (err) console.log(err);
-                        else {
-                            renderStats(gameStats);
-                        }
-                    });
-                });
+            generateConfigTable(games, gameList, true);
+        }
+
+        // generate a table to display the game code, start/end page, and game mode
+        function generateConfigTable(data, placement, link){
+            var configTable = document.createElement("table");
+            configTable.className = "table";
+            configTable.innerHTML = `<tr>
+                                <th>Game Code</th>
+                                <th>Start Page</th>
+                                <th>End Page</th>
+                                <th>Game Mode</th>
+                                </tr>`;
+            var dataLength = 1;
+            if(link){
+              dataLength = data.length
             }
-            // appends each game code to the list
-            for (var index = 0; index < games.length; index++) {
-                var listElmt = document.createElement("li");
-                listElmt.className = "list_element";
-                listElmt.innerHTML = games[index];
-                addLinks(listElmt);
-                gameList.appendChild(listElmt);
+            for (var index = 0; index < dataLength; index++) {
+              var row = configTable.insertRow(-1);
+              var cell0 = row.insertCell(0);
+              var cell1 = row.insertCell(1);
+              var cell2 = row.insertCell(2);
+              var cell3 = row.insertCell(3);
+              if(link){
+                cell0.innerHTML = data[index][0];
+                cell1.innerHTML = data[index][1];
+                cell2.innerHTML = data[index][2];
+                cell3.innerHTML = data[index][3];
+                addLinks(cell0);
+                cell0.className = "list_element";
+              }
+              else{
+                cell0.innerHTML = data.gameCode;
+                cell1.innerHTML = data.startPage;
+                cell2.innerHTML = data.endPage;
+                cell3.innerHTML = data.gameMode;
+              }
             }
-            
+            placement.appendChild(configTable);
         }
 
         function renderStats(gameStats) {
   
+            var configForm = document.getElementById("config_form");
+            configForm.innerHTML = "";
+
+            generateConfigTable(gameStats[0], configForm, false);
+            configForm.className = "form";
+
             var statsForm = document.getElementById("stats_form");
             statsForm.innerHTML = "";
             // makes a table with game and user stats
@@ -94,7 +131,7 @@
                                 <th>Clicks Taken</th>
                                 </tr>`;
             // inserts username, clicks, and time for each user who completed the game
-            for (var i = 0; i < gameStats.length; i++) {
+            for (var i = 1; i < gameStats.length; i++) {
                 var time = new Date(null);
                 time.setSeconds(gameStats[i].timeSpend);
                 var finalTime = time.toISOString().substr(11, 8);

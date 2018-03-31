@@ -4,6 +4,7 @@
 	StartId int NOT NULL,
 	EndId int NOT NULL,
 	GameMode int NOT NULL DEFAULT 2,
+	IsSync Bool NOT NULL DEFAULT FALSE,
 	PRIMARY KEY (Id, GameId),
 	FOREIGN KEY (StartId) REFERENCES Wiki_Pages(Id),
 	FOREIGN KEY (EndId) REFERENCES Wiki_Pages(Id)

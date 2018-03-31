@@ -39,10 +39,12 @@ import kappa.wikiracer.wiki.SendRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -52,6 +54,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class Api {
 
+  public static final String GAME_CODE_KEY = "gameCode";
+  public static final String START_PAGE_KEY = "startPage";
+  public static final String END_PAGE_KEY = "endPage";
+  public static final String GAME_MODE_KEY = "gameMode";
   public static final String USERNAME_KEY = "username";
   public static final String TIME_SPEND_KEY = "timeSpend";
   public static final String NUM_CLICKS_KEY = "numClicks";
@@ -72,6 +78,12 @@ public class Api {
   private LoadingCache<Pair<String, String>, Boolean> inGameCache;
   private LoadingCache<String, Boolean> existsCache;
   private LoadingCache<String, String> redirectCache;
+  private LoadingCache<String, Boolean> isSyncCache;
+
+  @Autowired
+  private SimpMessagingTemplate simpMessagingTemplate;
+  
+  private SyncGamesManager syncGamesManager;
 
   /**
    * Initialize all the caches.
@@ -98,6 +110,13 @@ public class Api {
             ExistRequest::exists);
     redirectCache = Caffeine.newBuilder().maximumSize(10000).refreshAfterWrite(1, TimeUnit.HOURS)
         .build(ResolveRedirectRequest::resolveRedirect);
+    isSyncCache = Caffeine.newBuilder().maximumSize(1000)
+        .build(key -> new GameDao(dbUrl, dbUsername, dbPassword).isSync(key));
+  }
+  
+  @PostConstruct
+  public void initManagers() {
+    syncGamesManager = new SyncGamesManager(simpMessagingTemplate);
   }
 
   private void setSession(HttpServletRequest req, HttpServletResponse res, String username) {
@@ -263,7 +282,7 @@ public class Api {
    */
   @RequestMapping(value = "/api/game/new/", method = RequestMethod.POST)
   public ResponseEntity<?> createGame(HttpServletRequest req, String start, String end,
-      String rules, String gameMode) {
+      String rules, String gameMode, Boolean isSync) {
     if (!isAuthenticated(req)) {
       return new ResponseEntity<>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
     }
@@ -332,9 +351,12 @@ public class Api {
     response.put("end", end);
     try {
       response
-          .put("id", new GameDao(dbUrl, dbUsername, dbPassword).createGame(start, end, gameMode));
+          .put("id", new GameDao(dbUrl, dbUsername, dbPassword).createGame(start, end, gameMode, isSync));
       new GameDao(dbUrl, dbUsername, dbPassword).joinGame(response.get("id"),
           (String) req.getSession().getAttribute("username"));
+      if (isSync) {
+        syncGamesManager.createGame(response.get("id"), (String) req.getSession().getAttribute("username"));
+      }
       new RulesDao(dbUrl, dbUsername, dbPassword)
           .banCategories(response.get("id"), bannedCategoriesSet);
       new RulesDao(dbUrl, dbUsername, dbPassword).banArticles(response.get("id"), bannedArticlesSet);
@@ -360,16 +382,34 @@ public class Api {
       return new ResponseEntity<String>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
     }
     try {
-      Map<String, String> response = new HashMap<>();
+      final Boolean isSync = isSyncCache.get(gameId);
+      if (isSync) {
+        syncGamesManager.joinGame(gameId, (String) req.getSession().getAttribute("username"));
+      }
+      Map<String, Object> response = new HashMap<>();
       response.put("start", new GameDao(dbUrl, dbUsername, dbPassword)
           .joinGame(gameId, (String) req.getSession().getAttribute("username")));
       response.put("id", gameId);
       response.put("end", finalPageCache.get(gameId));
+      response.put("is_sync", isSync);
       return new ResponseEntity<>(response, HttpStatus.OK);
     } catch (SQLException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()),
           HttpStatus.INTERNAL_SERVER_ERROR);
     } catch (GameException ex) {
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+  }
+  
+  @RequestMapping(value = "/api/game/{gameId}/leave/", method = RequestMethod.GET)
+  public ResponseEntity<?> leaveGame(HttpServletRequest req, @PathVariable String gameId) {
+    if (!isAuthenticated(req)) {
+      return new ResponseEntity<String>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
+    }
+    try {
+      syncGamesManager.leaveGame(gameId, (String) req.getSession().getAttribute("username"));
+      return new ResponseEntity<String>(JSONObject.quote("success"), HttpStatus.OK);
+    } catch (GameException | UserNotFoundException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
   }
@@ -450,7 +490,7 @@ public class Api {
       @RequestParam(value = "limit", defaultValue = "10") int limit) {
     limit = Math.min(limit, 50);
     search = StringUtils.trimToEmpty(search);
-    List<String> response = new ArrayList<String>();
+    List<List<String>> response = new ArrayList<>();
     try {
       response = new GameDao(dbUrl, dbUsername, dbPassword).getGameList(search, offset, limit);
     } catch (SQLException ex) {
