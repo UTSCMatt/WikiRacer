@@ -3,7 +3,10 @@ package kappa.wikiracer.dao;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class StatsDao extends Dao {
 
@@ -41,6 +44,74 @@ public class StatsDao extends Dao {
 
     c.close();
     stmt.close();
+  }
+
+  /**
+   * Get a list of games a user have played. Default only show finished games
+   *
+   * @param username find games of this user
+   * @param showNonFinished shows non finished games if true
+   * @param offset skip the first offset games
+   * @param limit the number of results
+   * @return list of games
+   * @throws SQLException when database has an error
+   */
+  public List<String> userGames(String username, boolean showNonFinished, int offset, int limit) throws SQLException {
+    Connection c = getConnection();
+    CallableStatement stmt;
+
+    String sql = "CALL User_Games(?,?,?,?)";
+
+    stmt = c.prepareCall(sql);
+    stmt.setString(1, username);
+    stmt.setBoolean(2, showNonFinished);
+    stmt.setInt(3, offset);
+    stmt.setInt(4, limit);
+
+    ResultSet rs = stmt.executeQuery();
+
+    ArrayList<String> results = new ArrayList<String>();
+
+    while (rs.next()) {
+      results.add(rs.getString("GameId"));
+    }
+    c.close();
+    stmt.close();
+    rs.close();
+
+    return results;
+  }
+
+  /**
+   * Get a list of wiki pages from start to end page of a game
+   *
+   * @param  gameId find game of this id
+   * @param username find games of this user
+   * @return list of wiki page ordered from start page to end page
+   * @throws SQLException when database has an error
+   */
+  public List<String> userGamePath(String gameId, String username) throws SQLException {
+    Connection c = getConnection();
+    PreparedStatement stmt;
+
+    String sql = "SELECT w.Title FROM Wiki_Pages w INNER JOIN Paths p ON w.Id = p.PageId INNER JOIN Users u ON u.Id=p.UserId INNER JOIN Games g ON g.Id=p.gameId WHERE g.GameId = ? AND u.Username = ? ORDER BY p.PathOrder";
+
+    stmt = c.prepareStatement(sql);
+    stmt.setString(1, gameId);
+    stmt.setString(2, username);
+
+    ResultSet rs = stmt.executeQuery();
+
+    ArrayList<String> results = new ArrayList<String>();
+
+    while (rs.next()) {
+      results.add(rs.getString("Title"));
+    }
+    c.close();
+    stmt.close();
+    rs.close();
+
+    return results;
   }
 
 }

@@ -502,7 +502,7 @@ public class Api {
       @RequestParam(value = "limit", defaultValue = "10") int limit) {
     List<String> response = new ArrayList<String>();
     try {
-      response = new GameDao(dbUrl, dbUsername, dbPassword).userGames(username, showNonFinished, offset, limit);
+      response = new StatsDao(dbUrl, dbUsername, dbPassword).userGames(username, showNonFinished, offset, limit);
     } catch (SQLException ex) {
       return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -522,7 +522,7 @@ public class Api {
       @PathVariable String username) {
     List<String> response = new ArrayList<String>();
     try {
-      response = new GameDao(dbUrl, dbUsername, dbPassword).userGamePath(gameId, username);
+      response = new StatsDao(dbUrl, dbUsername, dbPassword).userGamePath(gameId, username);
     } catch (SQLException ex) {
       return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
