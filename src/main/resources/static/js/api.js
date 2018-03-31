@@ -98,6 +98,10 @@ var api = (function () {
         send("GET", "/api/game/realtime/" + gameId + "/players/", null, callback);
     };
 
+    module.startSyncGame = function(gameId, callback) {
+        send("PATCH", "/api/game/realtime/" + gameId + "/start/", null, callback);
+    }
+
     return module;
 
 })();

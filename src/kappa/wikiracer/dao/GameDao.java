@@ -214,7 +214,7 @@ public class GameDao extends Dao {
     rs.next();
 
     Map<String, Object> result = new HashMap<>();
-    result.put("clicks", rs.getString("NumClicks"));
+    result.put("clicks", rs.getInt("NumClicks"));
     result.put("time", rs.getInt("usedTime"));
 
     c.close();

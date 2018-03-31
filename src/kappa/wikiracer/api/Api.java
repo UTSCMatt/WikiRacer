@@ -481,7 +481,7 @@ public class Api {
     String username = (String) req.getSession().getAttribute("username");
     try {
       syncGamesManager.startGame(gameId, username);
-      return new ResponseEntity<>("success", HttpStatus.OK);
+      return new ResponseEntity<>(JSONObject.quote("success"), HttpStatus.OK);
     } catch (GameException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }

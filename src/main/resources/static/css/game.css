@@ -1,8 +1,9 @@
+
 #framewrapper {
     position: relative;
     background-color: white;
     width: 90%;
-    padding-bottom: 44%;
+    padding-bottom: 35%;
     height:0;
     overflow: auto;
     margin-left: auto;
@@ -21,4 +22,11 @@
 
 .hidden{
     display: none;
+}
+
+
+@media (max-width: 1000px) {
+    #framewrapper {
+        padding-bottom: 56.25%;
+    }
 }

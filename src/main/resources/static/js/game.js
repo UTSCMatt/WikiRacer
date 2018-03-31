@@ -128,6 +128,7 @@
         function makeLobby(gameReqs) {
             var lobbyBox = document.getElementById("lobbybox");  
             var lobbyForm = document.createElement("form");
+            var buttonDiv = document.createElement("div");
             lobbyForm.className = "form";
             lobbyForm.id = "lobby_form";
             lobbyForm.innerHTML = `Game ID:` + gameReqs.gameId;
@@ -142,11 +143,18 @@
             lobbyStartBtn.id = "lobby_start_btn";
             lobbyStartBtn.innerHTML = "Start Game";
             lobbyStartBtn.addEventListener('click', function(e) {
+                buttonDiv.className = "hidden";
                 loadingScreen();
-                api.getWikiPage(gameReqs.start, function(err, res) {
+                api.startSyncGame(gameReqs.gameId, function(err, res) {
                     if (err) console.log(err);
-                    else createGameWindow(res, gameReqs);
-                });
+                    else {
+                        api.getWikiPage(gameReqs.start, function(err, res) {
+                            if (err) console.log(err);
+                            else createGameWindow(res, gameReqs);
+                        });
+                    }
+                })
+               
             });
             // adds leave button
             var lobbyLeaveBtn = document.createElement("button");
@@ -180,7 +188,7 @@
                 }
             });
 
-            var buttonDiv = document.createElement("div");
+            
             buttonDiv.appendChild(lobbyLeaveBtn);
             buttonDiv.appendChild(lobbyStartBtn);
             lobbyForm.appendChild(userBox);
@@ -194,10 +202,38 @@
         function receiveWebsocket(socketInfo) {
             var socketProps = JSON.parse(socketInfo.body);
             if (socketProps.joined) {
+                // add newly joined user to lobby list
                 var userList = document.getElementById("user_list");
                 var userNode = document.createElement("li");
+                userNode.id = socketProps.joined;
                 userNode.innerHTML = socketProps.joined;
                 userList.prepend(userNode);
+            }
+
+            if (socketProps.left) {
+                try {
+                    // removes user name from lobby is user leaves
+                    var userNode = document.getElementById(socketProps.left);
+                    userNode.parentNode.removeChild(userNode);
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+
+            if (socketProps.lobby_closed || socketProps.timed_out) {
+                websocket.clientDisconnect(gameReqs.gameId);
+            }
+
+            if (socketProps.player) {
+                
+            }
+
+            if (socketProps.game_finished) {
+                
+            }
+
+            if (socketProps.started) {
+                
             }
         };
 

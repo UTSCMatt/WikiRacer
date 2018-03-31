@@ -28,6 +28,12 @@ var websocket = (function () {
         }
     };
 
+    module.clientDisconnect = function (gameId) {
+        if (stompClient !== null) {
+            stompClient.disconnect();
+        }
+    };
+
     return module;
 
 })();
