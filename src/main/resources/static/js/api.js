@@ -10,6 +10,7 @@ var api = (function () {
             if (xhr.status !== 200) callback("[" + xhr.status + "]" + xhr.responseText, null);
             else callback(null, JSON.parse(xhr.responseText));
         };
+
         xhr.open(method, url, true);
         if (!data) xhr.send();
         else { // converts data to json if there is any
@@ -26,7 +27,6 @@ var api = (function () {
             if (xhr.status !== 200) callback("[" + xhr.status + "]" + xhr.responseText, null);
             else callback(null, JSON.parse(xhr.responseText));
         };
-
 
         xhr.open(method, url, true);
         if (!data) xhr.send();
@@ -62,8 +62,8 @@ var api = (function () {
         send("GET", "/logoff/", null, callback);
     };
 
-    module.makeGame = function (start, end, gameMode, rules, callback) {
-        send("POST", "/api/game/new/", { start: start, end: end, gameMode: gameMode, rules: rules }, callback);
+    module.makeGame = function (start, end, gameMode, rules, syncOpt, callback) {
+        send("POST", "/api/game/new/", { start: start, end: end, gameMode: gameMode, rules: rules, isSync: syncOpt }, callback);
     };
 
     module.joinGame = function (gameId, callback) {
@@ -89,6 +89,18 @@ var api = (function () {
     module.getGameStats = function (gameId, callback) {
         send("GET", "/api/getGameStats/" + gameId + "/", null, callback);
     };
+
+    module.leaveSyncGame = function (gameId, callback) {
+        send("GET", "/api/game/" + gameId + "/leave/", null, callback);
+    };
+
+    module.getLobbyUsers = function(gameId, callback) {
+        send("GET", "/api/game/realtime/" + gameId + "/players/", null, callback);
+    };
+
+    module.startSyncGame = function(gameId, callback) {
+        send("PATCH", "/api/game/realtime/" + gameId + "/start/", null, callback);
+    }
 
     return module;
 

@@ -80,10 +80,14 @@ public class Api {
   private LoadingCache<String, String> redirectCache;
   private LoadingCache<String, Boolean> isSyncCache;
 
-  @Autowired
-  private SimpMessagingTemplate simpMessagingTemplate;
+  private final SimpMessagingTemplate simpMessagingTemplate;
   
   private SyncGamesManager syncGamesManager;
+
+  @Autowired
+  public Api(SimpMessagingTemplate simpMessagingTemplate) {
+    this.simpMessagingTemplate = simpMessagingTemplate;
+  }
 
   /**
    * Initialize all the caches.
@@ -340,7 +344,7 @@ public class Api {
     start = redirectCache.get(start);
     end = redirectCache.get(end);
 
-    Map<String, String> response = new HashMap<>();
+    Map<String, Object> response = new HashMap<>();
 
     if (start.equals(end)) {
       return new ResponseEntity<String>(JSONObject.quote("Cannot start and end in same article"),
@@ -352,20 +356,22 @@ public class Api {
     try {
       response
           .put("id", new GameDao(dbUrl, dbUsername, dbPassword).createGame(start, end, gameMode, isSync));
-      new GameDao(dbUrl, dbUsername, dbPassword).joinGame(response.get("id"),
+      String gameId = (String) response.get("id");
+      new GameDao(dbUrl, dbUsername, dbPassword).joinGame(gameId ,
           (String) req.getSession().getAttribute("username"));
       if (isSync) {
-        syncGamesManager.createGame(response.get("id"), (String) req.getSession().getAttribute("username"));
+        syncGamesManager.createGame(gameId, (String) req.getSession().getAttribute("username"), start, gameMode);
       }
       new RulesDao(dbUrl, dbUsername, dbPassword)
-          .banCategories(response.get("id"), bannedCategoriesSet);
-      new RulesDao(dbUrl, dbUsername, dbPassword).banArticles(response.get("id"), bannedArticlesSet);
+          .banCategories(gameId, bannedCategoriesSet);
+      new RulesDao(dbUrl, dbUsername, dbPassword).banArticles(gameId, bannedArticlesSet);
     } catch (SQLException ex) {
       return new ResponseEntity<>(JSONObject.quote(ex.getMessage()),
           HttpStatus.INTERNAL_SERVER_ERROR);
     } catch (GameException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
+    response.put("isSync", isSync);
     return new ResponseEntity<>(response, HttpStatus.OK);
 
   }
@@ -391,7 +397,7 @@ public class Api {
           .joinGame(gameId, (String) req.getSession().getAttribute("username")));
       response.put("id", gameId);
       response.put("end", finalPageCache.get(gameId));
-      response.put("is_sync", isSync);
+      response.put("isSync", isSync);
       return new ResponseEntity<>(response, HttpStatus.OK);
     } catch (SQLException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()),
@@ -466,11 +472,47 @@ public class Api {
           .changePage(gameId, username, nextPage, finished));
       response.put("finished", finished);
       response.put("current_page", nextPage);
+      Boolean isSync = isSyncCache.get(gameId);
+      response.put("isSync", isSync);
+      if (isSync) {
+        syncGamesManager.goToPage(gameId, username, response);
+      }
       return new ResponseEntity<>(response, HttpStatus.OK);
     } catch (SQLException | UnsupportedEncodingException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()),
           HttpStatus.INTERNAL_SERVER_ERROR);
-    } catch (InvalidArticleException ex) {
+    } catch (InvalidArticleException | GameException ex) {
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    } catch (UserNotFoundException ex) {
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.UNAUTHORIZED);
+    }
+  }
+
+  @RequestMapping(value = "/api/game/realtime/{gameId}/players/", method = RequestMethod.GET)
+  public ResponseEntity<?> gameLobbyPlayers(HttpServletRequest req, @PathVariable String gameId) {
+    if (!isAuthenticated(req)) {
+      return new ResponseEntity<String>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
+    }
+    String username = (String) req.getSession().getAttribute("username");
+    try {
+      return new ResponseEntity<>(syncGamesManager.getPlayers(username, gameId), HttpStatus.OK);
+    } catch (GameException ex) {
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    } catch (UserNotFoundException ex) {
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.UNAUTHORIZED);
+    }
+  }
+
+  @RequestMapping(value = "api/game/realtime/{gameId}/start/", method = RequestMethod.PATCH)
+  public ResponseEntity<?> startGame(HttpServletRequest req, @PathVariable String gameId) {
+    if (!isAuthenticated(req)) {
+      return new ResponseEntity<String>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
+    }
+    String username = (String) req.getSession().getAttribute("username");
+    try {
+      syncGamesManager.startGame(gameId, username);
+      return new ResponseEntity<>(JSONObject.quote("success"), HttpStatus.OK);
+    } catch (GameException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
   }
