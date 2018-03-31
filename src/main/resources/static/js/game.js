@@ -292,7 +292,7 @@
                     var time = new Date(null);
                     time.setSeconds(socketProps.time);
                     var finalTime = time.toISOString().substr(11, 8);
-
+                    
                     // update finished status
                     var updatedFinish = document.createTextNode("Finished in: " + finalTime);
                     updateCells[2].innerHTML = '';
@@ -302,6 +302,14 @@
             }
 
             if (socketProps.game_finished) {
+                var modal = document.getElementById("finished_modal");
+                var modalBtn = document.getElementById("proceed_btn");
+                document.getElementById("modal_text").innerHTML = `All players have finished the game,
+                                                                    <br> redirecting to leaderboard.`;
+                modalBtn.addEventListener('click', function(e) {
+                    window.location.href = "leaderboard.html#" + gameReqs.gameId;
+                });
+                modal.style.display = "block";
                 
             }
 
@@ -328,6 +336,7 @@
             frameWrapper.id = "framewrapper";
             frame.id = "wikiframe";
             frame.innerHTML = content.parse.text["*"];
+
             // hides the game window until all links and images have been added 
             frameWrapper.style.visibility = "hidden";
             frameWrapper.appendChild(frame);
@@ -342,20 +351,24 @@
             // replaces game window with loading screen
             var gameBox = document.getElementById("gamebox");
             gameBox.innerHTML = "";
+
             var frameWrapper = document.createElement("div");
             frameWrapper.id = "framewrapper";
             frameWrapper.style.backgroundColor = "#333333";
+
             var loadIcon = document.createElement("img");
+            loadIcon.id = "load_icon";
             loadIcon.style.marginTop = "64px";
             loadIcon.src = "images/loader.gif";
+
             frameWrapper.innerHTML = "";
             frameWrapper.appendChild(loadIcon);
             gameBox.appendChild(frameWrapper);
         }
 
         function insertLinks(content, gameReqs) {
-        
-            var links = document.getElementById("framewrapper").getElementsByTagName("a");
+            var frameWrapper = document.getElementById("framewrapper");
+            var links = frameWrapper.getElementsByTagName("a");
             var regex = new RegExp(/Template|#|action=edit|:|external/);
             function linksAdder(i) {
                 var linkSplit = links[i].href.split("/wiki/").slice(-1)[0];
@@ -384,9 +397,15 @@
                                 var time = new Date(null);
                                 time.setSeconds(res.time);
                                 var finalTime = time.toISOString().substr(11, 8);
-                                alert("You've reached your destination! Your score is: \n Clicks: " + res.clicks + "\n Time: " + finalTime);
 
-                                if (!res.isSync) {
+                                if (res.isSync) {
+                                    var frameWrapper = document.getElementById("framewrapper");
+                                    frameWrapper.style.color = "white";
+                                    frameWrapper.innerHTML = `You've reached your destination! Your score is: <br> Clicks: `
+                                                            + res.clicks + `<br> Time:` 
+                                                            + finalTime + `<br> Waiting on other players to finish.`;
+                                } else {
+                                    alert("You've reached your destination! Your score is: \n Clicks: " + res.clicks + "\n Time: " + finalTime);
                                     window.location.href = "leaderboard.html#" + gameReqs.gameId;
                                 }
                                 

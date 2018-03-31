@@ -6,11 +6,20 @@
     <link href="css/main.css" rel="stylesheet" type="text/css"/>
     <link href="css/form.css" rel="stylesheet" type="text/css"/>
     <link href="css/game.css" rel="stylesheet" type="text/css"/>
+    <link href="css/modal.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
     <header>
         <a href="index.html" id="title">Wikiracer</a>
     </header>
+
+    <div id="finished_modal" class="modal">
+        <div class="modal_content">
+            <p id="modal_text"></p>
+            <button class="btn" type="button" id="proceed_btn">OK</button>
+        </div>
+    </div>
+
     <ul id="navbar">
         <li class="navelmt"><a href="index.html">Home</a></li>
         <li class="navelmt"><a href="game.html">Play Now</a></li>
