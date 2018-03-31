@@ -176,12 +176,18 @@
             // generates a table for storing player progress
             var userTable = document.createElement("table");
             userTable.id = "user_table";
+        
             var userRow = document.createElement("tr");
             userRow.id = "user_row";
             userRow.innerHTML = `<th>Players:</th>`
+
             var clicksRow = document.createElement("tr");
             clicksRow.id = "clicks_row";
             clicksRow.innerHTML = `<th>Clicks:</th>`
+
+            var statusRow = document.createElement("tr");
+            statusRow.id = "table_row";
+            statusRow.innerHTML = "<th>Status:</th>";
 
             userTable.appendChild(userRow);
             userTable.appendChild(clicksRow);
@@ -196,20 +202,27 @@
                         // and their clicks count
                         var newUserCell = document.createElement("td");
                         var newClicksCell = document.createElement("td");
+                        var newStatusCell = document.createElement("td");
                         var userNode = document.createTextNode(users[i]);
                         var clicksNode = document.createTextNode("0");
+                        var statusNode = document.createTextNode("In Progress");
+
                         newUserCell.className = users[i];
                         newClicksCell.className = users[i];
+                        newStatusCell.className = users[i];
+
                         newUserCell.appendChild(userNode);
                         newClicksCell.appendChild(clicksNode);
+                        newStatusCell.appendChild(statusNode);
+
                         userRow.appendChild(newUserCell);
                         clicksRow.appendChild(newClicksCell);
+                        statusRow.appendChild(newStatusCell);
+
                     }
                     userBox.appendChild(userTable);
                 }
             });
-
-            
             
             lobbyForm.appendChild(userBox);
             lobbyForm.appendChild(buttonDiv);
@@ -223,18 +236,28 @@
             var socketProps = JSON.parse(socketInfo.body);
             var userRow = document.getElementById("user_row");
             var clicksRow = document.getElementById("clicks_row");
+            var statusRow = document.getElementById("status_row");
             if (socketProps.joined) {
                 // add newly joined user to lobby list
                 var newUserCell = document.createElement("td");
                 var newClicksCell = document.createElement("td");
+                var newStatusCell = document.createElement("td");
+
                 var userNode = document.createTextNode(socketProps.joined);
                 var clicksNode = document.createTextNode("0");
+                var statusNode = document.createTextNode("In Progress");
+
                 newUserCell.className = socketProps.joined;
                 newClicksCell.className = socketProps.joined;
+                newStatusCell.className = socketProps.joined;
+
                 newUserCell.appendChild(userNode);
                 newClicksCell.appendChild(clicksNode);
+                newStatusCell.appendChild(statusNode);
+
                 userRow.appendChild(newUserCell);
                 clicksRow.appendChild(newClicksCell);
+                statusRow.appendChild(newStatusCell);
             }
 
             if (socketProps.left) {
@@ -255,11 +278,32 @@
             }
 
             if (socketProps.player) {
+                var updateCells = document.getElementsByClassName(socketProps.player);
+
                 // update the clicks counter when a user clicks a new link
-                var updateClicksCell = document.getElementsByClassName(socketProps.player)[1];
                 var updatedClicks = document.createTextNode(socketProps.clicks);
-                updateClicksCell.innerHTML = '';
-                updateClicksCell.appendChild(updatedClicks);
+                updateCells[1].innerHTML = '';
+                updateCells[1].appendChild(updatedClicks);
+                if (socketProps.finished) {
+                    // update finished status
+                    var updatedFinish = document.createTextNode("Finished!");
+                    updateCells[2].innerHTML = '';
+                    updateCells[2].appendChild(updatedFinish);
+
+                    
+                    var timeRow = document.createElement("tr");
+                    timeRow.className = socketProps.player;
+                    timeRow.innerHTML = `<th>Time Taken:</th>`;
+                    // converts time in seconds to hh:mm:ss
+                    var time = new Date(null);
+                    time.setSeconds(socketProps.time);
+                    var finalTime = time.toISOString().substr(11, 8);
+                    // adds final time to table
+                    var timeNode = document.createTextNode(finalTime);
+                    var newTimeCell = document.createElement("td");
+                    newTimeCell.appendChild(timeNode);
+                    timeRow.appendChild(newTimeCell);
+                }
             }
 
             if (socketProps.game_finished) {
@@ -346,7 +390,11 @@
                                 time.setSeconds(res.time);
                                 var finalTime = time.toISOString().substr(11, 8);
                                 alert("You've reached your destination! Your score is: \n Clicks: " + res.clicks + "\n Time: " + finalTime);
-                                window.location.href = "leaderboard.html#" + gameReqs.gameId;
+
+                                if (res.isSync) {
+                                    window.location.href = "leaderboard.html#" + gameReqs.gameId;
+                                }
+                                
                             } else {
                                 gameReqs.clicks = res.clicks;
                                 api.getWikiPage(res.current_page, function (err, res) {
