@@ -268,6 +268,7 @@
                     var delCells = document.getElementsByClassName(socketProps.left);
                     userRow.removeChild(delCells[0]);
                     clicksRow.removeChild(delCells[0]);
+                    statusRow.removeChild(delCells[0]);
                 } catch (error) {
                     console.log(error);
                 }
@@ -302,10 +303,11 @@
             }
 
             if (socketProps.game_finished) {
+                // displays pop up modal box 
                 var modal = document.getElementById("finished_modal");
                 var modalBtn = document.getElementById("proceed_btn");
-                document.getElementById("modal_text").innerHTML = `All players have finished the game,
-                                                                    <br> redirecting to leaderboard.`;
+                document.getElementById("modal_text").innerHTML = `All players have finished the game.
+                                                                    <br> Click OK to go leaderboard.`;
                 modalBtn.addEventListener('click', function(e) {
                     window.location.href = "leaderboard.html#" + gameReqs.gameId;
                 });
@@ -405,8 +407,15 @@
                                                             + res.clicks + `<br> Time:` 
                                                             + finalTime + `<br> Waiting on other players to finish.`;
                                 } else {
-                                    alert("You've reached your destination! Your score is: \n Clicks: " + res.clicks + "\n Time: " + finalTime);
-                                    window.location.href = "leaderboard.html#" + gameReqs.gameId;
+                                    var modal = document.getElementById("finished_modal");
+                                    var modalBtn = document.getElementById("proceed_btn");
+                                    document.getElementById("modal_text").innerHTML = `You've reached your destination! Your score is: <br> Clicks: `
+                                                                                    + res.clicks + `<br> Time:` 
+                                                                                    + finalTime + `<br> Click OK to go leaderboard.`;
+                                    modalBtn.addEventListener('click', function(e) {
+                                        window.location.href = "leaderboard.html#" + gameReqs.gameId;
+                                    });
+                                    modal.style.display = "block";
                                 }
                                 
                             } else {
