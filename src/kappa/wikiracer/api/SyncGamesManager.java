@@ -85,11 +85,8 @@ public class SyncGamesManager {
     if (game == null) {
       throw new GameException(gameId + " not found");
     }
-    if (game.getStarted()) {
-      throw new GameException("Cannot leave started game");
-    }
     Boolean lobbyClosed = false;
-    if (game.removePlayer(player)) {
+    if (game.removePlayer(player) && !game.getStarted()) {
       games.remove(gameId);
       lobbyClosed = true;
     }
@@ -97,6 +94,12 @@ public class SyncGamesManager {
     payload.put(LEFT, player);
     payload.put(LOBBY_CLOSED, lobbyClosed);
     simpMessagingTemplate.convertAndSend(WebSocketConfig.SOCKET_DEST + gameId, payload);
+    if (game.getStarted() && game.isFinished()) {
+      payload = new HashMap<>(game.getEndInfo());
+      payload.put(GAME_FINISHED, true);
+      simpMessagingTemplate.convertAndSend(WebSocketConfig.SOCKET_DEST + gameId, payload);
+      games.remove(gameId);
+    }
     return lobbyClosed;
   }
   
