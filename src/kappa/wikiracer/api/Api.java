@@ -505,9 +505,12 @@ public class Api {
       @RequestParam(value = "limit", defaultValue = "10") int limit) {
     List<String> response = new ArrayList<String>();
     try {
+      if(!userExistsCache.get(username)){
+        return new ResponseEntity<String>(JSONObject.quote("No such user"), HttpStatus.NOT_FOUND);
+      }
       response = new StatsDao(dbUrl, dbUsername, dbPassword).userGames(username, showNonFinished, offset, limit);
     } catch (SQLException ex) {
-      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
@@ -525,9 +528,12 @@ public class Api {
       @PathVariable String username) {
     List<String> response = new ArrayList<String>();
     try {
+      if(!userExistsCache.get(username)){
+        return new ResponseEntity<String>(JSONObject.quote("No such user"), HttpStatus.NOT_FOUND);
+      }
       response = new StatsDao(dbUrl, dbUsername, dbPassword).userGamePath(gameId, username);
     } catch (SQLException ex) {
-      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
@@ -545,7 +551,7 @@ public class Api {
     try {
       response = new StatsDao(dbUrl, dbUsername, dbPassword).topPages(limit);
     } catch (SQLException ex) {
-      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
