@@ -8,6 +8,10 @@ public abstract class GameModeStrategy {
 
   private ArrayList<SortedPlayerStrategy> rankings;
 
+  protected GameModeStrategy() {
+    rankings = new ArrayList<>();
+  }
+
   public ArrayList<SortedPlayerStrategy> getRankings() {
     Collections.sort(rankings);
     return rankings;
