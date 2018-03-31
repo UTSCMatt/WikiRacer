@@ -291,6 +291,9 @@ public class Api {
 
   @RequestMapping(value = "/api/profile/image/", method = RequestMethod.POST)
   public ResponseEntity<?> uploadProfileImage(HttpServletRequest req, MultipartFile file) {
+    if (file == null) {
+      return new ResponseEntity<>(JSONObject.quote("File not provided"), HttpStatus.BAD_REQUEST);
+    }
     if (!isAuthenticated(req)) {
       return new ResponseEntity<>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
     }
