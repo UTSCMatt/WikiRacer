@@ -1,7 +1,9 @@
 package kappa.wikiracer.api;
 
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.sql.SQLException;
@@ -28,8 +30,10 @@ import kappa.wikiracer.dao.RulesDao;
 import kappa.wikiracer.dao.UserDao;
 import kappa.wikiracer.exception.GameException;
 import kappa.wikiracer.exception.InvalidArticleException;
+import kappa.wikiracer.exception.InvalidFileTypeException;
 import kappa.wikiracer.exception.UserNotFoundException;
 import kappa.wikiracer.util.UserVerification;
+import kappa.wikiracer.util.amazon.S3Client;
 import kappa.wikiracer.wiki.CategoryRequest;
 import kappa.wikiracer.wiki.ExistRequest;
 import kappa.wikiracer.wiki.LinkRequest;
@@ -43,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -50,6 +55,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 public class Api {
@@ -82,6 +88,9 @@ public class Api {
 
   @Autowired
   private SimpMessagingTemplate simpMessagingTemplate;
+
+  @Autowired
+  private S3Client s3Client;
   
   private SyncGamesManager syncGamesManager;
 
@@ -269,6 +278,40 @@ public class Api {
       }
     }
     return new ResponseEntity<>(JSONObject.quote("Logged off"), HttpStatus.OK);
+  }
+
+  @RequestMapping(value = "/profile/image/", method = RequestMethod.POST)
+  public ResponseEntity<?> upload(HttpServletRequest req, MultipartFile file) {
+    if (!isAuthenticated(req)) {
+      return new ResponseEntity<>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
+    }
+    String username = (String) req.getSession().getAttribute("username");
+    try {
+      String fileName = s3Client.uploadImage(file);
+      new UserDao(dbUrl, dbUsername, dbPassword).changeImage(username, fileName);
+      return new ResponseEntity<>(JSONObject.quote("Success"), HttpStatus.OK);
+    } catch (IOException | SQLException ex) {
+      return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (InvalidFileTypeException ex) {
+      return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @RequestMapping(value = "/profile/{user}/image/", method = RequestMethod.GET)
+  public ResponseEntity<?> getImage(@PathVariable String user) {
+    try {
+      HttpHeaders res = new HttpHeaders();
+      String url = new UserDao(dbUrl, dbUsername, dbPassword).getImage(user);
+      if (url.isEmpty()) {
+        return new ResponseEntity<>(HttpStatus.OK);
+      }
+      res.add("content-type", "image/jpeg");
+      return new ResponseEntity<>(s3Client.getImage(url), res, HttpStatus.OK);
+    } catch (IOException | SQLException ex) {
+      return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (AmazonS3Exception ex) {
+      return new ResponseEntity<>("Image not found", HttpStatus.NOT_FOUND);
+    }
   }
 
   /**
@@ -494,7 +537,7 @@ public class Api {
     try {
       response = new GameDao(dbUrl, dbUsername, dbPassword).getGameList(search, offset, limit);
     } catch (SQLException ex) {
-      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
     return new ResponseEntity<>(response, HttpStatus.OK);
   }

@@ -37,6 +37,8 @@ public class S3Client {
   @Value("${amazonProperties.region}")
   private String region;
 
+  private static final int MAX_IMAGE_BYTES = 1000000;
+
   @PostConstruct
   private void init() {
     AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
@@ -61,6 +63,9 @@ public class S3Client {
       throws InvalidFileTypeException, IOException {
     if (!isImage(file)) {
       throw new InvalidFileTypeException("Not a valid image type");
+    }
+    if (file.length() > MAX_IMAGE_BYTES) {
+      throw new InvalidFileTypeException("Image exceeds max size");
     }
     s3client.putObject(new PutObjectRequest(bucketName, fileName, file).withCannedAcl(
         CannedAccessControlList.Private));
