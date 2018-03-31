@@ -9,6 +9,23 @@
     <link href="css/modal.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
+    <div id="fb-root"></div>
+    <script>
+    window.fbAsyncInit = function() {
+        FB.init({
+          appId            : '1976880799295620',
+          autoLogAppEvents : true,
+          xfbml            : true,
+          version          : 'v2.12'
+        });
+    };
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = 'https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.12&appId=1976880799295620&autoLogAppEvents=1';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));</script>
     <header>
         <a href="index.html" id="title">Wikiracer</a>
     </header>
@@ -17,6 +34,8 @@
         <div class="modal_content">
             <p id="modal_text"></p>
             <button class="btn" type="button" id="proceed_btn">OK</button>
+            <div class="fb-share-button" data-href="https://www.wikiracer.me/" data-layout="button" data-size="small" data-mobile-iframe="true"><a target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.wikiracer.me%2F&amp;src=sdkpreparse" class="fb-xfbml-parse-ignore">Share</a></div>
+            <div id="shareBtn" class="btn btn-success clearfix">ShareDialog</div>
         </div>
     </div>
 
@@ -72,7 +91,16 @@
     <script src="js/main.js"></script>
     <script src="js/game.js"></script>
     <script src="js/websocket.js"></script>
-    
+    <script>
+    document.getElementById('shareBtn').onclick = function() {
+      FB.ui({
+        method: 'share',
+        display: 'popup',
+        href: 'https://www.wikiracer.me/',
+        caption: 'Testing caption',
+      }, function(response){console.log(response);});
+    }
+    </script>
     <footer>
         <a href='credits.html'>Credits</a>
     </footer>
