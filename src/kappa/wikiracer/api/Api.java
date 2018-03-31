@@ -503,16 +503,25 @@ public class Api {
       @RequestParam(value = "showNonFinished", defaultValue = "false") Boolean showNonFinished,
       @RequestParam(value = "offset", defaultValue = "0") int offset,
       @RequestParam(value = "limit", defaultValue = "10") int limit) {
+    Map<String, Object> payload = new HashMap<>();
     List<String> response = new ArrayList<String>();
     try {
       if(!userExistsCache.get(username)){
         return new ResponseEntity<String>(JSONObject.quote("No such user"), HttpStatus.NOT_FOUND);
       }
+      boolean usernameMatch = false;
+      if(req.getSession() != null) {
+        String sessionUsername = (String) req.getSession().getAttribute("username");
+        usernameMatch = sessionUsername.equals(username);
+      }
       response = new StatsDao(dbUrl, dbUsername, dbPassword).userGames(username, showNonFinished, offset, limit);
+      payload.put("games", response);
+      payload.put("match", usernameMatch);
+
     } catch (SQLException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return new ResponseEntity<>(response, HttpStatus.OK);
+    return new ResponseEntity<>(payload, HttpStatus.OK);
   }
 
   /**

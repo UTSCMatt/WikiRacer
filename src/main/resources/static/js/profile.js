@@ -12,20 +12,20 @@
         } else {
             username = api.getUser();
             profileName.innerHTML = "Your username is: " + username;
-            api.userGames(username, showNonFinished, offset, limit, function(err, games){
-              if (err) {console.log(err);
-              } else {
-                  getPage(games);
-              }
+            api.userGames(username, showNonFinished, offset, limit, function(err, payload){
+                if (err) console.log(err);
+                else {
+                    getPage(payload.games);
+                }
             });
 
         document.getElementById("prev_page_btn").addEventListener('click', function(e) {
             if (offset - limit >= 0) {
                 offset = offset - limit;
-                api.userGames(username, showNonFinished, offset, limit, function(err, games){
+                api.userGames(username, showNonFinished, offset, limit, function(err, payload){
                     if (err) console.log(err);
                     else {
-                        getPage(games);
+                        getPage(payload.games);
                     }
                 });
             } else {
@@ -35,13 +35,13 @@
 
         document.getElementById("next_page_btn").addEventListener('click', function(e) {
             offset = offset + limit;
-            api.userGames(username, showNonFinished, offset, limit, function(err, games){
+            api.userGames(username, showNonFinished, offset, limit, function(err, payload){
                 if (err) console.log(err);
-                else if (games.length === 0){
+                else if (payload.games.length === 0){
                     offset = offset - limit;
                     alert("No Results");
                 } else {
-                    getPage(games);
+                    getPage(payload.games);
                 }
             });
         });
