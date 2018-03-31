@@ -468,7 +468,9 @@ public class Api {
           .changePage(gameId, username, nextPage, finished));
       response.put("finished", finished);
       response.put("current_page", nextPage);
-      if (isSyncCache.get(gameId)) {
+      Boolean isSync = isSyncCache.get(gameId);
+      response.put("isSync", isSync);
+      if (isSync) {
         syncGamesManager.goToPage(gameId, username, response);
       }
       return new ResponseEntity<>(response, HttpStatus.OK);
