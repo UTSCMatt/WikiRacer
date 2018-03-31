@@ -271,7 +271,7 @@ public class GameDao extends Dao {
     Connection c = getConnection();
     PreparedStatement stmt;
 
-    String sql = "SELECT Games.GameId as GameCode, (SELECT wiki_pages.Title FROM wiki_pages INNER JOIN games WHERE games.GameId = GameCode AND games.StartId = wiki_pages.Id) as StartPage, (SELECT wiki_pages.Title FROM wiki_pages INNER JOIN games WHERE games.GameId = GameCode AND games.EndId = wiki_pages.Id) as EndPage, game_mode.GameMode FROM Games INNER JOIN player_game_map INNER JOIN game_mode WHERE games.GameMode = game_mode.Id AND player_game_map.GameId = Games.Id AND Finished = 1 AND Games.GameId LIKE ? LIMIT ? OFFSET ?";
+    String sql = "SELECT Games.GameId as GameCode, (SELECT Wiki_Pages.Title FROM Wiki_Pages INNER JOIN Games WHERE Games.GameId = GameCode AND Games.StartId = Wiki_Pages.Id) as StartPage, (SELECT Wiki_Pages.Title FROM Wiki_Pages INNER JOIN Games WHERE Games.GameId = GameCode AND Games.EndId = Wiki_Pages.Id) as EndPage, game_mode.GameMode FROM Games INNER JOIN player_game_map INNER JOIN game_mode WHERE Games.GameMode = game_mode.Id AND player_game_map.GameId = Games.Id AND Finished = 1 AND Games.GameId LIKE ? LIMIT ? OFFSET ?";
 
     stmt = c.prepareStatement(sql);
     stmt.setString(1, search + "%");
@@ -308,7 +308,7 @@ public class GameDao extends Dao {
   public List<Map> getGameStats(String gameId) throws SQLException, GameException {
     Connection c = getConnection();
 
-    String sql = "SELECT wiki_pages.Title as StartPage, (SELECT wiki_pages.Title FROM wiki_pages INNER JOIN games WHERE games.GameId = ? AND games.EndId = wiki_pages.Id) as EndPage, game_mode.GameMode FROM wiki_pages INNER JOIN games, game_mode WHERE games.GameId = ? AND games.StartId = wiki_pages.Id AND games.GameMode = game_mode.id";
+    String sql = "SELECT Wiki_Pages.Title as StartPage, (SELECT Wiki_Pages.Title FROM Wiki_Pages INNER JOIN Games WHERE Games.GameId = ? AND Games.EndId = Wiki_Pages.Id) as EndPage, game_mode.GameMode FROM Wiki_Pages INNER JOIN Games, game_mode WHERE Games.GameId = ? AND Games.StartId = Wiki_Pages.Id AND Games.GameMode = game_mode.id";
     PreparedStatement stmt2;
     stmt2 = c.prepareStatement(sql);
     stmt2.setString(1, gameId);
