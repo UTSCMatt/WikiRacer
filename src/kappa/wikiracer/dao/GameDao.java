@@ -267,7 +267,7 @@ public class GameDao extends Dao {
     Connection c = getConnection();
     PreparedStatement stmt;
 
-    String sql = "SELECT GameId FROM Games WHERE GameId LIKE ? LIMIT ? OFFSET ?";
+    String sql = "SELECT Games.GameId FROM Games INNER JOIN player_game_map WHERE player_game_map.GameId = Games.Id AND Finished = 1 AND Games.GameId LIKE ? LIMIT ? OFFSET ?";
 
     stmt = c.prepareStatement(sql);
     stmt.setString(1, search + "%");
@@ -298,11 +298,11 @@ public class GameDao extends Dao {
    */
   public List<Map> getGameStats(String gameId) throws SQLException, GameException {
     Connection c = getConnection();
-    PreparedStatement stmt;
+    CallableStatement stmt;
 
     String sql = "CALL Get_Leaderboard(?)";
 
-    stmt = c.prepareStatement(sql);
+    stmt = c.prepareCall(sql);
     stmt.setString(1, gameId);
     ResultSet rs = stmt.executeQuery();
 

@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -173,7 +174,8 @@ public class Api {
   }
 
   private String fixWikiTitles(String title) {
-    title = title.replaceAll("&", "%26");
+    title = title = title.replaceAll("&", "%26");
+    title = title = title.replaceAll("\\+", "%2B");
     return title.replaceAll("_", " ");
   }
 
@@ -285,6 +287,23 @@ public class Api {
     JSONObject parsedRules = new JSONObject(rules);
     JSONArray bannedCategories = parsedRules.getJSONArray(CATEGORIES);
     JSONArray bannedArticles = parsedRules.getJSONArray(ARTICLES);
+
+    Set<String> bannedCategoriesSet = new HashSet<>();
+    for (int i = 0; i < bannedCategories.length(); i++) {
+      String ban = StringUtils.trimToEmpty(bannedCategories.getString(i));
+      if (!ban.isEmpty()) {
+        bannedCategoriesSet.add(bannedCategories.getString(i));
+      }
+    }
+
+    Set<String> bannedArticlesSet = new HashSet<>();
+    for (int i = 0; i < bannedArticles.length(); i++) {
+      String ban = StringUtils.trimToEmpty(bannedArticles.getString(i));
+      if (!ban.isEmpty()) {
+        bannedArticlesSet.add(bannedArticles.getString(i));
+      }
+    }
+
     start = fixWikiTitles(start);
     end = fixWikiTitles(end);
     if (start.isEmpty()) {
@@ -336,8 +355,8 @@ public class Api {
         syncGamesManager.createGame(gameId, (String) req.getSession().getAttribute("username"), start, gameMode);
       }
       new RulesDao(dbUrl, dbUsername, dbPassword)
-          .banCategories(gameId, bannedCategories);
-      new RulesDao(dbUrl, dbUsername, dbPassword).banArticles(gameId, bannedArticles);
+          .banCategories(gameId, bannedCategoriesSet);
+      new RulesDao(dbUrl, dbUsername, dbPassword).banArticles(gameId, bannedArticlesSet);
     } catch (SQLException ex) {
       return new ResponseEntity<>(JSONObject.quote(ex.getMessage()),
           HttpStatus.INTERNAL_SERVER_ERROR);
@@ -425,13 +444,13 @@ public class Api {
         return new ResponseEntity<String>(JSONObject.quote("Game already finished"),
             HttpStatus.BAD_REQUEST);
       }
-      if (!hasLink(currentPage, nextPage)) {
+      String oldPage = nextPage;
+      nextPage = redirectCache.get(nextPage);
+      if (!hasLink(currentPage, oldPage)) {
         return new ResponseEntity<String>(
             JSONObject.quote("No link to '" + nextPage + "' found in '" + currentPage + "'"),
             HttpStatus.NOT_FOUND);
       }
-      String oldPage = nextPage;
-      nextPage = redirectCache.get(nextPage);
       if (!nextPage.equals(oldPage)) {
         storedPagesCache.get(nextPage);
       }
@@ -440,6 +459,7 @@ public class Api {
         return new ResponseEntity<String>(JSONObject.quote("Attempt page is banned by rules"),
             HttpStatus.UNAUTHORIZED);
       }
+      nextPage = fixWikiTitles(nextPage);
       Map<String, Object> response = new HashMap<>(new GameDao(dbUrl, dbUsername, dbPassword)
           .changePage(gameId, username, nextPage, finished));
       response.put("finished", finished);
