@@ -61,7 +61,7 @@
                         gameReqs.isSync = res.isSync;
 
                         if(gameReqs.isSync) {
-                            makeLobby(gameReqs);
+                            makeLobby(gameReqs, true);
                         } else {
                             // get the json representation of the starting page
                             api.getWikiPage(gameReqs.start, function(err, res) {
@@ -125,10 +125,11 @@
             });
         });
 
-        function makeLobby(gameReqs) {
+        function makeLobby(gameReqs, isHost=false) {
             var lobbyBox = document.getElementById("lobbybox");  
             var lobbyForm = document.createElement("form");
             var buttonDiv = document.createElement("div");
+            buttonDiv.id = "button_div";
             lobbyForm.className = "form";
             lobbyForm.id = "lobby_form";
             lobbyForm.innerHTML = `Game ID:` + gameReqs.gameId;
@@ -136,26 +137,7 @@
             var userBox = document.createElement("fieldset");
             userBox.id = "user_box";
             userBox.innerHTML = `<legend>Users:</legend>`;
-            // adds start button
-            var lobbyStartBtn = document.createElement("button");
-            lobbyStartBtn.type = "button";
-            lobbyStartBtn.className = "btn";
-            lobbyStartBtn.id = "lobby_start_btn";
-            lobbyStartBtn.innerHTML = "Start Game";
-            lobbyStartBtn.addEventListener('click', function(e) {
-                buttonDiv.className = "hidden";
-                loadingScreen();
-                api.startSyncGame(gameReqs.gameId, function(err, res) {
-                    if (err) console.log(err);
-                    else {
-                        api.getWikiPage(gameReqs.start, function(err, res) {
-                            if (err) console.log(err);
-                            else createGameWindow(res, gameReqs);
-                        });
-                    }
-                })
-               
-            });
+
             // adds leave button
             var lobbyLeaveBtn = document.createElement("button");
             lobbyLeaveBtn.type = "button";
@@ -171,26 +153,64 @@
                 });
             });
 
-            var userList = document.createElement("ul");
-            userList.id = "user_list";
+            // adds start button if user is host
+            if (isHost) {
+                var lobbyStartBtn = document.createElement("button");
+                lobbyStartBtn.type = "button";
+                lobbyStartBtn.className = "btn";
+                lobbyStartBtn.id = "lobby_start_btn";
+                lobbyStartBtn.innerHTML = "Start Game";
+                lobbyStartBtn.addEventListener('click', function(e) {
+                    buttonDiv.className = "hidden";
+                    loadingScreen();
+                    api.startSyncGame(gameReqs.gameId, function(err, res) {
+                        if (err) console.log(err);
+                    })  
+                });
+                buttonDiv.appendChild(lobbyStartBtn);
+            }
+
+            buttonDiv.appendChild(lobbyLeaveBtn);
+            
+
+            // generates a table for storing player progress
+            var userTable = document.createElement("table");
+            userTable.id = "user_table";
+            var userRow = document.createElement("tr");
+            userRow.id = "user_row";
+            userRow.innerHTML = `<th>Players:</th>`
+            var clicksRow = document.createElement("tr");
+            clicksRow.id = "clicks_row";
+            clicksRow.innerHTML = `<th>Clicks:</th>`
+
+            userTable.appendChild(userRow);
+            userTable.appendChild(clicksRow);
+
             // gets list of users from backend, displays in lobby 
             var lobbyUsers = api.getLobbyUsers(gameReqs.gameId, function(err, users) {
                 if (err) console.log(err);
                 else {
                   
                     for (var i = 0; i < users.length; i++) {
-                        // adds list of users to show in lobby
-                        var userNode = document.createElement("li");
-                        userNode.innerHTML = users[i];
-                        userList.appendChild(userNode);
+                        // adds table of users to show in lobby
+                        // and their clicks count
+                        var newUserCell = document.createElement("td");
+                        var newClicksCell = document.createElement("td");
+                        var userNode = document.createTextNode(users[i]);
+                        var clicksNode = document.createTextNode("0");
+                        newUserCell.className = users[i];
+                        newClicksCell.className = users[i];
+                        newUserCell.appendChild(userNode);
+                        newClicksCell.appendChild(clicksNode);
+                        userRow.appendChild(newUserCell);
+                        clicksRow.appendChild(newClicksCell);
                     }
-                    userBox.appendChild(userList);
+                    userBox.appendChild(userTable);
                 }
             });
 
             
-            buttonDiv.appendChild(lobbyLeaveBtn);
-            buttonDiv.appendChild(lobbyStartBtn);
+            
             lobbyForm.appendChild(userBox);
             lobbyForm.appendChild(buttonDiv);
             lobbyBox.appendChild(lobbyForm);
@@ -201,20 +221,28 @@
 
         function receiveWebsocket(socketInfo) {
             var socketProps = JSON.parse(socketInfo.body);
+            var userRow = document.getElementById("user_row");
+            var clicksRow = document.getElementById("clicks_row");
             if (socketProps.joined) {
                 // add newly joined user to lobby list
-                var userList = document.getElementById("user_list");
-                var userNode = document.createElement("li");
-                userNode.id = socketProps.joined;
-                userNode.innerHTML = socketProps.joined;
-                userList.prepend(userNode);
+                var newUserCell = document.createElement("td");
+                var newClicksCell = document.createElement("td");
+                var userNode = document.createTextNode(socketProps.joined);
+                var clicksNode = document.createTextNode("0");
+                newUserCell.className = socketProps.joined;
+                newClicksCell.className = socketProps.joined;
+                newUserCell.appendChild(userNode);
+                newClicksCell.appendChild(clicksNode);
+                userRow.appendChild(newUserCell);
+                clicksRow.appendChild(newClicksCell);
             }
 
             if (socketProps.left) {
                 try {
                     // removes user name from lobby is user leaves
-                    var userNode = document.getElementById(socketProps.left);
-                    userNode.parentNode.removeChild(userNode);
+                    var delCells = document.getElementsByClassName(socketProps.left);
+                    userRow.removeChild(delCells[0]);
+                    clicksRow.removeChild(delCells[0]);
                 } catch (error) {
                     console.log(error);
                 }
@@ -222,10 +250,16 @@
 
             if (socketProps.lobby_closed || socketProps.timed_out) {
                 websocket.clientDisconnect(gameReqs.gameId);
+                alert("Host has left the game, lobby has been closed");
+                window.location.href = "game.html";
             }
 
             if (socketProps.player) {
-                
+                // update the clicks counter when a user clicks a new link
+                var updateClicksCell = document.getElementsByClassName(socketProps.player)[1];
+                var updatedClicks = document.createTextNode(socketProps.clicks);
+                updateClicksCell.innerHTML = '';
+                updateClicksCell.appendChild(updatedClicks);
             }
 
             if (socketProps.game_finished) {
@@ -233,7 +267,15 @@
             }
 
             if (socketProps.started) {
-                
+                var buttonDiv = document.getElementById("button_div");
+                buttonDiv.className = "hidden";
+                loadingScreen();
+               
+                api.getWikiPage(gameReqs.start, function(err, res) {
+                    if (err) console.log(err);
+                    else createGameWindow(res, gameReqs);
+                });
+                      
             }
         };
 
