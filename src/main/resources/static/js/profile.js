@@ -14,9 +14,6 @@
             profileName.innerHTML = "Your username is: " + username;
             api.userGames(username, showNonFinished, offset, limit, function(err, games){
               if (err) console.log(err);
-              else if (games.length === 0){
-                  offset = offset - limit;
-                  alert("No Results");
               } else {
                   getPage(games);
               }
