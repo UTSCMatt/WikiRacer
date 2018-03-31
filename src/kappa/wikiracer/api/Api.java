@@ -275,12 +275,18 @@ public class Api {
 
     Set<String> bannedCategoriesSet = new HashSet<>();
     for (int i = 0; i < bannedCategories.length(); i++) {
-      bannedCategoriesSet.add(bannedCategories.getString(i));
+      String ban = StringUtils.trimToEmpty(bannedCategories.getString(i));
+      if (!ban.isEmpty()) {
+        bannedCategoriesSet.add(bannedCategories.getString(i));
+      }
     }
 
     Set<String> bannedArticlesSet = new HashSet<>();
     for (int i = 0; i < bannedArticles.length(); i++) {
-      bannedArticlesSet.add(bannedArticles.getString(i));
+      String ban = StringUtils.trimToEmpty(bannedArticles.getString(i));
+      if (!ban.isEmpty()) {
+        bannedArticlesSet.add(bannedArticles.getString(i));
+      }
     }
 
     start = fixWikiTitles(start);
