@@ -351,4 +351,21 @@ public class GameDao extends Dao {
     return result;
   }
 
+  public void leaveGame(String gameId, String username) throws SQLException {
+    Connection c = getConnection();
+    PreparedStatement stmt;
+
+    String sql = "DELETE FROM player_game_map WHERE GameId = (SELECT Id FROM Games WHERE GameId = ?) AND UserId = (SELECT Id FROM Users WHERE Username = ?)";
+
+    stmt = c.prepareStatement(sql);
+    stmt.setString(1, gameId);
+    stmt.setString(2, username);
+
+    stmt.executeUpdate();
+
+    c.close();
+    stmt.close();
+
+  }
+
 }

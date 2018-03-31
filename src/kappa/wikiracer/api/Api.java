@@ -410,9 +410,12 @@ public class Api {
     }
     try {
       syncGamesManager.leaveGame(gameId, (String) req.getSession().getAttribute("username"));
+      new GameDao(dbUrl, dbUsername, dbPassword).leaveGame(gameId, (String) req.getSession().getAttribute("username"));
       return new ResponseEntity<String>(JSONObject.quote("success"), HttpStatus.OK);
     } catch (GameException | UserNotFoundException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    } catch (SQLException ex) {
+      return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
