@@ -72,4 +72,26 @@ public class UserDao extends Dao {
     return rs.getString("Username");
   }
 
+  public Boolean userExists(String username) throws SQLException {
+    Connection c = getConnection();
+    PreparedStatement stmt;
+
+    String sql = "SELECT COUNT(Id) numUser FROM Users WHERE Username=?";
+
+    stmt = c.prepareStatement(sql);
+    stmt.setString(1, username);
+
+    ResultSet rs = stmt.executeQuery();
+    rs.next();
+
+    final Boolean result = rs.getInt("numUser") > 0;
+
+    c.close();
+    stmt.close();
+    rs.close();
+
+    return result;
+
+  }
+
 }

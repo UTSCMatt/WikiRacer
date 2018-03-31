@@ -73,6 +73,7 @@ public class Api {
   private LoadingCache<Pair<String, String>, Boolean> inGameCache;
   private LoadingCache<String, Boolean> existsCache;
   private LoadingCache<String, String> redirectCache;
+  private LoadingCache<String, Boolean> userExistsCache;
 
   /**
    * Initialize all the caches.
@@ -99,6 +100,7 @@ public class Api {
             ExistRequest::exists);
     redirectCache = Caffeine.newBuilder().maximumSize(10000).refreshAfterWrite(1, TimeUnit.HOURS)
         .build(ResolveRedirectRequest::resolveRedirect);
+    userExistsCache = Caffeine.newBuilder().maximumSize(1000).build(key -> new UserDao(dbUrl, dbUsername, dbPassword).userExists(key));
   }
 
   private void setSession(HttpServletRequest req, HttpServletResponse res, String username) {
@@ -222,6 +224,7 @@ public class Api {
           .createUser(username, UserVerification.createHash(password));
       invalidateSession(req);
       setSession(req, res, username);
+      userExistsCache.invalidate(username);
       return new ResponseEntity<String>(JSONObject.quote("User signed up"), HttpStatus.OK);
     } catch (SQLException ex) {
       if (ex.getMessage().equals("Username already in use")) {
