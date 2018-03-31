@@ -102,8 +102,7 @@
                     console.log(err);
                     alert(err);
                     window.location.href = "game.html";
-                } 
-                else {
+                } else {
                     formBox.className = "form hidden";
                     gameReqs.gameId = res.id;
                     gameReqs.start = res.start;
