@@ -76,10 +76,14 @@ public class Api {
   private LoadingCache<String, String> redirectCache;
   private LoadingCache<String, Boolean> isSyncCache;
 
-  @Autowired
-  private SimpMessagingTemplate simpMessagingTemplate;
+  private final SimpMessagingTemplate simpMessagingTemplate;
   
   private SyncGamesManager syncGamesManager;
+
+  @Autowired
+  public Api(SimpMessagingTemplate simpMessagingTemplate) {
+    this.simpMessagingTemplate = simpMessagingTemplate;
+  }
 
   /**
    * Initialize all the caches.
