@@ -297,12 +297,12 @@ public class Api {
     String username = (String) req.getSession().getAttribute("username");
     try {
       String oldUrl = profilePictureUrlCache.get(username);
+      String fileName = s3Client.uploadImage(file);
+      new UserDao(dbUrl, dbUsername, dbPassword).changeImage(username, fileName);
       if (!oldUrl.isEmpty()) {
         s3Client.deleteImage(oldUrl);
         pictureCache.invalidate(oldUrl);
       }
-      String fileName = s3Client.uploadImage(file);
-      new UserDao(dbUrl, dbUsername, dbPassword).changeImage(username, fileName);
       profilePictureUrlCache.invalidate(username);
       return new ResponseEntity<>(JSONObject.quote("Success"), HttpStatus.OK);
     } catch (IOException | SQLException ex) {
