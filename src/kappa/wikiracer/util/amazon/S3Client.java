@@ -11,11 +11,11 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.util.IOUtils;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
-import javax.activation.MimetypesFileTypeMap;
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 import kappa.wikiracer.exception.InvalidFileTypeException;
@@ -40,6 +40,8 @@ public class S3Client {
 
   private static final int MAX_IMAGE_BYTES = 1000000;
 
+  private static final int MAX_DIMENSION = 1000;
+
   @PostConstruct
   private void init() {
     AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
@@ -49,10 +51,13 @@ public class S3Client {
   public String uploadImage(MultipartFile multipartFile)
       throws IOException, InvalidFileTypeException {
     File file = convertMultiPartToFile(multipartFile);
-    String fileName = generateFileName(multipartFile);
-    uploadToBucket(fileName, file);
-    file.delete();
-    return fileName;
+    try {
+      String fileName = generateFileName(multipartFile);
+      uploadToBucket(fileName, file);
+      return fileName;
+    } finally {
+      file.delete();
+    }
   }
 
   public byte[] getImage(String fileName) throws IOException {
@@ -66,18 +71,22 @@ public class S3Client {
 
   private void uploadToBucket(String fileName, File file)
       throws InvalidFileTypeException, IOException {
-    if (!isImage(file)) {
-      throw new InvalidFileTypeException("Not a valid image type");
-    }
-    if (file.length() > MAX_IMAGE_BYTES) {
-      throw new InvalidFileTypeException("Image exceeds max size");
-    }
+    checkImage(file);
     s3client.putObject(new PutObjectRequest(bucketName, fileName, file).withCannedAcl(
         CannedAccessControlList.Private));
   }
 
-  private Boolean isImage(File file) throws IOException {
-    return ImageIO.read(file) != null;
+  private void checkImage(File file) throws IOException, InvalidFileTypeException {
+    BufferedImage image = ImageIO.read(file);
+    if (image == null) {
+      throw new InvalidFileTypeException("Not a valid image type");
+    }
+    if (image.getHeight() > MAX_DIMENSION && image.getWidth() > MAX_DIMENSION) {
+      throw new InvalidFileTypeException("Image exceeds max dimensions");
+    }
+    if (file.length() > MAX_IMAGE_BYTES) {
+      throw new InvalidFileTypeException("Image exceeds max size");
+    }
   }
 
   private File convertMultiPartToFile(MultipartFile file) throws IOException {
