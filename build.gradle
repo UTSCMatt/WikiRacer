@@ -48,6 +48,7 @@ dependencies {
     compile 'com.github.ben-manes.caffeine:caffeine:2.6.2'
     compile "org.springframework.boot:spring-boot-starter-web"
     compile "org.json:json"
+    compile group: 'com.amazonaws', name: 'aws-java-sdk', version: '1.11.133'
     compile group: 'com.github.ulisesbocchio', name: 'jasypt-spring-boot-starter', version: '1.18'
     compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.6'
     compile group: 'de.svenkubiak', name: 'jBCrypt', version: '0.4.1'
