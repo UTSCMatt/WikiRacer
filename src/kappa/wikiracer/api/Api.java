@@ -86,6 +86,8 @@ public class Api {
   private LoadingCache<String, Boolean> existsCache;
   private LoadingCache<String, String> redirectCache;
   private LoadingCache<String, Boolean> isSyncCache;
+  private LoadingCache<String, String> profilePictureUrlCache;
+  private LoadingCache<String, byte[]> pictureCache;
 
   @Autowired
   private SimpMessagingTemplate simpMessagingTemplate;
@@ -122,6 +124,8 @@ public class Api {
         .build(ResolveRedirectRequest::resolveRedirect);
     isSyncCache = Caffeine.newBuilder().maximumSize(1000)
         .build(key -> new GameDao(dbUrl, dbUsername, dbPassword).isSync(key));
+    profilePictureUrlCache = Caffeine.newBuilder().maximumSize(5000).build(key -> new UserDao(dbUrl, dbUsername, dbPassword).getImage(key));
+    pictureCache = Caffeine.newBuilder().maximumWeight(10000).weigher((String key, byte[] file) -> file.length).build(key -> s3Client.getImage(key));
   }
   
   @PostConstruct
@@ -288,8 +292,14 @@ public class Api {
     }
     String username = (String) req.getSession().getAttribute("username");
     try {
+      String oldUrl = profilePictureUrlCache.get(username);
+      if (!oldUrl.isEmpty()) {
+        s3Client.deleteImage(oldUrl);
+        pictureCache.invalidate(oldUrl);
+      }
       String fileName = s3Client.uploadImage(file);
       new UserDao(dbUrl, dbUsername, dbPassword).changeImage(username, fileName);
+      profilePictureUrlCache.invalidate(username);
       return new ResponseEntity<>(JSONObject.quote("Success"), HttpStatus.OK);
     } catch (IOException | SQLException ex) {
       return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -302,14 +312,12 @@ public class Api {
   public ResponseEntity<?> getProfileImage(@PathVariable String user) {
     try {
       HttpHeaders res = new HttpHeaders();
-      String url = new UserDao(dbUrl, dbUsername, dbPassword).getImage(user);
+      String url = profilePictureUrlCache.get(user);
       if (url.isEmpty()) {
         return new ResponseEntity<>(HttpStatus.OK);
       }
       res.add("content-type", "image/jpeg");
-      return new ResponseEntity<>(s3Client.getImage(url), res, HttpStatus.OK);
-    } catch (IOException | SQLException ex) {
-      return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<>(pictureCache.get(url), res, HttpStatus.OK);
     } catch (AmazonS3Exception ex) {
       return new ResponseEntity<>(JSONObject.quote("Image not found"), HttpStatus.NOT_FOUND);
     }
@@ -322,12 +330,14 @@ public class Api {
     }
     String username = (String) req.getSession().getAttribute("username");
     try {
-      String url = new UserDao(dbUrl, dbUsername, dbPassword).getImage(username);
+      String url = profilePictureUrlCache.get(username);
       if (url.isEmpty()) {
         return new ResponseEntity<>(JSONObject.quote("Image not found"), HttpStatus.NOT_FOUND);
       }
       s3Client.deleteImage(url);
       new UserDao(dbUrl, dbUsername, dbPassword).deleteImage(username);
+      profilePictureUrlCache.invalidate(username);
+      pictureCache.invalidate(url);
       return new ResponseEntity<>(JSONObject.quote("Success"), HttpStatus.OK);
     } catch (SQLException ex) {
       return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
