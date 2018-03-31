@@ -484,6 +484,50 @@ public class Api {
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
+
+  /**
+   * Get a list of games a user have played
+   *
+   * @param username name of the user to display
+   * @param showNonFinished display non-finished games, default false
+   * @param offset how many games to skip, default 0
+   * @param limit how many games to return, default 10, max 50
+   * @return response a list of games
+   */
+  @RequestMapping(value = "/api/user/{username}/game", method = RequestMethod.GET)
+  public ResponseEntity<?> userGames(HttpServletRequest req, HttpServletResponse res,
+      @PathVariable String username,
+      @RequestParam(value = "showNonFinished", defaultValue = "false") Boolean showNonFinished,
+      @RequestParam(value = "offset", defaultValue = "0") int offset,
+      @RequestParam(value = "limit", defaultValue = "10") int limit) {
+    List<String> response = new ArrayList<String>();
+    try {
+      response = new GameDao(dbUrl, dbUsername, dbPassword).userGames(username, showNonFinished, offset, limit);
+    } catch (SQLException ex) {
+      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+
+  /**
+   * Get a list of pages a player visited to finish a game
+   *
+   * @param gameId name of the game to display
+   * @param username name of the user to display
+   * @return response a list of wiki page from start to finish
+   */
+  @RequestMapping(value = "/api/game/{gameId}/player/{username}/path/", method = RequestMethod.GET)
+  public ResponseEntity<?> userGamePath(HttpServletRequest req, HttpServletResponse res,
+      @PathVariable String gameId,
+      @PathVariable String username) {
+    List<String> response = new ArrayList<String>();
+    try {
+      response = new GameDao(dbUrl, dbUsername, dbPassword).userGamePath(gameId, username);
+    } catch (SQLException ex) {
+      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    return new ResponseEntity<>(response, HttpStatus.OK);
+  }
   /* API ENDS */
 
 }

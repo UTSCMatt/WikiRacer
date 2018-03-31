@@ -90,6 +90,13 @@ var api = (function () {
         send("GET", "/api/getGameStats/" + gameId + "/", null, callback);
     };
 
+    module.userGames = function (username, showNonFinished, offset, limit, callback) {
+        send("GET", "/api/user/" + username + "/game?showNonFinished=" + showNonFinished + "&offset=" + offset + "&limit=" + limit, null, callback);
+    };
+
+    module.userGamePath = function (gameId, username, callback) {
+        send("GET", "/api/game/" + gameId + "/player/" + username + "/path/", null, callback);
+    };
     return module;
 
 })();
