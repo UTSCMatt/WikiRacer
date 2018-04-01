@@ -90,7 +90,7 @@ public class StatsDao extends Dao {
    * @return list of wiki page ordered from start page to end page
    * @throws SQLException when database has an error
    */
-  public List<String> userGamePath(String gameId, String username) throws SQLException {
+  public String userGamePath(String gameId, String username) throws SQLException {
     Connection c = getConnection();
     PreparedStatement stmt;
 
@@ -102,16 +102,21 @@ public class StatsDao extends Dao {
 
     ResultSet rs = stmt.executeQuery();
 
-    ArrayList<String> results = new ArrayList<String>();
+    StringBuilder results = new StringBuilder();
+
+    Boolean first = true;
 
     while (rs.next()) {
-      results.add(rs.getString("Title"));
+      if (!first) {
+        results.append(" -> ");
+      }
+      results.append(rs.getString("Title"));
     }
     c.close();
     stmt.close();
     rs.close();
 
-    return results;
+    return results.toString();
   }
 
   /**

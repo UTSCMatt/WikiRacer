@@ -83,7 +83,7 @@ public class Api {
   private LoadingCache<String, Set<String>> bannedArticlesCache;
   // Pair<gameId, username>
   private LoadingCache<Pair<String, String>, Boolean> inGameCache;
-  private LoadingCache<Pair<String, String>, List<String>> pathCache;
+  private LoadingCache<Pair<String, String>, String> pathCache;
   private LoadingCache<String, Boolean> existsCache;
   private LoadingCache<String, String> redirectCache;
   private LoadingCache<String, Boolean> isSyncCache;
@@ -137,7 +137,7 @@ public class Api {
     pictureCache = Caffeine.newBuilder().maximumWeight(10000000).weigher((String key, byte[] file) -> file.length).build(
         s3Client::getImage);
     topPagesCache = Caffeine.newBuilder().maximumWeight(100).weigher((Integer key, List<String> pages) -> pages.size()).build(key -> new StatsDao(dbUrl, dbUsername, dbPassword).topPages(key));
-    pathCache = Caffeine.newBuilder().maximumWeight(1000).weigher((Pair<String, String> key, List<String> path) -> path.size()).build(key -> new StatsDao(dbUrl, dbUsername, dbPassword).userGamePath(key.getKey(), key.getValue()));
+    pathCache = Caffeine.newBuilder().maximumWeight(10000).weigher((Pair<String, String> key, String path) -> path.length()).build(key -> new StatsDao(dbUrl, dbUsername, dbPassword).userGamePath(key.getKey(), key.getValue()));
   }
   
   @PostConstruct
@@ -717,12 +717,11 @@ public class Api {
   public ResponseEntity<?> userGamePath(HttpServletRequest req, HttpServletResponse res,
       @PathVariable String gameId,
       @PathVariable String username) {
-    List<String> response = new ArrayList<String>();
     if(!userExistsCache.get(username)){
       return new ResponseEntity<String>(JSONObject.quote("No such user"), HttpStatus.NOT_FOUND);
     }
-    response = pathCache.get(new Pair<>(gameId, username));
-    return new ResponseEntity<>(response, HttpStatus.OK);
+    String response = pathCache.get(new Pair<>(gameId, username));
+    return new ResponseEntity<>(JSONObject.quote(response), HttpStatus.OK);
   }
 
   /**
