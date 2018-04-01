@@ -456,7 +456,7 @@ public class Api {
       }if (incrementEnd) {
         new StatsDao(dbUrl, dbUsername, dbPassword).incrementWikiPageUse(end);
       }
-      new StatsDao(dbUrl, dbUsername, dbPassword).addToPath(response.get("id"), (String) req.getSession().getAttribute("username"), start);
+      new StatsDao(dbUrl, dbUsername, dbPassword).addToPath(gameId, (String) req.getSession().getAttribute("username"), start);
     } catch (SQLException ex) {
       return new ResponseEntity<>(JSONObject.quote(ex.getMessage()),
           HttpStatus.INTERNAL_SERVER_ERROR);
@@ -490,7 +490,7 @@ public class Api {
       response.put("id", gameId);
       response.put("end", finalPageCache.get(gameId));
       response.put("isSync", isSync);
-      new StatsDao(dbUrl, dbUsername, dbPassword).addToPath(gameId, (String) req.getSession().getAttribute("username"), response.get("start"));
+      new StatsDao(dbUrl, dbUsername, dbPassword).addToPath(gameId, (String) req.getSession().getAttribute("username"), (String) response.get("start"));
       return new ResponseEntity<>(response, HttpStatus.OK);
     } catch (SQLException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()),
@@ -681,7 +681,7 @@ public class Api {
         return new ResponseEntity<String>(JSONObject.quote("No such user"), HttpStatus.NOT_FOUND);
       }
       boolean usernameMatch = false;
-      if(req.getSession() != null) {
+      if(isAuthenticated(req)) {
         String sessionUsername = (String) req.getSession().getAttribute("username");
         usernameMatch = sessionUsername.equals(username);
       }
