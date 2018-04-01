@@ -110,6 +110,7 @@ public class StatsDao extends Dao {
       if (!first) {
         results.append(" -> ");
       }
+      first = false;
       results.append(rs.getString("Title"));
     }
     c.close();
