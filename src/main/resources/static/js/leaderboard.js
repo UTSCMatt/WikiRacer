@@ -83,7 +83,6 @@
                                 <th>End Page</th>
                                 <th>Game Mode</th>
                                 </tr>`;
-            console.log(data);
             for (var index = 0; index < data.length; index++) {
                 var row = configTable.insertRow(-1);
                 var codeCell = row.insertCell(0);
