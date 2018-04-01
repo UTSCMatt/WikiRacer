@@ -416,6 +416,9 @@
                                         window.location.href = "leaderboard.html#" + gameReqs.gameId;
                                     });
                                     modal.style.display = "block";
+                                    addTwitter(res, gameReqs);
+
+
                                 }
                                 
                             } else {
@@ -437,6 +440,40 @@
                 linksAdder(i);
             }
             
+        }
+
+        function addTwitter(res, gameReqs){
+            var navBar = document.querySelector(".modal_content");
+            var tweetBtn = document.createElement('a');
+            var href = "";
+            var time = new Date(null);
+            time.setSeconds(res.time);
+            var finalTime = time.toISOString().substr(11, 8);
+//            if(res.isSync){
+//            }
+//            else{
+            href += "I just got from '" +  gameReqs.start + "' to '" + gameReqs.end + "' in " + res.clicks + " clicks and " + finalTime + ". Game Id: " + gameReqs.gameId + ".";
+//            }
+            tweetBtn.href = "https://twitter.com/intent/tweet?text=" + href;
+            tweetBtn.className = "twitter-share-button";
+            tweetBtn.innerHTML = "Tweet";
+            navBar.appendChild(tweetBtn);
+            window.twttr = (function(d, s, id) {
+              var js, fjs = d.getElementsByTagName(s)[0],
+                t = window.twttr || {};
+              if (d.getElementById(id)) return t;
+              js = d.createElement(s);
+              js.id = id;
+              js.src = "https://platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js, fjs);
+
+              t._e = [];
+              t.ready = function(f) {
+                t._e.push(f);
+              };
+
+              return t;
+            }(document, "script", "twitter-wjs"));
         }
         
     });
