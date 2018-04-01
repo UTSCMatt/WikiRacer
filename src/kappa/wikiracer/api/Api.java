@@ -738,6 +738,29 @@ public class Api {
     response = topPagesCache.get(limit);
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
+
+  /**
+   * Send the message given the game id, player name, and message content.
+   * Only send if the player is in the given game.
+   *
+   * @param gameId name of the game to send message to
+   * @param player name of the player who is sending the message
+   * @param messageContent content of the message to send
+   * @return response success if message send, not found otherwise
+   */
+  public ResponseEntity<?> sendMessage(HttpServletRequest req, HttpServletResponse res,
+      @PathVariable String gameId,
+      @PathVariable String player,
+      @PathVariable String messageContent){
+    try {
+      syncGamesManager.sendMessage(gameId, player, messageContent);
+    } catch (GameException ex) {
+      return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.NOT_FOUND);
+    } catch (UserNotFoundException ex) {
+      return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.UNAUTHORIZED);
+    }
+    return  new ResponseEntity<>(JSONObject.quote("success"), HttpStatus.OK);
+  }
   /* API ENDS */
 
 }
