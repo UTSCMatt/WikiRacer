@@ -207,10 +207,21 @@
                         var clicksNode = document.createTextNode("0");
                         var statusNode = document.createTextNode("In Progress");
 
+                        // add profile pic to table
+                        var imgDiv = document.createElement("div");
+                        var imgNode = document.createElement("img");
+                        imgNode.className = "thumbnail " + users[i];
+                        imgNode.src = "/profile/" + users[i] + "/image/";
+                        imgNode.onerror = function() {
+                            this.src = "images/profile_placeholder.png";
+                        };
+
                         newUserCell.className = users[i];
                         newClicksCell.className = users[i];
                         newStatusCell.className = users[i];
 
+                        imgDiv.appendChild(imgNode);
+                        newUserCell.appendChild(imgDiv);
                         newUserCell.appendChild(userNode);
                         newClicksCell.appendChild(clicksNode);
                         newStatusCell.appendChild(statusNode);
@@ -248,10 +259,21 @@
                 var clicksNode = document.createTextNode("0");
                 var statusNode = document.createTextNode("In Progress");
 
+                // adds profile pic to table
+                var imgDiv = document.createElement("div");
+                var imgNode = document.createElement("img");
+                imgNode.className = "thumbnail " + socketProps.joined;
+                imgNode.src = "/profile/" + socketProps.joined + "/image/";
+                imgNode.onerror = function () {
+                    this.src = "images/profile_placeholder.png";
+                };
+
                 newUserCell.className = socketProps.joined;
                 newClicksCell.className = socketProps.joined;
                 newStatusCell.className = socketProps.joined;
 
+                imgDiv.appendChild(imgNode);
+                newUserCell.appendChild(imgDiv);
                 newUserCell.appendChild(userNode);
                 newClicksCell.appendChild(clicksNode);
                 newStatusCell.appendChild(statusNode);
