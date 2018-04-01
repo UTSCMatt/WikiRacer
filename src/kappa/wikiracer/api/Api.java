@@ -89,15 +89,15 @@ public class Api {
   private LoadingCache<String, byte[]> pictureCache;
 
 
-  @Autowired
-  private S3Client s3Client;
+  private final S3Client s3Client;
   private final SimpMessagingTemplate simpMessagingTemplate;
   
   private SyncGamesManager syncGamesManager;
 
   @Autowired
-  public Api(SimpMessagingTemplate simpMessagingTemplate) {
+  public Api(SimpMessagingTemplate simpMessagingTemplate, S3Client s3Client) {
     this.simpMessagingTemplate = simpMessagingTemplate;
+    this.s3Client = s3Client;
   }
 
   /**
@@ -128,7 +128,7 @@ public class Api {
     isSyncCache = Caffeine.newBuilder().maximumSize(1000)
         .build(key -> new GameDao(dbUrl, dbUsername, dbPassword).isSync(key));
     profilePictureUrlCache = Caffeine.newBuilder().maximumSize(5000).build(key -> new UserDao(dbUrl, dbUsername, dbPassword).getImage(key));
-    pictureCache = Caffeine.newBuilder().maximumWeight(10000).weigher((String key, byte[] file) -> file.length).build(key -> s3Client.getImage(key));
+    pictureCache = Caffeine.newBuilder().maximumWeight(10000000).weigher((String key, byte[] file) -> file.length).build(key -> s3Client.getImage(key));
   }
   
   @PostConstruct
@@ -290,18 +290,21 @@ public class Api {
 
   @RequestMapping(value = "/api/profile/image/", method = RequestMethod.POST)
   public ResponseEntity<?> uploadProfileImage(HttpServletRequest req, MultipartFile file) {
+    if (file == null) {
+      return new ResponseEntity<>(JSONObject.quote("File not provided"), HttpStatus.BAD_REQUEST);
+    }
     if (!isAuthenticated(req)) {
       return new ResponseEntity<>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
     }
     String username = (String) req.getSession().getAttribute("username");
     try {
       String oldUrl = profilePictureUrlCache.get(username);
+      String fileName = s3Client.uploadImage(file);
+      new UserDao(dbUrl, dbUsername, dbPassword).changeImage(username, fileName);
       if (!oldUrl.isEmpty()) {
         s3Client.deleteImage(oldUrl);
         pictureCache.invalidate(oldUrl);
       }
-      String fileName = s3Client.uploadImage(file);
-      new UserDao(dbUrl, dbUsername, dbPassword).changeImage(username, fileName);
       profilePictureUrlCache.invalidate(username);
       return new ResponseEntity<>(JSONObject.quote("Success"), HttpStatus.OK);
     } catch (IOException | SQLException ex) {
