@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Wikiracer</title>
     <link href="css/main.css" rel="stylesheet" type="text/css"/>
+    <link href="css/profile.css" rel="stylesheet" type="text/css"/>
     <link href="css/form.css" rel="stylesheet" type="text/css"/>
     <link href="css/leaderboard.css" rel="stylesheet" type="text/css"/>
 </head>
@@ -17,17 +18,24 @@
         <li class="navelmt"><a href="leaderboard.html">Leaderboards</a></li>   
         <li class="navelmt"><a href="profile.html">Profile</a></li>
     </ul> 
-    <div>This is a placeholder page for when profiles are implemented in final version</div>
-    <div id="profile_uname"></div>
-    <form class="form" id="select_game_form">
-        <div class="form_title">Your Recent Games</div>
-        <ul class="game_list">
-        </ul>
-        <button type="button" class="btn" id="prev_page_btn">Prev Page</button>
-        <button type="button" class="btn" id="next_page_btn">Next Page</button>
-    </form>
-    <form class="hidden" id="stats_form">
 
+    <div id="profile_wrapper">
+        <img src="images/profile_placeholder.png" id="profile_pic">
+       
+        <button type="button" id="toggle_hidden_btn" class="btn hidden">Upload Profile Picture</button>
+        <div id="img_form_wrapper" class="hidden">
+            <form id="img_form" class="form" enctype="multipart/form-data">
+                <div class="form_title">Choose an image to upload</div>
+                <input type="file" name="upload_img" class="form_element" id="file_upload" accept="image/*" required>
+                <div>
+                    <button type="submit" id="upload_btn" class="btn">Upload</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="profile_uname"></div>
+    </div>
+    
     <script src="js/api.js"></script>
     <script src="js/main.js"></script>
     <script src="js/profile.js"></script>

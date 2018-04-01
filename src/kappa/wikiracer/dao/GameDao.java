@@ -1,6 +1,10 @@
 package kappa.wikiracer.dao;
 
+import static kappa.wikiracer.api.Api.END_PAGE_KEY;
+import static kappa.wikiracer.api.Api.GAME_CODE_KEY;
+import static kappa.wikiracer.api.Api.GAME_MODE_KEY;
 import static kappa.wikiracer.api.Api.NUM_CLICKS_KEY;
+import static kappa.wikiracer.api.Api.START_PAGE_KEY;
 import static kappa.wikiracer.api.Api.TIME_SPEND_KEY;
 import static kappa.wikiracer.api.Api.USERNAME_KEY;
 
@@ -263,11 +267,12 @@ public class GameDao extends Dao {
    * @return list of games
    * @throws SQLException when database has an error
    */
-  public List<String> getGameList(String search, int offset, int limit) throws SQLException {
+  public List<List<String>> getGameList(String search, int offset, int limit) throws SQLException {
     Connection c = getConnection();
     PreparedStatement stmt;
 
-    String sql = "SELECT DISTINCT Games.GameId FROM Games INNER JOIN player_game_map WHERE player_game_map.GameId = Games.Id AND Finished = 1 AND Games.GameId LIKE ? LIMIT ? OFFSET ?";
+    String sql = "SELECT DISTINCT Games.GameId as GameCode, (SELECT Wiki_Pages.Title FROM Wiki_Pages INNER JOIN Games WHERE Games.GameId = GameCode AND Games.StartId = Wiki_Pages.Id) as StartPage, (SELECT Wiki_Pages.Title FROM Wiki_Pages INNER JOIN Games WHERE Games.GameId = GameCode AND Games.EndId = Wiki_Pages.Id) as EndPage, game_mode.GameMode FROM Games INNER JOIN player_game_map INNER JOIN game_mode WHERE Games.GameMode = game_mode.Id AND player_game_map.GameId = Games.Id AND Finished = 1 AND Games.GameId LIKE ? LIMIT ? OFFSET ?";
+    
 
     stmt = c.prepareStatement(sql);
     stmt.setString(1, search + "%");
@@ -276,10 +281,15 @@ public class GameDao extends Dao {
 
     ResultSet rs = stmt.executeQuery();
 
-    ArrayList<String> results = new ArrayList<String>();
+    List<List<String>> results = new ArrayList<>();
 
     while (rs.next()) {
-      results.add(rs.getString("GameId"));
+      ArrayList<String> currentGame = new ArrayList<>();
+      currentGame.add(rs.getString("GameCode"));
+      currentGame.add(rs.getString("StartPage"));
+      currentGame.add(rs.getString("EndPage"));
+      currentGame.add(rs.getString("GameMode"));
+      results.add(currentGame);
 
     }
     c.close();
@@ -298,15 +308,35 @@ public class GameDao extends Dao {
    */
   public List<Map> getGameStats(String gameId) throws SQLException, GameException {
     Connection c = getConnection();
+
+    String sql = "SELECT Wiki_Pages.Title as StartPage, (SELECT Wiki_Pages.Title FROM Wiki_Pages INNER JOIN Games WHERE Games.GameId = ? AND Games.EndId = Wiki_Pages.Id) as EndPage, game_mode.GameMode FROM Wiki_Pages INNER JOIN Games, game_mode WHERE Games.GameId = ? AND Games.StartId = Wiki_Pages.Id AND Games.GameMode = game_mode.id";
+    PreparedStatement stmt2;
+    stmt2 = c.prepareStatement(sql);
+    stmt2.setString(1, gameId);
+    stmt2.setString(2, gameId);
+    ResultSet rs = stmt2.executeQuery();
+
+    List<Map> results = new ArrayList<>();
+
+    if(rs.next()){
+      Map<String, Object> gamePageAndMode = new HashMap<>();
+      String startPage = rs.getString(1);
+      String endPage = rs.getString(2);
+      String gameMode = rs.getString(3);
+      gamePageAndMode.put(GAME_CODE_KEY, gameId);
+      gamePageAndMode.put(START_PAGE_KEY, startPage);
+      gamePageAndMode.put(END_PAGE_KEY, endPage);
+      gamePageAndMode.put(GAME_MODE_KEY, gameMode);
+      results.add(gamePageAndMode);
+    }
+
     CallableStatement stmt;
 
-    String sql = "CALL Get_Leaderboard(?)";
+    sql = "CALL Get_Leaderboard(?)";
 
     stmt = c.prepareCall(sql);
     stmt.setString(1, gameId);
-    ResultSet rs = stmt.executeQuery();
-
-    List<Map> results = new ArrayList<>();
+    rs = stmt.executeQuery();
 
     while (rs.next()) {
       Map<String, Object> currentResult = new HashMap<>();
@@ -322,6 +352,7 @@ public class GameDao extends Dao {
       results.add(currentResult);
 
     }
+
     c.close();
     stmt.close();
     rs.close();

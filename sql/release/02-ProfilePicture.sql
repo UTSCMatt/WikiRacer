@@ -1,0 +1,1 @@
+﻿ALTER TABLE Users ADD ProfilePicture VARCHAR(255);

@@ -1,7 +1,9 @@
 package kappa.wikiracer.api;
 
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.sql.SQLException;
@@ -29,8 +31,10 @@ import kappa.wikiracer.dao.StatsDao;
 import kappa.wikiracer.dao.UserDao;
 import kappa.wikiracer.exception.GameException;
 import kappa.wikiracer.exception.InvalidArticleException;
+import kappa.wikiracer.exception.InvalidFileTypeException;
 import kappa.wikiracer.exception.UserNotFoundException;
 import kappa.wikiracer.util.UserVerification;
+import kappa.wikiracer.util.amazon.S3Client;
 import kappa.wikiracer.wiki.CategoryRequest;
 import kappa.wikiracer.wiki.ExistRequest;
 import kappa.wikiracer.wiki.LinkRequest;
@@ -44,6 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -51,10 +56,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 public class Api {
 
+  public static final String GAME_CODE_KEY = "gameCode";
+  public static final String START_PAGE_KEY = "startPage";
+  public static final String END_PAGE_KEY = "endPage";
+  public static final String GAME_MODE_KEY = "gameMode";
   public static final String USERNAME_KEY = "username";
   public static final String TIME_SPEND_KEY = "timeSpend";
   public static final String NUM_CLICKS_KEY = "numClicks";
@@ -77,14 +87,19 @@ public class Api {
   private LoadingCache<String, String> redirectCache;
   private LoadingCache<String, Boolean> isSyncCache;
   private LoadingCache<String, Boolean> userExistsCache;
-  
+  private LoadingCache<String, String> profilePictureUrlCache;
+  private LoadingCache<String, byte[]> pictureCache;
+
+
+  private final S3Client s3Client;
   private final SimpMessagingTemplate simpMessagingTemplate;
   
   private SyncGamesManager syncGamesManager;
 
   @Autowired
-  public Api(SimpMessagingTemplate simpMessagingTemplate) {
+  public Api(SimpMessagingTemplate simpMessagingTemplate, S3Client s3Client) {
     this.simpMessagingTemplate = simpMessagingTemplate;
+    this.s3Client = s3Client;
   }
  
 
@@ -116,6 +131,8 @@ public class Api {
     isSyncCache = Caffeine.newBuilder().maximumSize(1000)
         .build(key -> new GameDao(dbUrl, dbUsername, dbPassword).isSync(key));
     userExistsCache = Caffeine.newBuilder().maximumSize(1000).build(key -> new UserDao(dbUrl, dbUsername, dbPassword).userExists(key));
+    profilePictureUrlCache = Caffeine.newBuilder().maximumSize(5000).build(key -> new UserDao(dbUrl, dbUsername, dbPassword).getImage(key));
+    pictureCache = Caffeine.newBuilder().maximumWeight(10000000).weigher((String key, byte[] file) -> file.length).build(key -> s3Client.getImage(key));
   }
   
   @PostConstruct
@@ -274,6 +291,70 @@ public class Api {
       }
     }
     return new ResponseEntity<>(JSONObject.quote("Logged off"), HttpStatus.OK);
+  }
+
+  @RequestMapping(value = "/api/profile/image/", method = RequestMethod.POST)
+  public ResponseEntity<?> uploadProfileImage(HttpServletRequest req, MultipartFile file) {
+    if (file == null) {
+      return new ResponseEntity<>(JSONObject.quote("File not provided"), HttpStatus.BAD_REQUEST);
+    }
+    if (!isAuthenticated(req)) {
+      return new ResponseEntity<>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
+    }
+    String username = (String) req.getSession().getAttribute("username");
+    try {
+      String oldUrl = profilePictureUrlCache.get(username);
+      String fileName = s3Client.uploadImage(file);
+      new UserDao(dbUrl, dbUsername, dbPassword).changeImage(username, fileName);
+      if (!oldUrl.isEmpty()) {
+        s3Client.deleteImage(oldUrl);
+        pictureCache.invalidate(oldUrl);
+      }
+      profilePictureUrlCache.invalidate(username);
+      return new ResponseEntity<>(JSONObject.quote("Success"), HttpStatus.OK);
+    } catch (IOException | SQLException ex) {
+      return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (InvalidFileTypeException ex) {
+      return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @RequestMapping(value = "/profile/{user}/image/", method = RequestMethod.GET)
+  public ResponseEntity<?> getProfileImage(@PathVariable String user) {
+    try {
+      HttpHeaders res = new HttpHeaders();
+      String url = profilePictureUrlCache.get(user);
+      if (url.isEmpty()) {
+        return new ResponseEntity<>(HttpStatus.OK);
+      }
+      res.add("content-type", "image/jpeg");
+      return new ResponseEntity<>(pictureCache.get(url), res, HttpStatus.OK);
+    } catch (AmazonS3Exception ex) {
+      return new ResponseEntity<>(JSONObject.quote("Image not found"), HttpStatus.NOT_FOUND);
+    }
+  }
+
+  @RequestMapping(value = "/api/profile/image/", method = RequestMethod.DELETE)
+  public ResponseEntity<?> deleteProfileImage(HttpServletRequest req) {
+    if (!isAuthenticated(req)) {
+      return new ResponseEntity<>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
+    }
+    String username = (String) req.getSession().getAttribute("username");
+    try {
+      String url = profilePictureUrlCache.get(username);
+      if (url.isEmpty()) {
+        return new ResponseEntity<>(JSONObject.quote("Image not found"), HttpStatus.NOT_FOUND);
+      }
+      s3Client.deleteImage(url);
+      new UserDao(dbUrl, dbUsername, dbPassword).deleteImage(username);
+      profilePictureUrlCache.invalidate(username);
+      pictureCache.invalidate(url);
+      return new ResponseEntity<>(JSONObject.quote("Success"), HttpStatus.OK);
+    } catch (SQLException ex) {
+      return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (AmazonS3Exception ex) {
+      return new ResponseEntity<>(JSONObject.quote("Image not found"), HttpStatus.NOT_FOUND);
+    }
   }
 
   /**
@@ -548,11 +629,11 @@ public class Api {
       @RequestParam(value = "limit", defaultValue = "10") int limit) {
     limit = Math.min(limit, 50);
     search = StringUtils.trimToEmpty(search);
-    List<String> response = new ArrayList<String>();
+    List<List<String>> response = new ArrayList<>();
     try {
       response = new GameDao(dbUrl, dbUsername, dbPassword).getGameList(search, offset, limit);
     } catch (SQLException ex) {
-      return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
     return new ResponseEntity<>(response, HttpStatus.OK);
   }

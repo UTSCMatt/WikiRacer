@@ -90,7 +90,10 @@ var api = (function () {
         send("GET", "/api/getGameStats/" + gameId + "/", null, callback);
     };
 
-<<<<<<< HEAD
+    module.startSyncGame = function(gameId, callback) {
+        send("PATCH", "/api/game/realtime/" + gameId + "/start/", null, callback);
+    }
+
     module.leaveSyncGame = function (gameId, callback) {
         send("GET", "/api/game/" + gameId + "/leave/", null, callback);
     };
@@ -99,11 +102,18 @@ var api = (function () {
         send("GET", "/api/game/realtime/" + gameId + "/players/", null, callback);
     };
 
-    module.startSyncGame = function(gameId, callback) {
-        send("PATCH", "/api/game/realtime/" + gameId + "/start/", null, callback);
-    }
+    module.postProfilePic = function(file, callback) {
+        send("POST", "/api/profile/image/", {file: file}, callback);
+    };
 
-=======
+    module.deleteProfilePic = function(callback) {
+        send("DELETE", "/api/profile/image", null, callback);
+    };
+
+    module.getProfileData = function(user, callback) {
+        send("GET", "/api/user/" + user + "/game/", null, callback);
+    }; 
+
     module.userGames = function (username, showNonFinished, offset, limit, callback) {
         send("GET", "/api/user/" + username + "/game?showNonFinished=" + showNonFinished + "&offset=" + offset + "&limit=" + limit, null, callback);
     };
@@ -115,7 +125,6 @@ var api = (function () {
     module.topStartEndPage = function (limit, callback){
         send("GET", "/api/article/mostused?limit=" + limit, null, callback);
     };
->>>>>>> statistics
     return module;
 
 })();
