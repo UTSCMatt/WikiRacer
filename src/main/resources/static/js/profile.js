@@ -113,7 +113,7 @@
             listWrapper.appendChild(list);
         };
 
-        function displayGameStats(game) {
+        function displayGameTable(game) {
 
         }
         

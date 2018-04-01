@@ -629,7 +629,7 @@ public class Api {
       @RequestParam(value = "limit", defaultValue = "10") int limit) {
     limit = Math.min(limit, 50);
     search = StringUtils.trimToEmpty(search);
-    List<List<String>> response = new ArrayList<>();
+    List<Map<String, Object>> response = new ArrayList<>();
     try {
       response = new GameDao(dbUrl, dbUsername, dbPassword).getGameList(search, offset, limit);
     } catch (SQLException ex) {

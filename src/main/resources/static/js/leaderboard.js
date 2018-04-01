@@ -72,7 +72,7 @@
             gameList.innerHTML = "";
             generateConfigTable(games, gameList, true);
         }
-
+       
         // generate a table to display the game code, start/end page, and game mode
         function generateConfigTable(data, placement, link){
             var configTable = document.createElement("table");
@@ -83,30 +83,22 @@
                                 <th>End Page</th>
                                 <th>Game Mode</th>
                                 </tr>`;
-            var dataLength = 1;
-            if(link){
-              dataLength = data.length
-            }
-            for (var index = 0; index < dataLength; index++) {
-              var row = configTable.insertRow(-1);
-              var cell0 = row.insertCell(0);
-              var cell1 = row.insertCell(1);
-              var cell2 = row.insertCell(2);
-              var cell3 = row.insertCell(3);
-              if(link){
-                cell0.innerHTML = data[index][0];
-                cell1.innerHTML = data[index][1];
-                cell2.innerHTML = data[index][2];
-                cell3.innerHTML = data[index][3];
-                addLinks(cell0);
-                cell0.className = "list_element";
-              }
-              else{
-                cell0.innerHTML = data.gameCode;
-                cell1.innerHTML = data.startPage;
-                cell2.innerHTML = data.endPage;
-                cell3.innerHTML = data.gameMode;
-              }
+            console.log(data);
+            for (var index = 0; index < data.length; index++) {
+                var row = configTable.insertRow(-1);
+                var codeCell = row.insertCell(0);
+                var startPageCell = row.insertCell(1);
+                var endPageCell = row.insertCell(2);
+                var modeCell = row.insertCell(3);
+                codeCell.innerHTML = data[index].gameCode;
+                startPageCell.innerHTML = data[index].startPage;
+                endPageCell.innerHTML = data[index].endPage;
+                modeCell.innerHTML = data[index].gameMode;
+
+                if (link) {
+                    addLinks(codeCell);
+                    codeCell.className = "list_element";
+                }        
             }
             placement.appendChild(configTable);
         }
@@ -116,7 +108,7 @@
             var configForm = document.getElementById("config_form");
             configForm.innerHTML = "";
 
-            generateConfigTable(gameStats[0], configForm, false);
+            generateConfigTable([gameStats[0]], configForm, false);
             configForm.className = "form";
 
             var statsForm = document.getElementById("stats_form");
