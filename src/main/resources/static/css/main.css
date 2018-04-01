@@ -16,6 +16,12 @@ header {
 
 table, th, td {
     border: 1px solid white;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+
+table {
+    width: 100%;
 }
 
 #title {

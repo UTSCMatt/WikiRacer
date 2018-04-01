@@ -8,167 +8,103 @@
         var offset = 0;
         var limit = 10;
         var query = window.location.hash.substring(1);
-
         var profileName = document.getElementById("profile_uname");
+        var profileWrapper = document.getElementById("profile_wrapper");
+        var hideProfileContainer = document.getElementById("hide_profile_container");
+        
+
         if (!username) {
-            profileName.innerHTML = "You are not logged in";
+            profileWrapper.innerHTML = `You are not logged in`;
+            hideProfileContainer.className = '';
 
         } else if (query == username || query == '') {
             
-            profileName.innerHTML = username;
-            var toggleButton = document.getElementById("toggle_hidden_btn");
-            toggleButton.addEventListener('click', function(e){
-                var imgFormWrapper = document.getElementById("img_form_wrapper");
-                switch (imgFormWrapper.className) {
-                    // toggles the display of the image submission form
-                    case '':
-                        imgFormWrapper.className = 'hidden';
-                        break;
-                    case 'hidden':
-                        imgFormWrapper.className = '';
-                        break;
+            api.userGames(username, false, offset, limit, function(err, res) {
+                if (err) {
+                    console.log(err);
+                    alert(err);
                 }
-            });
+                else if (res.match) {
 
-            var uploadForm = document.getElementById("img_form");
-            // uploads the given image to server
-            uploadForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                var imgFile = document.getElementById("file_upload").files[0];
-                uploadForm.reset();
-                api.postProfilePic(imgFile, function(err, res) {
-                    if (err) {
-                        console.log(err);
-                        alert(err);
-                    }
-                });
-            });
-            toggleButton.className = 'btn';
-            
-            var profilePic = document.getElementById("profile_pic");
-            profilePic.src = `/profile/` + username + `/image/`;
+                    profileName.innerHTML = username;
 
-        } else {
-            username = api.getUser();
-            profileName.innerHTML = "Your username is: " + username;
-            api.userGames(username, showNonFinished, offset, limit, function(err, payload){
-                if (err) console.log(err);
-                else {
-                    getPage(payload.games);
-                }
-            });
+                    var uploadForm = document.getElementById("img_form");
 
-        document.getElementById("prev_page_btn").addEventListener('click', function(e) {
-            if (offset - limit >= 0) {
-                offset = offset - limit;
-                api.userGames(username, showNonFinished, offset, limit, function(err, payload){
-                    if (err) console.log(err);
-                    else {
-                        getPage(payload.games);
-                    }
-                });
-            } else {
-                alert("You are on the first page");
-            }
-        });
-
-        document.getElementById("next_page_btn").addEventListener('click', function(e) {
-            offset = offset + limit;
-            api.userGames(username, showNonFinished, offset, limit, function(err, payload){
-                if (err) console.log(err);
-                else if (payload.games.length === 0){
-                    offset = offset - limit;
-                    alert("No Results");
-                } else {
-                    getPage(payload.games);
-                }
-            });
-        });
-
-        // renders list of game codes
-        function getPage (games) {
-            var gameList = document.querySelector('.game_list');
-            gameList.innerHTML = "";
-            // adds behaviour to game codes to show stats table when clicked
-            function addLinks(listElmt) {
-                listElmt.addEventListener('click', function (e) {
-                    api.userGamePath(listElmt.innerHTML, username, function (err, gamePath) {
-                        if (err) console.log(err);
-                        else {
-                            api.getGameStats(listElmt.innerHTML, function(err, gameStats){
-                               renderStats(gamePath, gameStats);
-                            });
-
-                        }
+                    // uploads the given image to server
+                    uploadForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        var imgFile = document.getElementById("file_upload").files[0];
+                        uploadForm.reset();
+                        api.postProfilePic(imgFile, function(err, res) {
+                            if (err) {
+                                console.log(err);
+                                alert(err);
+                            } else {
+                                window.location.href = "profile.html";
+                            }
+                        });
                     });
-                });
-            }
-            // appends each game code to the list
-            for (var index = 0; index < games.length; index++) {
-                var listElmt = document.createElement("li");
-                listElmt.className = "list_element";
-                listElmt.innerHTML = games[index];
-                addLinks(listElmt);
-                gameList.appendChild(listElmt);
-            }
 
-        }
+                    var deleteButton = document.getElementById("del_btn");
+                    deleteButton.addEventListener('click', function(e) {
+                        api.deleteProfilePic(function(err, res) {
+                            if (err) {
+                                console.log(err);
+                                alert(err);
+                            } else {
+                                window.location.href = "profile.html";
+                            }
+                        });
+                    });
 
-        function renderStats(gamePath, gameStats) {
-            var statsForm = document.getElementById("stats_form");
-            statsForm.innerHTML = "";
-            // makes a table with game and user stats
-            var statsTable = document.createElement("table");
-            statsTable.id = "stats_table";
-            statsTable.className = "table";
-            statsTable.innerHTML = `<tr>
-                                <th>Time Taken</th>
-                                <th>Clicks Taken</th>
-                                <th>Path Taken</th>
-                                </tr>`;
-            // inserts clicks, time, path for the user
-            var path = gamePath[0];
-            for (var i = 1; i < gamePath.length; i++) {
-                path += " -> " + gamePath[i];
-            }
+                    var toggleButton = document.getElementById("toggle_hidden_btn");
+                    // adds script to button that pops up modal
+                    toggleButton.addEventListener('click', function(e) {
+                        var modal = document.getElementById("upload_modal");
+                        modal.style.display = "block";
+                        document.getElementsByClassName("close")[0].addEventListener('click', function(e) {
+                            modal.style.display = "none";
+                        });
+                    });
 
-            for (var i = 0; i < gameStats.length; i++){
-                if(gameStats[i].username == username){
-                    var time = new Date(null);
-                    time.setSeconds(gameStats[i].timeSpend);
-                    var finalTime = time.toISOString().substr(11, 8);
-                    var numClicks = gameStats[i].numClicks;
+                    toggleButton.className = 'btn';
+                    
+                    var profilePic = document.getElementById("profile_pic");
+                    profilePic.src = `/profile/` + username + `/image/`;
+
+                    listGames(res.games);
+                    hideProfileContainer.className = '';
                 }
-            }
-
-            var row = statsTable.insertRow(-1);
-            var cell0 = row.insertCell(0);
-            var cell1 = row.insertCell(1);
-            var cell2 = row.insertCell(2);
-            cell0.innerHTML = finalTime;
-            cell1.innerHTML = numClicks;
-            cell2.innerHTML = path;
-
-            statsForm.appendChild(statsTable);
-
-            statsForm.className = "form";
-        }
-
-        }
-
-        // renders a requested profile that is not the current user's
-        function getProfileByName(profileName) {
+            });
             
-        };
+        } else {
+            api.userGames(query, false, offset, limit, function(err, res) {
+                if (err) {
+                    console.log(err);
+                    alert(err);
+                } else {
+                    profileName.innerHTML = query;
 
-        // renders a list of the user's completed games
-        function generateGamesList(data) {
-
-        };
-
-        // renders a table showing a game's statistics
-        function generateGamesTable(data) {
-
+                    var profilePic = document.getElementById("profile_pic");
+                    profilePic.src = `/profile/` + query + `/image/`;
+                    
+                    listGames(res.games);
+                    hideProfileContainer.className = '';
+                }
+            });
+        }
+      
+        // shows a list of completed games by the user
+        function listGames(gameData) {
+            var listWrapper = document.getElementById("profile_list");
+            var list = document.createElement("ul");
+            for (var i = 0; i < gameData.length; i++) {
+                var listElement = document.createElement("li");
+                listElement.className = "list_element";
+                listElement.innerHTML = gameData[i];
+                list.appendChild(listElement);
+            }
+            listWrapper.appendChild(list);
         };
         
     });

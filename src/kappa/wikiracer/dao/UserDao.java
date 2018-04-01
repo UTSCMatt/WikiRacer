@@ -92,6 +92,7 @@ public class UserDao extends Dao {
     rs.close();
 
     return result;
+  }
 
   public void changeImage(String username, String fileName) throws SQLException {
     Connection c = getConnection();

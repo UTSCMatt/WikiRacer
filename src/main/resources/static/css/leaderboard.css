@@ -41,10 +41,11 @@
 
 #code_search {
     grid-row: 2;
-
 }
 
 #search_title {
     grid-row: 1;
-
+}
+.hidden{
+    display: none;
 }
