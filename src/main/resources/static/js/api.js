@@ -107,7 +107,7 @@ var api = (function () {
     };
 
     module.deleteProfilePic = function(callback) {
-        send("DELETE", "/api/profile/image", null, callback);
+        send("DELETE", "/api/profile/image/", null, callback);
     };
 
     module.getProfileData = function(user, callback) {

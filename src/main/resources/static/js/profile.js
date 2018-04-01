@@ -71,6 +71,9 @@
                     
                     var profilePic = document.getElementById("profile_pic");
                     profilePic.src = `/profile/` + username + `/image/`;
+                    profilePic.onerror = function() {
+                        this.src = "images/profile_placeholder.png";
+                    };
 
                     listGames(res.games);
                     hideProfileContainer.className = '';
@@ -87,6 +90,9 @@
 
                     var profilePic = document.getElementById("profile_pic");
                     profilePic.src = `/profile/` + query + `/image/`;
+                    profilePic.onerror = function() {
+                        this.src = "images/profile_placeholder.png";
+                    };
                     
                     listGames(res.games);
                     hideProfileContainer.className = '';
@@ -106,6 +112,10 @@
             }
             listWrapper.appendChild(list);
         };
+
+        function displayGameStats(game) {
+
+        }
         
     });
 })();
