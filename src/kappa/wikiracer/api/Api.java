@@ -610,7 +610,7 @@ public class Api {
     }
   }
 
-  @RequestMapping(value = "api/game/realtime/{gameId}/start/", method = RequestMethod.PATCH)
+  @RequestMapping(value = "/api/game/realtime/{gameId}/start/", method = RequestMethod.PATCH)
   public ResponseEntity<?> startGame(HttpServletRequest req, @PathVariable String gameId) {
     if (!isAuthenticated(req)) {
       return new ResponseEntity<String>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
