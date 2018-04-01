@@ -329,19 +329,20 @@
                     var time = new Date(null);
                     time.setSeconds(currentPlayerStats.time);
                     var finalTime = time.toISOString().substr(11, 8);
-                    var row = statsTable.insertRow(-1);
+                    var row = rankingTable.insertRow(-1);
                     var rankCell = row.insertCell(0);
                     var playerCell = row.insertCell(1);
                     var clicksCell = row.insertCell(2);
                     var timeCell = row.insertCell(3);
                     var pathCell = row.insertCell(4);
-                    rankCell.innerHTML = i
+                    rankCell.innerHTML = i + 1;
                     playerCell.innerHTML = currentPlayer;
                     clicksCell.innerHTML = currentPlayerStats.clicks;
                     timeCell.innerHTML = finalTime;
                     pathCell.innerHTML = currentPlayerStats.path;
                 }
-                modal.innerHTML += ranking_table;
+                var rankingDiv = document.getElementById('ranking_div');
+                rankingDiv.appendChild(rankingTable);
 
             }
 
