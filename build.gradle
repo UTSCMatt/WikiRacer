@@ -7,7 +7,6 @@ buildscript {
         // If unable to refresh ide project, comment out lines 8 and 17 temporarily
         classpath 'com.github.mowedgrass:jasypt-gradle-boot-plugin:0.1.33'
     }
-
 }
 
 apply plugin: 'java'
@@ -55,6 +54,6 @@ dependencies {
     compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.6'
     compile group: 'de.svenkubiak', name: 'jBCrypt', version: '0.4.1'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
-    testCompile 'junit:junit:4.12'
+    compile group: 'com.googlecode.owasp-java-html-sanitizer', name: 'owasp-java-html-sanitizer', version: 'r239'
 }
 

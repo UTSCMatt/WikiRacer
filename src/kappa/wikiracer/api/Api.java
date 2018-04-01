@@ -44,6 +44,8 @@ import kappa.wikiracer.wiki.SendRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.owasp.html.HtmlPolicyBuilder;
+import org.owasp.html.PolicyFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -744,15 +746,19 @@ public class Api {
    * Only send if the player is in the given game.
    *
    * @param gameId name of the game to send message to
-   * @param player name of the player who is sending the message
    * @param messageContent content of the message to send
    * @return response success if message send, not found otherwise
    */
+  @RequestMapping(value = "/api/game/realtime/{gameId}/message/")
   public ResponseEntity<?> sendMessage(HttpServletRequest req, HttpServletResponse res,
-      @PathVariable String gameId,
-      @PathVariable String player,
-      @PathVariable String messageContent){
+      @PathVariable String gameId, String messageContent){
+    if (!isAuthenticated(req)) {
+      return new ResponseEntity<String>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
+    }
+    String player = (String) req.getSession().getAttribute("username");
     try {
+      PolicyFactory policy = new HtmlPolicyBuilder().toFactory();
+      messageContent = policy.sanitize(messageContent);
       syncGamesManager.sendMessage(gameId, player, messageContent);
     } catch (GameException ex) {
       return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.NOT_FOUND);
