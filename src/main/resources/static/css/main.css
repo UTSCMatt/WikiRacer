@@ -71,3 +71,13 @@ table {
     list-style-type: none;
 }
 
+.thumbnail {
+    max-width: 48px;
+    max-height: 48px;
+    vertical-align: middle;
+}
+
+.thumbnail_cell {
+    width: 1%;
+    white-space: nowrap;
+}

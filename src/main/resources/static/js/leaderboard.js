@@ -117,7 +117,7 @@
             statsTable.id = "stats_table";
             statsTable.className = "table";
             statsTable.innerHTML = `<tr>
-                                <th>Username</th>
+                                <th colspan="2">Username</th>
                                 <th>Time Taken</th>
                                 <th>Clicks Taken</th>
                                 </tr>`;
@@ -130,9 +130,26 @@
                 var cell0 = row.insertCell(0);
                 var cell1 = row.insertCell(1);
                 var cell2 = row.insertCell(2);
-                cell0.innerHTML = gameStats[i].username;
-                cell1.innerHTML = finalTime;
-                cell2.innerHTML = gameStats[i].numClicks;
+                var cell3 = row.insertCell(3);
+
+                var usernameNode = document.createElement("a");
+                usernameNode.className = "list_element";
+                usernameNode.innerHTML = gameStats[i].username;
+                usernameNode.href = "profile.html#" + gameStats[i].username;
+
+                // adds profile pic to table
+                cell0.className = "thumbnail_cell";
+                var imgNode = document.createElement("img");
+                imgNode.className = "thumbnail";
+                imgNode.src = "/profile/" + gameStats[i].username + "/image/";
+                imgNode.onerror = function () {
+                    this.src = "images/profile_placeholder.png";
+                };
+
+                cell0.appendChild(imgNode);
+                cell1.appendChild(usernameNode);
+                cell2.innerHTML = finalTime;
+                cell3.innerHTML = gameStats[i].numClicks;
             }
             statsForm.appendChild(statsTable);
 

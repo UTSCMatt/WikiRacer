@@ -13,6 +13,8 @@
 
 .list_element {
     text-align: left;
+    color: white;
+    text-decoration: none;
 }
 
 .list_element:hover {
