@@ -1,6 +1,7 @@
 package kappa.wikiracer.api;
 
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -165,10 +166,10 @@ public class SyncGamesManager {
       if(!game.inGame(player)){
         throw new UserNotFoundException(player + " not found");
       }
-      Map<String, String> messageMap = new HashMap<>();
+      Map<String, Object> messageMap = new HashMap<>();
       messageMap.put(MESSAGE_CONTENT, messageContent);
       messageMap.put(PLAYER, player);
-      String timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+      long timeStamp = Instant.now().getEpochSecond();
       messageMap.put(TIME_STAMP, timeStamp);
       Map<String, Object> payload = new HashMap<>();
       payload.put(MESSAGE, messageMap);
