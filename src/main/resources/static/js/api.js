@@ -114,6 +114,17 @@ var api = (function () {
         send("GET", "/api/user/" + user + "/game/", null, callback);
     }; 
 
+    module.userGames = function (username, showNonFinished, offset, limit, callback) {
+        send("GET", "/api/user/" + username + "/game?showNonFinished=" + showNonFinished + "&offset=" + offset + "&limit=" + limit, null, callback);
+    };
+
+    module.userGamePath = function (gameId, username, callback) {
+        send("GET", "/api/game/" + gameId + "/player/" + username + "/path/", null, callback);
+    };
+
+    module.topStartEndPage = function (limit, callback){
+        send("GET", "/api/article/mostused?limit=" + limit, null, callback);
+    };
     return module;
 
 })();
