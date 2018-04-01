@@ -267,7 +267,7 @@ public class GameDao extends Dao {
    * @return list of games
    * @throws SQLException when database has an error
    */
-  public List<List<String>> getGameList(String search, int offset, int limit) throws SQLException {
+  public List<Map<String, Object>> getGameList(String search, int offset, int limit) throws SQLException {
     Connection c = getConnection();
     PreparedStatement stmt;
 
@@ -281,14 +281,14 @@ public class GameDao extends Dao {
 
     ResultSet rs = stmt.executeQuery();
 
-    List<List<String>> results = new ArrayList<>();
+    List<Map<String, Object>> results = new ArrayList<>();
 
     while (rs.next()) {
-      ArrayList<String> currentGame = new ArrayList<>();
-      currentGame.add(rs.getString("GameCode"));
-      currentGame.add(rs.getString("StartPage"));
-      currentGame.add(rs.getString("EndPage"));
-      currentGame.add(rs.getString("GameMode"));
+      Map<String, Object> currentGame = new HashMap<>();
+      currentGame.put(GAME_CODE_KEY, rs.getString("GameCode"));
+      currentGame.put(START_PAGE_KEY, rs.getString("StartPage"));
+      currentGame.put(END_PAGE_KEY, rs.getString("EndPage"));
+      currentGame.put(GAME_MODE_KEY, rs.getString("GameMode"));
       results.add(currentGame);
 
     }
@@ -397,6 +397,21 @@ public class GameDao extends Dao {
     c.close();
     stmt.close();
 
+  }
+
+  public void startSyncGame(String gameId) throws SQLException {
+    Connection c = getConnection();
+    PreparedStatement stmt;
+
+    String sql = "UPDATE player_game_map SET StartTime = CURRENT_TIMESTAMP WHERE GameId = (SELECT Id FROM Games WHERE GameId = ?)";
+
+    stmt = c.prepareStatement(sql);
+    stmt.setString(1, gameId);
+
+    stmt.executeUpdate();
+
+    c.close();
+    stmt.close();
   }
 
 }

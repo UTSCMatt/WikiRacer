@@ -83,12 +83,14 @@ public class Api {
   private LoadingCache<String, Set<String>> bannedArticlesCache;
   // Pair<gameId, username>
   private LoadingCache<Pair<String, String>, Boolean> inGameCache;
+  private LoadingCache<Pair<String, String>, List<String>> pathCache;
   private LoadingCache<String, Boolean> existsCache;
   private LoadingCache<String, String> redirectCache;
   private LoadingCache<String, Boolean> isSyncCache;
   private LoadingCache<String, Boolean> userExistsCache;
   private LoadingCache<String, String> profilePictureUrlCache;
   private LoadingCache<String, byte[]> pictureCache;
+  private LoadingCache<Integer, List<String>> topPagesCache;
 
 
   private final S3Client s3Client;
@@ -132,7 +134,10 @@ public class Api {
         .build(key -> new GameDao(dbUrl, dbUsername, dbPassword).isSync(key));
     userExistsCache = Caffeine.newBuilder().maximumSize(1000).build(key -> new UserDao(dbUrl, dbUsername, dbPassword).userExists(key));
     profilePictureUrlCache = Caffeine.newBuilder().maximumSize(5000).build(key -> new UserDao(dbUrl, dbUsername, dbPassword).getImage(key));
-    pictureCache = Caffeine.newBuilder().maximumWeight(10000000).weigher((String key, byte[] file) -> file.length).build(key -> s3Client.getImage(key));
+    pictureCache = Caffeine.newBuilder().maximumWeight(10000000).weigher((String key, byte[] file) -> file.length).build(
+        s3Client::getImage);
+    topPagesCache = Caffeine.newBuilder().maximumWeight(100).weigher((Integer key, List<String> pages) -> pages.size()).build(key -> new StatsDao(dbUrl, dbUsername, dbPassword).topPages(key));
+    pathCache = Caffeine.newBuilder().maximumWeight(1000).weigher((Pair<String, String> key, List<String> path) -> path.size()).build(key -> new StatsDao(dbUrl, dbUsername, dbPassword).userGamePath(key.getKey(), key.getValue()));
   }
   
   @PostConstruct
@@ -453,8 +458,10 @@ public class Api {
       new RulesDao(dbUrl, dbUsername, dbPassword).banArticles(gameId, bannedArticlesSet);
       if (incrementStart) {
         new StatsDao(dbUrl, dbUsername, dbPassword).incrementWikiPageUse(start);
+        topPagesCache.invalidateAll();
       }if (incrementEnd) {
         new StatsDao(dbUrl, dbUsername, dbPassword).incrementWikiPageUse(end);
+        topPagesCache.invalidateAll();
       }
       new StatsDao(dbUrl, dbUsername, dbPassword).addToPath(gameId, (String) req.getSession().getAttribute("username"), start);
     } catch (SQLException ex) {
@@ -574,6 +581,7 @@ public class Api {
         syncGamesManager.goToPage(gameId, username, response);
       }
       new StatsDao(dbUrl, dbUsername, dbPassword).addToPath(gameId, username, nextPage);
+      pathCache.invalidate(new Pair<>(gameId, username));
       return new ResponseEntity<>(response, HttpStatus.OK);
     } catch (SQLException | UnsupportedEncodingException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()),
@@ -608,9 +616,12 @@ public class Api {
     String username = (String) req.getSession().getAttribute("username");
     try {
       syncGamesManager.startGame(gameId, username);
+      new GameDao(dbUrl, dbUsername, dbPassword).startSyncGame(gameId);
       return new ResponseEntity<>(JSONObject.quote("success"), HttpStatus.OK);
     } catch (GameException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    } catch (SQLException ex) {
+      return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -629,7 +640,7 @@ public class Api {
       @RequestParam(value = "limit", defaultValue = "10") int limit) {
     limit = Math.min(limit, 50);
     search = StringUtils.trimToEmpty(search);
-    List<List<String>> response = new ArrayList<>();
+    List<Map<String, Object>> response = new ArrayList<>();
     try {
       response = new GameDao(dbUrl, dbUsername, dbPassword).getGameList(search, offset, limit);
     } catch (SQLException ex) {
@@ -707,14 +718,10 @@ public class Api {
       @PathVariable String gameId,
       @PathVariable String username) {
     List<String> response = new ArrayList<String>();
-    try {
-      if(!userExistsCache.get(username)){
-        return new ResponseEntity<String>(JSONObject.quote("No such user"), HttpStatus.NOT_FOUND);
-      }
-      response = new StatsDao(dbUrl, dbUsername, dbPassword).userGamePath(gameId, username);
-    } catch (SQLException ex) {
-      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    if(!userExistsCache.get(username)){
+      return new ResponseEntity<String>(JSONObject.quote("No such user"), HttpStatus.NOT_FOUND);
     }
+    response = pathCache.get(new Pair<>(gameId, username));
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
@@ -728,11 +735,7 @@ public class Api {
   public ResponseEntity<?> topPages(HttpServletRequest req, HttpServletResponse res,
       @RequestParam(value = "limit", defaultValue = "10") int limit) {
     List<String> response = new ArrayList<String>();
-    try {
-      response = new StatsDao(dbUrl, dbUsername, dbPassword).topPages(limit);
-    } catch (SQLException ex) {
-      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    response = topPagesCache.get(limit);
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
   /* API ENDS */

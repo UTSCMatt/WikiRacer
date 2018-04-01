@@ -12,7 +12,6 @@
         var profileWrapper = document.getElementById("profile_wrapper");
         var hideProfileContainer = document.getElementById("hide_profile_container");
         
-
         if (!username) {
             profileWrapper.innerHTML = `You are not logged in`;
             hideProfileContainer.className = '';
@@ -45,7 +44,8 @@
                         });
                     });
 
-                    var deleteButton = document.getElementById("del_btn");
+                    var deleteButton = document.getElementById("delete_btn");
+                    // deletes the image from the profile
                     deleteButton.addEventListener('click', function(e) {
                         api.deleteProfilePic(function(err, res) {
                             if (err) {
@@ -71,6 +71,9 @@
                     
                     var profilePic = document.getElementById("profile_pic");
                     profilePic.src = `/profile/` + username + `/image/`;
+                    profilePic.onerror = function() {
+                        this.src = "images/profile_placeholder.png";
+                    };
 
                     listGames(res.games);
                     hideProfileContainer.className = '';
@@ -87,6 +90,9 @@
 
                     var profilePic = document.getElementById("profile_pic");
                     profilePic.src = `/profile/` + query + `/image/`;
+                    profilePic.onerror = function() {
+                        this.src = "images/profile_placeholder.png";
+                    };
                     
                     listGames(res.games);
                     hideProfileContainer.className = '';
@@ -106,6 +112,10 @@
             }
             listWrapper.appendChild(list);
         };
+
+        function displayGameTable(game) {
+
+        }
         
     });
 })();
