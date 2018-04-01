@@ -25,6 +25,7 @@ import javax.servlet.http.HttpSession;
 import kappa.wikiracer.dao.GameDao;
 import kappa.wikiracer.dao.LinkDao;
 import kappa.wikiracer.dao.RulesDao;
+import kappa.wikiracer.dao.StatsDao;
 import kappa.wikiracer.dao.UserDao;
 import kappa.wikiracer.exception.GameException;
 import kappa.wikiracer.exception.InvalidArticleException;
@@ -75,7 +76,8 @@ public class Api {
   private LoadingCache<String, Boolean> existsCache;
   private LoadingCache<String, String> redirectCache;
   private LoadingCache<String, Boolean> isSyncCache;
-
+  private LoadingCache<String, Boolean> userExistsCache;
+  
   private final SimpMessagingTemplate simpMessagingTemplate;
   
   private SyncGamesManager syncGamesManager;
@@ -84,6 +86,7 @@ public class Api {
   public Api(SimpMessagingTemplate simpMessagingTemplate) {
     this.simpMessagingTemplate = simpMessagingTemplate;
   }
+ 
 
   /**
    * Initialize all the caches.
@@ -112,6 +115,7 @@ public class Api {
         .build(ResolveRedirectRequest::resolveRedirect);
     isSyncCache = Caffeine.newBuilder().maximumSize(1000)
         .build(key -> new GameDao(dbUrl, dbUsername, dbPassword).isSync(key));
+    userExistsCache = Caffeine.newBuilder().maximumSize(1000).build(key -> new UserDao(dbUrl, dbUsername, dbPassword).userExists(key));
   }
   
   @PostConstruct
@@ -241,6 +245,7 @@ public class Api {
           .createUser(username, UserVerification.createHash(password));
       invalidateSession(req);
       setSession(req, res, username);
+      userExistsCache.invalidate(username);
       return new ResponseEntity<String>(JSONObject.quote("User signed up"), HttpStatus.OK);
     } catch (SQLException ex) {
       if (ex.getMessage().equals("Username already in use")) {
@@ -283,6 +288,8 @@ public class Api {
   @RequestMapping(value = "/api/game/new/", method = RequestMethod.POST)
   public ResponseEntity<?> createGame(HttpServletRequest req, String start, String end,
       String rules, String gameMode, Boolean isSync) {
+    Boolean incrementStart = false;
+    Boolean incrementEnd = false;
     if (!isAuthenticated(req)) {
       return new ResponseEntity<>(JSONObject.quote("Not logged in"), HttpStatus.UNAUTHORIZED);
     }
@@ -322,6 +329,7 @@ public class Api {
         return new ResponseEntity<>(JSONObject.quote(start + " does not exist"),
             HttpStatus.NOT_FOUND);
       }
+      incrementStart = true;
     }
     if (end.isEmpty()) {
       end = RandomRequest.getRandom(start);
@@ -335,6 +343,7 @@ public class Api {
         return new ResponseEntity<>(JSONObject.quote(end + " does not exist"),
             HttpStatus.NOT_FOUND);
       }
+      incrementEnd = true;
     }
 
     start = redirectCache.get(start);
@@ -361,6 +370,12 @@ public class Api {
       new RulesDao(dbUrl, dbUsername, dbPassword)
           .banCategories(gameId, bannedCategoriesSet);
       new RulesDao(dbUrl, dbUsername, dbPassword).banArticles(gameId, bannedArticlesSet);
+      if (incrementStart) {
+        new StatsDao(dbUrl, dbUsername, dbPassword).incrementWikiPageUse(start);
+      }if (incrementEnd) {
+        new StatsDao(dbUrl, dbUsername, dbPassword).incrementWikiPageUse(end);
+      }
+      new StatsDao(dbUrl, dbUsername, dbPassword).addToPath(response.get("id"), (String) req.getSession().getAttribute("username"), start);
     } catch (SQLException ex) {
       return new ResponseEntity<>(JSONObject.quote(ex.getMessage()),
           HttpStatus.INTERNAL_SERVER_ERROR);
@@ -394,6 +409,7 @@ public class Api {
       response.put("id", gameId);
       response.put("end", finalPageCache.get(gameId));
       response.put("isSync", isSync);
+      new StatsDao(dbUrl, dbUsername, dbPassword).addToPath(gameId, (String) req.getSession().getAttribute("username"), response.get("start"));
       return new ResponseEntity<>(response, HttpStatus.OK);
     } catch (SQLException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()),
@@ -476,6 +492,7 @@ public class Api {
       if (isSync) {
         syncGamesManager.goToPage(gameId, username, response);
       }
+      new StatsDao(dbUrl, dbUsername, dbPassword).addToPath(gameId, username, nextPage);
       return new ResponseEntity<>(response, HttpStatus.OK);
     } catch (SQLException | UnsupportedEncodingException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()),
@@ -560,6 +577,83 @@ public class Api {
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
+
+  /**
+   * Get a list of games a user have played
+   *
+   * @param username name of the user to display
+   * @param showNonFinished display non-finished games, default false
+   * @param offset how many games to skip, default 0
+   * @param limit how many games to return, default 10, max 50
+   * @return response a list of games
+   */
+  @RequestMapping(value = "/api/user/{username}/game", method = RequestMethod.GET)
+  public ResponseEntity<?> userGames(HttpServletRequest req, HttpServletResponse res,
+      @PathVariable String username,
+      @RequestParam(value = "showNonFinished", defaultValue = "false") Boolean showNonFinished,
+      @RequestParam(value = "offset", defaultValue = "0") int offset,
+      @RequestParam(value = "limit", defaultValue = "10") int limit) {
+    Map<String, Object> payload = new HashMap<>();
+    List<String> response = new ArrayList<String>();
+    try {
+      if(!userExistsCache.get(username)){
+        return new ResponseEntity<String>(JSONObject.quote("No such user"), HttpStatus.NOT_FOUND);
+      }
+      boolean usernameMatch = false;
+      if(req.getSession() != null) {
+        String sessionUsername = (String) req.getSession().getAttribute("username");
+        usernameMatch = sessionUsername.equals(username);
+      }
+      response = new StatsDao(dbUrl, dbUsername, dbPassword).userGames(username, showNonFinished, offset, limit);
+      payload.put("games", response);
+      payload.put("match", usernameMatch);
+
+    } catch (SQLException ex) {
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    return new ResponseEntity<>(payload, HttpStatus.OK);
+  }
+
+  /**
+   * Get a list of pages a player visited to finish a game
+   *
+   * @param gameId name of the game to display
+   * @param username name of the user to display
+   * @return response a list of wiki page from start to finish
+   */
+  @RequestMapping(value = "/api/game/{gameId}/player/{username}/path/", method = RequestMethod.GET)
+  public ResponseEntity<?> userGamePath(HttpServletRequest req, HttpServletResponse res,
+      @PathVariable String gameId,
+      @PathVariable String username) {
+    List<String> response = new ArrayList<String>();
+    try {
+      if(!userExistsCache.get(username)){
+        return new ResponseEntity<String>(JSONObject.quote("No such user"), HttpStatus.NOT_FOUND);
+      }
+      response = new StatsDao(dbUrl, dbUsername, dbPassword).userGamePath(gameId, username);
+    } catch (SQLException ex) {
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+
+  /**
+   * Get a list of pages that are most used as start/end pages
+   *
+   * @param limit how many pages to return, default 10, max 50
+   * @return response a list of games
+   */
+  @RequestMapping(value = "/api/article/mostused", method = RequestMethod.GET)
+  public ResponseEntity<?> topPages(HttpServletRequest req, HttpServletResponse res,
+      @RequestParam(value = "limit", defaultValue = "10") int limit) {
+    List<String> response = new ArrayList<String>();
+    try {
+      response = new StatsDao(dbUrl, dbUsername, dbPassword).topPages(limit);
+    } catch (SQLException ex) {
+      return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    return new ResponseEntity<>(response, HttpStatus.OK);
+  }
   /* API ENDS */
 
 }

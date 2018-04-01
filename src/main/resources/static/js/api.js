@@ -90,6 +90,7 @@ var api = (function () {
         send("GET", "/api/getGameStats/" + gameId + "/", null, callback);
     };
 
+<<<<<<< HEAD
     module.leaveSyncGame = function (gameId, callback) {
         send("GET", "/api/game/" + gameId + "/leave/", null, callback);
     };
@@ -102,6 +103,19 @@ var api = (function () {
         send("PATCH", "/api/game/realtime/" + gameId + "/start/", null, callback);
     }
 
+=======
+    module.userGames = function (username, showNonFinished, offset, limit, callback) {
+        send("GET", "/api/user/" + username + "/game?showNonFinished=" + showNonFinished + "&offset=" + offset + "&limit=" + limit, null, callback);
+    };
+
+    module.userGamePath = function (gameId, username, callback) {
+        send("GET", "/api/game/" + gameId + "/player/" + username + "/path/", null, callback);
+    };
+
+    module.topStartEndPage = function (limit, callback){
+        send("GET", "/api/article/mostused?limit=" + limit, null, callback);
+    };
+>>>>>>> statistics
     return module;
 
 })();

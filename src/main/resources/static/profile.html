@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title>Wikiracer</title>
     <link href="css/main.css" rel="stylesheet" type="text/css"/>
+    <link href="css/form.css" rel="stylesheet" type="text/css"/>
+    <link href="css/leaderboard.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
     <header>
@@ -17,6 +19,15 @@
     </ul> 
     <div>This is a placeholder page for when profiles are implemented in final version</div>
     <div id="profile_uname"></div>
+    <form class="form" id="select_game_form">
+        <div class="form_title">Your Recent Games</div>
+        <ul class="game_list">
+        </ul>
+        <button type="button" class="btn" id="prev_page_btn">Prev Page</button>
+        <button type="button" class="btn" id="next_page_btn">Next Page</button>
+    </form>
+    <form class="hidden" id="stats_form">
+
     <script src="js/api.js"></script>
     <script src="js/main.js"></script>
     <script src="js/profile.js"></script>
