@@ -311,7 +311,38 @@
                     window.location.href = "leaderboard.html#" + gameReqs.gameId;
                 });
                 modal.style.display = "block";
-                
+
+                var rankingTable = document.createElement('table');
+                rankingTable.id = "ranking_table";
+                rankingTable.className = "table";
+                rankingTable.innerHTML = `<tr>
+                                    <th>Rank</th>
+                                    <th>Player</th>
+                                    <th>Clicks</th>
+                                    <th>Time</th>
+                                    <th>Path</th>
+                                    </tr>`;
+                var  rankingArray = socketProps.rankings;
+                for (var i = 0; i < rankingArray.length; i++) {
+                    var currentPlayer = rankingArray[i].player;
+                    var currentPlayerStats = socketProps.player_info[currentPlayer];
+                    var time = new Date(null);
+                    time.setSeconds(currentPlayerStats.time);
+                    var finalTime = time.toISOString().substr(11, 8);
+                    var row = statsTable.insertRow(-1);
+                    var rankCell = row.insertCell(0);
+                    var playerCell = row.insertCell(1);
+                    var clicksCell = row.insertCell(2);
+                    var timeCell = row.insertCell(3);
+                    var pathCell = row.insertCell(4);
+                    rankCell.innerHTML = i
+                    playerCell.innerHTML = currentPlayer;
+                    clicksCell.innerHTML = currentPlayerStats.clicks;
+                    timeCell.innerHTML = finalTime;
+                    pathCell.innerHTML = currentPlayerStats.path;
+                }
+                modal.innerHTML += ranking_table;
+
             }
 
             if (socketProps.started) {
