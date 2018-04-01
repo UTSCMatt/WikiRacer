@@ -749,7 +749,7 @@ public class Api {
    * @param messageContent content of the message to send
    * @return response success if message send, not found otherwise
    */
-  @RequestMapping(value = "/api/game/realtime/{gameId}/message/")
+  @RequestMapping(value = "/api/game/realtime/{gameId}/message/", method = RequestMethod.POST)
   public ResponseEntity<?> sendMessage(HttpServletRequest req, HttpServletResponse res,
       @PathVariable String gameId, String messageContent){
     if (!isAuthenticated(req)) {
