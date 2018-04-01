@@ -399,4 +399,19 @@ public class GameDao extends Dao {
 
   }
 
+  public void startSyncGame(String gameId) throws SQLException {
+    Connection c = getConnection();
+    PreparedStatement stmt;
+
+    String sql = "UPDATE player_game_map SET StartTime = CURRENT_TIMESTAMP WHERE GameId = (SELECT Id FROM Games WHERE GameId = ?)";
+
+    stmt = c.prepareStatement(sql);
+    stmt.setString(1, gameId);
+
+    stmt.executeUpdate();
+
+    c.close();
+    stmt.close();
+  }
+
 }

@@ -608,9 +608,12 @@ public class Api {
     String username = (String) req.getSession().getAttribute("username");
     try {
       syncGamesManager.startGame(gameId, username);
+      new GameDao(dbUrl, dbUsername, dbPassword).startSyncGame(gameId);
       return new ResponseEntity<>(JSONObject.quote("success"), HttpStatus.OK);
     } catch (GameException ex) {
       return new ResponseEntity<String>(JSONObject.quote(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    } catch (SQLException ex) {
+      return new ResponseEntity<>(JSONObject.quote(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
