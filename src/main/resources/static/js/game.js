@@ -46,6 +46,9 @@
                 rules.articles = rulesArt.split(",");
                 formBox.innerHTML = `LOADING`;
 
+                // var header = document.getElementsByTagName("header")[0];
+                // header.className = "hidden";
+
                 api.makeGame(startPage, endPage, gameMode, JSON.stringify(rules), syncOpt, function (err, res) {
                     if (err) {
                         console.log(err);
@@ -97,6 +100,8 @@
             var joinGameId = document.getElementById("gamecode").value;
             formBox.innerHTML = `LOADING`;
 
+            // var header = document.getElementsByTagName("header")[0];
+            // header.className = "hidden";
             // join existing game using game code
             api.joinGame(joinGameId, function (err, res) {
                 if (err) {
@@ -624,7 +629,7 @@
             });
             document.addEventListener("keydown", function (event) {
                 if (event.key === "Enter") {
-                    e.preventDefault();
+                    event.preventDefault();
                     var messageContent = messageArea.value;
                     messageArea.value = "";
                     if (messageContent !== "") {
@@ -645,9 +650,11 @@
             hideChatBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 if (hideDiv.classList.contains("hidden")) {
+                    hideChatBtn.innerHTML = "Hide Chat";
                     hideDiv.classList.remove("hidden");
                 }
                 else {
+                    hideChatBtn.innerHTML = "Show Chat";
                     hideDiv.classList.add("hidden");
                 }
             });
