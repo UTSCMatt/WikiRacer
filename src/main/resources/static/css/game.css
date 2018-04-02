@@ -36,7 +36,7 @@
   overflow-y:auto;
 }
 
-#chat_box{
+#chatbox{
   position:fixed;
   bottom: 0;
   width: 100%;
