@@ -51,13 +51,16 @@ public class Runner {
   @Value("${server.port}")
   private int serverPortHttps;
 
+  @Value("${server.port.publicHttps}")
+  private int redirectPort;
+
   private Connector createHttpConnector() {
     Connector connector =
         new Connector("org.apache.coyote.http11.Http11NioProtocol");
     connector.setScheme("http");
     connector.setSecure(false);
     connector.setPort(serverPortHttp);
-    connector.setRedirectPort(serverPortHttps);
+    connector.setRedirectPort(redirectPort);
     return connector;
   }
 
