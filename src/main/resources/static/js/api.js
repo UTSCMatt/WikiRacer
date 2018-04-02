@@ -92,7 +92,7 @@ var api = (function () {
 
     module.startSyncGame = function (gameId, callback) {
         send("PATCH", "/api/game/realtime/" + gameId + "/start/", null, callback);
-    }
+    };
 
     module.leaveSyncGame = function (gameId, callback) {
         send("GET", "/api/game/" + gameId + "/leave/", null, callback);
@@ -128,7 +128,7 @@ var api = (function () {
 
     module.sendMessage = function (gameId, messageContent, callback) {
         send("POST", "/api/game/realtime/" + gameId + "/message/", { messageContent: messageContent }, callback);
-    }
+    };
     return module;
 
 })();
