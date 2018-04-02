@@ -210,7 +210,7 @@
                         // add profile pic to table
                         var imgDiv = document.createElement("div");
                         var imgNode = document.createElement("img");
-                        imgNode.className = "thumbnail " + users[i];
+                        imgNode.className = "thumbnail";
                         imgNode.src = "/profile/" + users[i] + "/image/";
                         imgNode.onerror = function() {
                             this.src = "images/profile_placeholder.png";
@@ -262,7 +262,7 @@
                 // adds profile pic to table
                 var imgDiv = document.createElement("div");
                 var imgNode = document.createElement("img");
-                imgNode.className = "thumbnail " + socketProps.joined;
+                imgNode.className = "thumbnail";
                 imgNode.src = "/profile/" + socketProps.joined + "/image/";
                 imgNode.onerror = function () {
                     this.src = "images/profile_placeholder.png";
@@ -303,11 +303,12 @@
 
             if (socketProps.player) {
                 var updateCells = document.getElementsByClassName(socketProps.player);
-
+                console.log(updateCells);
                 // update the clicks counter when a user clicks a new link
                 var updatedClicks = document.createTextNode(socketProps.clicks);
                 updateCells[1].innerHTML = '';
                 updateCells[1].appendChild(updatedClicks);
+                console.log(updateCells);
                 if (socketProps.finished) {
                     
                     // converts time in seconds to hh:mm:ss
