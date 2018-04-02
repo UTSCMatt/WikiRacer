@@ -62,6 +62,7 @@
 
                         if(gameReqs.isSync) {
                             makeLobby(gameReqs, true);
+                            displayChat(gameReqs);
                         } else {
                             // get the json representation of the starting page
                             api.getWikiPage(gameReqs.start, function(err, res) {
@@ -111,6 +112,7 @@
                     gameReqs.isSync = res.isSync;
                     if (gameReqs.isSync) {
                         makeLobby(gameReqs);
+                        displayChat(gameReqs);
                     }
                     else{
                         loadingScreen();
@@ -125,7 +127,7 @@
         });
 
         function makeLobby(gameReqs, isHost=false) {
-            var lobbyBox = document.getElementById("lobbybox");  
+            var lobbyBox = document.getElementById("lobbybox");
             var lobbyForm = document.createElement("form");
             var buttonDiv = document.createElement("div");
             buttonDiv.id = "button_div";
@@ -357,6 +359,32 @@
                 });
                       
             }
+
+            if (socketProps.message){
+               var viewMessageDiv = document.getElementById("view_message_div");
+               var currentMessageDiv = document.createElement("div");
+               currentMessageDiv.className = "current_message_div";
+               var playerName = document.createElement("p");
+               playerName.className = "player_name";
+               var message = document.createElement("p");
+               message.className = "message";
+               var timeStamp = document.createElement("p");
+               timeStamp.className = "time_stamp";
+
+               var messageInfo = socketProps.message;
+               playerName.innerHTML = messageInfo.player + ": ";
+               message.innerHTML = messageInfo.message_content;
+               var time = new Date(messageInfo.time_stamp * 1000);
+               var finalTime = time.toTimeString().split(" ")[0];
+               timeStamp.innerHTML = finalTime;
+
+               currentMessageDiv.appendChild(playerName);
+               currentMessageDiv.appendChild(message);
+               currentMessageDiv.appendChild(timeStamp);
+               viewMessageDiv.appendChild(currentMessageDiv);
+               // scroll to the bottom when new message receive
+               viewMessageDiv.scrollTop = viewMessageDiv.scrollHeight;
+            }
         };
 
 
@@ -468,6 +496,74 @@
                 linksAdder(i);
             }
             
+        }
+
+        function displayChat(gameReqs){
+            var chatbox = document.getElementById("chatbox");
+            var chatform = document.createElement("form");
+            chatform.id = "chat_form";
+            chatform.className = "form";
+            var hideDiv = document.createElement("div");
+            hideDiv.id = "hide_div";
+            var viewMessageDiv = document.createElement("div");
+            viewMessageDiv.id = "view_message_div";
+            var inputDiv = document.createElement("div");
+            inputDiv.id = "input_div";
+            var messageArea = document.createElement("input");
+            messageArea.id = "message_area";
+            var sendBtn = document.createElement("button");
+            sendBtn.className = "btn";
+            sendBtn.innerHTML = "Send";
+            sendBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                var messageContent = messageArea.value;
+                messageArea.value = "";
+                if (messageContent !== "") {
+                  api.sendMessage(gameReqs.gameId, messageContent, function(err, res){
+                      if(err){
+                          console.log(err);
+                          alert(err);
+                      }
+                  });
+                }
+            });
+            document.addEventListener("keydown", function(e){
+                if(event.key === "Enter"){
+                  e.preventDefault();
+                  var messageContent = messageArea.value;
+                  messageArea.value = "";
+                  if (messageContent !== "") {
+                    api.sendMessage(gameReqs.gameId, messageContent, function(err, res){
+                      if(err){
+                          console.log(err);
+                          alert(err);
+                      }
+                    });
+                  }
+                }
+            });
+
+            var hideChatBtn = document.createElement("button");
+            hideChatBtn.id = "hide_chat_btn";
+            hideChatBtn.innerHTML = "Hide Chat";
+            hideChatBtn.className = "btn";
+            hideChatBtn.addEventListener('click', function(e){
+                e.preventDefault();
+                if(hideDiv.classList.contains("hidden")){
+                    hideDiv.classList.remove("hidden");
+                }
+                else{
+                    hideDiv.classList.add("hidden");
+                }
+            });
+
+            chatform.appendChild(hideChatBtn);
+            inputDiv.appendChild(messageArea);
+            inputDiv.appendChild(sendBtn);
+            hideDiv.appendChild(viewMessageDiv);
+            hideDiv.appendChild(inputDiv);
+            chatform.appendChild(hideDiv);
+            chatbox.appendChild(chatform);
         }
         
     });

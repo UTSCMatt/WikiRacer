@@ -271,7 +271,7 @@ public class GameDao extends Dao {
     Connection c = getConnection();
     PreparedStatement stmt;
 
-    String sql = "SELECT DISTINCT Games.GameId as GameCode, (SELECT Wiki_Pages.Title FROM Wiki_Pages INNER JOIN Games WHERE Games.GameId = GameCode AND Games.StartId = Wiki_Pages.Id) as StartPage, (SELECT Wiki_Pages.Title FROM Wiki_Pages INNER JOIN Games WHERE Games.GameId = GameCode AND Games.EndId = Wiki_Pages.Id) as EndPage, game_mode.GameMode FROM Games INNER JOIN player_game_map INNER JOIN game_mode WHERE Games.GameMode = game_mode.Id AND player_game_map.GameId = Games.Id AND Finished = 1 AND Games.GameId LIKE ? LIMIT ? OFFSET ?";
+    String sql = "SELECT DISTINCT Games.GameId as GameCode, (SELECT Wiki_Pages.Title FROM Wiki_Pages INNER JOIN Games WHERE Games.GameId = GameCode AND Games.StartId = Wiki_Pages.Id) as StartPage, (SELECT Wiki_Pages.Title FROM Wiki_Pages INNER JOIN Games WHERE Games.GameId = GameCode AND Games.EndId = Wiki_Pages.Id) as EndPage, game_mode.GameMode FROM Games INNER JOIN player_game_map INNER JOIN game_mode WHERE Games.GameMode = game_mode.Id AND player_game_map.GameId = Games.Id AND Finished = 1 AND Games.GameId LIKE ? LIMIT ? OFFSET ? ORDER BY Games.Id DESC";
     
 
     stmt = c.prepareStatement(sql);
