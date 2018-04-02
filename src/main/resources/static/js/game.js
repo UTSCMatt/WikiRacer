@@ -310,12 +310,10 @@
 
             if (socketProps.player) {
                 var updateCells = document.getElementsByClassName(socketProps.player);
-                console.log(updateCells);
                 // update the clicks counter when a user clicks a new link
                 var updatedClicks = document.createTextNode(socketProps.clicks);
                 updateCells[1].innerHTML = '';
                 updateCells[1].appendChild(updatedClicks);
-                console.log(updateCells);
                 if (socketProps.finished) {
 
                     // converts time in seconds to hh:mm:ss
