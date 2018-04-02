@@ -37,9 +37,9 @@
 }
 
 #chatbox{
-  position:fixed;
-  bottom: 0;
+  position:sticky;
   width: 100%;
+  bottom: 0;
 }
 
 #chat_form{
@@ -47,6 +47,9 @@
   display: flex;
   align-items: center;
   flex-direction: column;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
 }
 
 #hide_div{

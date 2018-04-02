@@ -650,6 +650,7 @@
                 else{
                     hideDiv.classList.add("hidden");
                 }
+                document.getElementById("chatbox").style.height = document.getElementById("chat_form").offsetHeight + "px";
             });
 
             chatform.appendChild(hideChatBtn);
@@ -659,6 +660,7 @@
             hideDiv.appendChild(inputDiv);
             chatform.appendChild(hideDiv);
             chatbox.appendChild(chatform);
+            chatbox.style.height = chatform.offsetHeight + "px";
         }
         
     });
