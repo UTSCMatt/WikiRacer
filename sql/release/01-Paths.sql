@@ -6,5 +6,5 @@
 	PRIMARY KEY (GameId, UserId, PathOrder),
 	FOREIGN KEY (GameId) REFERENCES Games(Id),
 	FOREIGN KEY (UserId) REFERENCES Users(Id),
-	FOREIGN KEY (PageId) REFERENCES wiki_pages(Id)
+	FOREIGN KEY (PageId) REFERENCES Wiki_Pages(Id)
 )CHARACTER SET=utf8;
