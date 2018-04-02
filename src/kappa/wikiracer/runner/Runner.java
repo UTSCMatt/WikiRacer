@@ -51,7 +51,7 @@ public class Runner {
   @Value("${server.port}")
   private int serverPortHttps;
 
-  @Value("{server.port.publicHttps}")
+  @Value("${server.port.publicHttps}")
   private int redirectPort;
 
   private Connector createHttpConnector() {
