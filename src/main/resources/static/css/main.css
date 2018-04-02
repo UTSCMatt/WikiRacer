@@ -24,7 +24,12 @@ table {
     width: 100%;
 }
 
-#title {
+footer {
+    display: flex;
+    flex-direction: column;
+}
+
+#title{
     color: black;
     text-decoration: none;
     width:100%;
