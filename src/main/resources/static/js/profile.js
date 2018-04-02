@@ -1,3 +1,4 @@
+/*jshint esversion: 6 */
 (function () {
     "use strict";
 
@@ -130,7 +131,7 @@
                     }
                 });
             });
-        };
+        }
 
         function addLinks(listElmt) {
             // gets the game stats when a game code is clicked
@@ -157,7 +158,7 @@
                 list.appendChild(listElement);
             }
             listWrapper.appendChild(list);
-        };
+        }
 
         function displayGameTable(data) {
             var statsForm = document.getElementById("profile_game_form");
@@ -202,10 +203,10 @@
             var time = new Date(null);
             time.setSeconds(userGameData.timeSpend);
             var finalTime = time.toISOString().substr(11, 8);
-            var row = statsTable.insertRow(-1);
-            var nameCell = row.insertCell(0);
-            var timeCell = row.insertCell(1);
-            var clicksCell = row.insertCell(2);
+            var statsRow = statsTable.insertRow(-1);
+            var nameCell = statsRow.insertCell(0);
+            var timeCell = statsRow.insertCell(1);
+            var clicksCell = statsRow.insertCell(2);
             nameCell.innerHTML = userGameData.username;
             timeCell.innerHTML = finalTime;
             clicksCell.innerHTML = userGameData.numClicks;

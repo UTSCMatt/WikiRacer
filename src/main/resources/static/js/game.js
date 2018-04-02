@@ -1,3 +1,4 @@
+/*jshint esversion: 6 */
 (function () {
     "use strict";
     window.addEventListener('load', function () {
@@ -27,7 +28,7 @@
 
         document.getElementById("start_btn").addEventListener("click", function (e) {
             e.preventDefault();
-            // if the user enters a wikipedia url instead of the page title, splits the string and 
+            // if the user enters a wikipedia url instead of the page title, splits the string and
             // returns just the page title
             var startPage = document.getElementById("startpage").value.split("/wiki/").slice(-1)[0];
             var endPage = document.getElementById("endpage").value.split("/wiki/").slice(-1)[0];
@@ -171,7 +172,7 @@
                     loadingScreen();
                     api.startSyncGame(gameReqs.gameId, function (err, res) {
                         if (err) console.log(err);
-                    })
+                    });
                 });
                 buttonDiv.appendChild(lobbyStartBtn);
             }
@@ -185,11 +186,11 @@
 
             var userRow = document.createElement("tr");
             userRow.id = "user_row";
-            userRow.innerHTML = `<th>Players:</th>`
+            userRow.innerHTML = `<th>Players:</th>`;
 
             var clicksRow = document.createElement("tr");
             clicksRow.id = "clicks_row";
-            clicksRow.innerHTML = `<th>Clicks:</th>`
+            clicksRow.innerHTML = `<th>Clicks:</th>`;
 
             var statusRow = document.createElement("tr");
             statusRow.id = "status_row";
@@ -199,7 +200,7 @@
             userTable.appendChild(clicksRow);
             userTable.appendChild(statusRow);
 
-            // gets list of users from backend, displays in lobby 
+            // gets list of users from backend, displays in lobby
             var lobbyUsers = api.getLobbyUsers(gameReqs.gameId, function (err, users) {
                 if (err) console.log(err);
                 else {
@@ -330,7 +331,7 @@
             }
 
             if (socketProps.game_finished) {
-                // displays pop up modal box 
+                // displays pop up modal box
                 var modal = document.getElementById("finished_modal");
                 var modalBtn = document.getElementById("proceed_btn");
                 document.getElementById("modal_text").innerHTML = `All players have finished the game.
@@ -354,9 +355,9 @@
                 for (var i = 0; i < rankingArray.length; i++) {
                     var currentPlayer = rankingArray[i].player;
                     var currentPlayerStats = socketProps.player_info[currentPlayer];
-                    var time = new Date(null);
-                    time.setSeconds(currentPlayerStats.time);
-                    var finalTime = time.toISOString().substr(11, 8);
+                    var rankingTime = new Date(null);
+                    rankingTime.setSeconds(currentPlayerStats.time);
+                    var finalRankingTime = rankingTime.toISOString().substr(11, 8);
                     var row = rankingTable.insertRow(-1);
                     var rankCell = row.insertCell(0);
                     var playerCell = row.insertCell(1);
@@ -366,7 +367,7 @@
                     rankCell.innerHTML = i + 1;
                     playerCell.innerHTML = currentPlayer;
                     clicksCell.innerHTML = currentPlayerStats.clicks;
-                    timeCell.innerHTML = finalTime;
+                    timeCell.innerHTML = finalRankingTime;
                     pathCell.innerHTML = currentPlayerStats.path;
                     if (api.getUser() === currentPlayer) {
                         addFacebook(currentPlayerStats, gameReqs);
@@ -403,9 +404,9 @@
                 var messageInfo = socketProps.message;
                 playerName.innerHTML = messageInfo.player + ": ";
                 message.innerHTML = messageInfo.message_content;
-                var time = new Date(messageInfo.time_stamp * 1000);
-                var finalTime = time.toTimeString().split(" ")[0];
-                timeStamp.innerHTML = finalTime;
+                var messageTime = new Date(messageInfo.time_stamp * 1000);
+                var finalMessageTime = messageTime.toTimeString().split(" ")[0];
+                timeStamp.innerHTML = finalMessageTime;
 
                 currentMessageDiv.appendChild(playerName);
                 currentMessageDiv.appendChild(message);
@@ -414,7 +415,7 @@
                 // scroll to the bottom when new message receive
                 viewMessageDiv.scrollTop = viewMessageDiv.scrollHeight;
             }
-        };
+        }
 
 
         // creates the structure for displaying the game
@@ -427,7 +428,7 @@
             frame.id = "wikiframe";
             frame.innerHTML = content.parse.text["*"];
 
-            // hides the game window until all links and images have been added 
+            // hides the game window until all links and images have been added
             frameWrapper.style.visibility = "hidden";
             frameWrapper.appendChild(frame);
             gameBox.appendChild(frameWrapper);
@@ -483,7 +484,7 @@
                                 createGameWindow(content, gameReqs);
                             }
                             else if (res.finished) {
-                                // placeholder for actual win 
+                                // placeholder for actual win
                                 var time = new Date(null);
                                 time.setSeconds(res.time);
                                 var finalTime = time.toISOString().substr(11, 8);
@@ -491,15 +492,15 @@
                                 if (res.isSync) {
                                     var frameWrapper = document.getElementById("framewrapper");
                                     frameWrapper.style.color = "white";
-                                    frameWrapper.innerHTML = `You've reached your destination! Your score is: <br> Clicks: `
-                                        + res.clicks + `<br> Time:`
-                                        + finalTime + `<br> Waiting on other players to finish.`;
+                                    frameWrapper.innerHTML = `You've reached your destination! Your score is: <br> Clicks: ` +
+                                        res.clicks + `<br> Time:` +
+                                        finalTime + `<br> Waiting on other players to finish.`;
                                 } else {
                                     var modal = document.getElementById("finished_modal");
                                     var modalBtn = document.getElementById("proceed_btn");
-                                    document.getElementById("modal_text").innerHTML = `You've reached your destination! Your score is: <br> Clicks: `
-                                        + res.clicks + `<br> Time:`
-                                        + finalTime + `<br> Click OK to go leaderboard.`;
+                                    document.getElementById("modal_text").innerHTML = `You've reached your destination! Your score is: <br> Clicks: ` +
+                                        res.clicks + `<br> Time:` +
+                                        finalTime + `<br> Click OK to go leaderboard.`;
                                     modalBtn.addEventListener('click', function (e) {
                                         window.location.href = "leaderboard.html#" + gameReqs.gameId;
                                     });
@@ -592,12 +593,12 @@
                     method: 'share',
                     display: 'popup',
                     href: 'https://wikiracer.me',
-                    quote: "I just got from '" + gameReqs.start + "' to '"
-                        + gameReqs.end + "' in " + res.clicks + " clicks and " + finalTime
-                        + ". Game Id: " + gameReqs.gameId + "."
+                    quote: "I just got from '" + gameReqs.start + "' to '" +
+                        gameReqs.end + "' in " + res.clicks + " clicks and " + finalTime +
+                        ". Game Id: " + gameReqs.gameId + "."
                 }, function (response) {
                 });
-            }
+            };
         }
         function displayChat(gameReqs) {
             var chatbox = document.getElementById("chatbox");
