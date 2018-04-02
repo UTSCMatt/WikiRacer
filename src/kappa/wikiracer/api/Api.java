@@ -651,7 +651,7 @@ public class Api {
    * @param limit how many games to return, default 10, max 50
    * @return response a list of games
    */
-  @RequestMapping(value = "/api/getGameList", method = RequestMethod.GET)
+  @RequestMapping(value = "/api/gameList", method = RequestMethod.GET)
   public ResponseEntity<?> getGameList(HttpServletRequest req, HttpServletResponse res,
       @RequestParam(value = "search", required = false) String search,
       @RequestParam(value = "offset", defaultValue = "0") int offset,
@@ -674,7 +674,7 @@ public class Api {
    * @param gameId the game's id
    * @return the stats of the game
    */
-  @RequestMapping(value = "/api/getGameStats/{gameId}/", method = RequestMethod.GET)
+  @RequestMapping(value = "/api/game/{gameId}/stats/", method = RequestMethod.GET)
   public ResponseEntity<?> getGameStats(HttpServletRequest req, HttpServletResponse res,
       @PathVariable String gameId) {
     List<Map> response = new ArrayList<>();
