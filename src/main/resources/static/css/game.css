@@ -36,7 +36,7 @@
   overflow-y:auto;
 }
 
-#chat_box{
+#chatbox{
   position:fixed;
   bottom: 0;
   width: 100%;
@@ -84,5 +84,5 @@
   order: 3;
   white-space: normal;
   word-break: break-word;
-  text-alight: left;
+  text-align: left;
 }

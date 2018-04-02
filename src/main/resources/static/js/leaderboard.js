@@ -1,14 +1,14 @@
 (function () {
     "use strict";
-    window.addEventListener('load', function() {
-        
+    window.addEventListener('load', function () {
+
         var offset = 0;
         var limit = 10;
         var query = window.location.hash.substring(1);
 
 
 
-        api.getGameList(offset, limit, query, function(err, games) {
+        api.getGameList(offset, limit, query, function (err, games) {
             if (err) console.log(err);
             else {
                 getPage(games);
@@ -16,10 +16,10 @@
         });
 
         // searches for games that match or are similar to the entered code 
-        document.getElementById("search_btn").addEventListener('click', function(e) {
+        document.getElementById("search_btn").addEventListener('click', function (e) {
             offset = 0;
             query = document.getElementById("code_search").value;
-            api.getGameList(offset, limit, query, function(err, games) {
+            api.getGameList(offset, limit, query, function (err, games) {
                 if (err) console.log(err);
                 else {
                     getPage(games);
@@ -27,10 +27,10 @@
             });
         });
 
-        document.getElementById("prev_page_btn").addEventListener('click', function(e) {
+        document.getElementById("prev_page_btn").addEventListener('click', function (e) {
             if (offset - limit >= 0) {
                 offset = offset - limit;
-                api.getGameList(offset, limit, query, function(err, games){
+                api.getGameList(offset, limit, query, function (err, games) {
                     if (err) console.log(err);
                     else {
                         getPage(games);
@@ -41,11 +41,11 @@
             }
         });
 
-        document.getElementById("next_page_btn").addEventListener('click', function(e) {
+        document.getElementById("next_page_btn").addEventListener('click', function (e) {
             offset = offset + limit;
-            api.getGameList(offset, limit, query, function(err, games) {
+            api.getGameList(offset, limit, query, function (err, games) {
                 if (err) console.log(err);
-                else if (games.length === 0){
+                else if (games.length === 0) {
                     offset = offset - limit;
                     alert("No Results");
                 } else {
@@ -67,14 +67,14 @@
         }
 
         // renders list of game codes
-        function getPage (games) {
+        function getPage(games) {
             var gameList = document.querySelector('.game_list');
             gameList.innerHTML = "";
             generateConfigTable(games, gameList, true);
         }
-      
+
         // generate a table to display the game code, start/end page, and game mode
-        function generateConfigTable(data, placement, link){
+        function generateConfigTable(data, placement, link) {
             var configTable = document.createElement("table");
             configTable.className = "table";
             configTable.innerHTML = `<tr>
@@ -97,13 +97,13 @@
                 if (link) {
                     addLinks(codeCell);
                     codeCell.className = "list_element";
-                }        
+                }
             }
             placement.appendChild(configTable);
         }
 
         function renderStats(gameStats) {
-  
+
             var configForm = document.getElementById("config_form");
             configForm.innerHTML = "";
 

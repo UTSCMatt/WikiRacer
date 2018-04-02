@@ -1,6 +1,6 @@
 (function () {
     "use strict";
-    window.addEventListener('load', function() {
+    window.addEventListener('load', function () {
 
         var formBox = document.getElementById("form_container");
 
@@ -11,7 +11,7 @@
             clicks: null,
             isSync: false
         };
-        (function(){
+        (function () {
             var gameForms = document.getElementById("form_container");
             var loginPrompt = document.getElementById("login_notify");
             // hides the game creation/join forms if the user is not logged in
@@ -23,7 +23,7 @@
                 loginPrompt.className = "";
             }
         })();
-              
+
 
         document.getElementById("start_btn").addEventListener("click", function (e) {
             e.preventDefault();
@@ -31,27 +31,27 @@
             // returns just the page title
             var startPage = document.getElementById("startpage").value.split("/wiki/").slice(-1)[0];
             var endPage = document.getElementById("endpage").value.split("/wiki/").slice(-1)[0];
-            
+
             try {
                 var gameMode = document.querySelector('input[name="game_mode"]:checked').value;
                 var syncOpt = document.querySelector('input[name="game_sync"]').checked;
                 var rulesCat = document.getElementById("ban_cat").value.replace(/, /g, ",");
                 var rulesArt = document.getElementById("ban_art").value.replace(/, /g, ",");
                 var rules = {
-                    "categories" : [],
-                    "articles" : []
+                    "categories": [],
+                    "articles": []
                 };
                 // splits the user input by commas into an array
                 rules.categories = rulesCat.split(",");
                 rules.articles = rulesArt.split(",");
                 formBox.innerHTML = `LOADING`;
-                
+
                 api.makeGame(startPage, endPage, gameMode, JSON.stringify(rules), syncOpt, function (err, res) {
                     if (err) {
                         console.log(err);
                         alert(err);
                         window.location.href = "game.html";
-                    } 
+                    }
                     else {
                         formBox.className = "form hidden";
                         gameReqs.gameId = res.id;
@@ -60,17 +60,17 @@
                         gameReqs.clicks = 0;
                         gameReqs.isSync = res.isSync;
 
-                        if(gameReqs.isSync) {
+                        if (gameReqs.isSync) {
                             makeLobby(gameReqs, true);
                             displayChat(gameReqs);
                         } else {
                             // get the json representation of the starting page
-                            api.getWikiPage(gameReqs.start, function(err, res) {
+                            api.getWikiPage(gameReqs.start, function (err, res) {
                                 if (err) console.log(err);
                                 else createGameWindow(res, gameReqs);
                             });
                         }
-                      
+
                     }
                 });
             } catch (error) {
@@ -80,7 +80,7 @@
 
 
         // used to toggle the options menu
-        document.getElementById("options_btn").addEventListener("click", function(e) {
+        document.getElementById("options_btn").addEventListener("click", function (e) {
             var optionsBtn = document.getElementById("options_btn");
             var optionsMenu = document.getElementById("options_menu");
             if (optionsMenu.className == "hidden") {
@@ -89,9 +89,9 @@
             } else {
                 optionsMenu.className = "hidden";
                 optionsBtn.innerHTML = "Show Options";
-            }   
+            }
         });
-        
+
         document.getElementById("join_btn").addEventListener("click", function (e) {
             e.preventDefault();
             var joinGameId = document.getElementById("gamecode").value;
@@ -114,19 +114,19 @@
                         makeLobby(gameReqs);
                         displayChat(gameReqs);
                     }
-                    else{
+                    else {
                         loadingScreen();
-                        api.getWikiPage(gameReqs.start, function(err, res) {
+                        api.getWikiPage(gameReqs.start, function (err, res) {
                             if (err) console.log(err);
                             else createGameWindow(res, gameReqs);
                         });
                     }
-                    
+
                 }
             });
         });
 
-        function makeLobby(gameReqs, isHost=false) {
+        function makeLobby(gameReqs, isHost = false) {
             var lobbyBox = document.getElementById("lobbybox");
             var lobbyForm = document.createElement("form");
             var buttonDiv = document.createElement("div");
@@ -145,8 +145,8 @@
             lobbyLeaveBtn.className = "btn";
             lobbyLeaveBtn.id = "lobby_leave_btn";
             lobbyLeaveBtn.innerHTML = "Leave Lobby";
-            lobbyLeaveBtn.addEventListener('click', function(e) {
-                websocket.disconnect(gameReqs.gameId, function(err, res) {
+            lobbyLeaveBtn.addEventListener('click', function (e) {
+                websocket.disconnect(gameReqs.gameId, function (err, res) {
                     if (err) console.log(err);
                     else {
                         window.location.href = "game.html";
@@ -161,23 +161,23 @@
                 lobbyStartBtn.className = "btn";
                 lobbyStartBtn.id = "lobby_start_btn";
                 lobbyStartBtn.innerHTML = "Start Game";
-                lobbyStartBtn.addEventListener('click', function(e) {
+                lobbyStartBtn.addEventListener('click', function (e) {
                     buttonDiv.className = "hidden";
                     loadingScreen();
-                    api.startSyncGame(gameReqs.gameId, function(err, res) {
+                    api.startSyncGame(gameReqs.gameId, function (err, res) {
                         if (err) console.log(err);
-                    })  
+                    })
                 });
                 buttonDiv.appendChild(lobbyStartBtn);
             }
 
             buttonDiv.appendChild(lobbyLeaveBtn);
-            
+
 
             // generates a table for storing player progress
             var userTable = document.createElement("table");
             userTable.id = "user_table";
-        
+
             var userRow = document.createElement("tr");
             userRow.id = "user_row";
             userRow.innerHTML = `<th>Players:</th>`
@@ -195,10 +195,10 @@
             userTable.appendChild(statusRow);
 
             // gets list of users from backend, displays in lobby 
-            var lobbyUsers = api.getLobbyUsers(gameReqs.gameId, function(err, users) {
+            var lobbyUsers = api.getLobbyUsers(gameReqs.gameId, function (err, users) {
                 if (err) console.log(err);
                 else {
-                  
+
                     for (var i = 0; i < users.length; i++) {
                         // adds table of users to show in lobby
                         // and their clicks count
@@ -214,7 +214,7 @@
                         var imgNode = document.createElement("img");
                         imgNode.className = "thumbnail";
                         imgNode.src = "/profile/" + users[i] + "/image/";
-                        imgNode.onerror = function() {
+                        imgNode.onerror = function () {
                             this.src = "images/profile_placeholder.png";
                         };
 
@@ -236,7 +236,7 @@
                     userBox.appendChild(userTable);
                 }
             });
-            
+
             lobbyForm.appendChild(userBox);
             lobbyForm.appendChild(buttonDiv);
             lobbyBox.appendChild(lobbyForm);
@@ -312,17 +312,17 @@
                 updateCells[1].appendChild(updatedClicks);
                 console.log(updateCells);
                 if (socketProps.finished) {
-                    
+
                     // converts time in seconds to hh:mm:ss
                     var time = new Date(null);
                     time.setSeconds(socketProps.time);
                     var finalTime = time.toISOString().substr(11, 8);
-                    
+
                     // update finished status
                     var updatedFinish = document.createTextNode("Finished in: " + finalTime);
                     updateCells[2].innerHTML = '';
                     updateCells[2].appendChild(updatedFinish);
-                    
+
                 }
             }
 
@@ -331,8 +331,8 @@
                 var modal = document.getElementById("finished_modal");
                 var modalBtn = document.getElementById("proceed_btn");
                 document.getElementById("modal_text").innerHTML = `All players have finished the game.
-                                                                    <br> Click OK to go leaderboard.`;
-                modalBtn.addEventListener('click', function(e) {
+                                                                    <br> Click OK to go to leaderboard.`;
+                modalBtn.addEventListener('click', function (e) {
                     window.location.href = "leaderboard.html#" + gameReqs.gameId;
                 });
                 modal.style.display = "block";
@@ -347,7 +347,7 @@
                                     <th>Time</th>
                                     <th>Path</th>
                                     </tr>`;
-                var  rankingArray = socketProps.rankings;
+                var rankingArray = socketProps.rankings;
                 for (var i = 0; i < rankingArray.length; i++) {
                     var currentPlayer = rankingArray[i].player;
                     var currentPlayerStats = socketProps.player_info[currentPlayer];
@@ -375,38 +375,38 @@
                 var buttonDiv = document.getElementById("button_div");
                 buttonDiv.className = "hidden";
                 loadingScreen();
-               
-                api.getWikiPage(gameReqs.start, function(err, res) {
+
+                api.getWikiPage(gameReqs.start, function (err, res) {
                     if (err) console.log(err);
                     else createGameWindow(res, gameReqs);
                 });
-                      
+
             }
 
-            if (socketProps.message){
-               var viewMessageDiv = document.getElementById("view_message_div");
-               var currentMessageDiv = document.createElement("div");
-               currentMessageDiv.className = "current_message_div";
-               var playerName = document.createElement("p");
-               playerName.className = "player_name";
-               var message = document.createElement("p");
-               message.className = "message";
-               var timeStamp = document.createElement("p");
-               timeStamp.className = "time_stamp";
+            if (socketProps.message) {
+                var viewMessageDiv = document.getElementById("view_message_div");
+                var currentMessageDiv = document.createElement("div");
+                currentMessageDiv.className = "current_message_div";
+                var playerName = document.createElement("p");
+                playerName.className = "player_name";
+                var message = document.createElement("p");
+                message.className = "message";
+                var timeStamp = document.createElement("p");
+                timeStamp.className = "time_stamp";
 
-               var messageInfo = socketProps.message;
-               playerName.innerHTML = messageInfo.player + ": ";
-               message.innerHTML = messageInfo.message_content;
-               var time = new Date(messageInfo.time_stamp * 1000);
-               var finalTime = time.toTimeString().split(" ")[0];
-               timeStamp.innerHTML = finalTime;
+                var messageInfo = socketProps.message;
+                playerName.innerHTML = messageInfo.player + ": ";
+                message.innerHTML = messageInfo.message_content;
+                var time = new Date(messageInfo.time_stamp * 1000);
+                var finalTime = time.toTimeString().split(" ")[0];
+                timeStamp.innerHTML = finalTime;
 
-               currentMessageDiv.appendChild(playerName);
-               currentMessageDiv.appendChild(message);
-               currentMessageDiv.appendChild(timeStamp);
-               viewMessageDiv.appendChild(currentMessageDiv);
-               // scroll to the bottom when new message receive
-               viewMessageDiv.scrollTop = viewMessageDiv.scrollHeight;
+                currentMessageDiv.appendChild(playerName);
+                currentMessageDiv.appendChild(message);
+                currentMessageDiv.appendChild(timeStamp);
+                viewMessageDiv.appendChild(currentMessageDiv);
+                // scroll to the bottom when new message receive
+                viewMessageDiv.scrollTop = viewMessageDiv.scrollHeight;
             }
         };
 
@@ -457,7 +457,7 @@
             function linksAdder(i) {
                 var linkSplit = links[i].href.split("/wiki/").slice(-1)[0];
                 // removes external links and template links
-                if(regex.test(linkSplit) || regex.test(links[i].className)) {
+                if (regex.test(linkSplit) || regex.test(links[i].className)) {
                     links[i].removeAttribute("href");
                 }
                 // replaces internal wiki links with api calls for their respective pages
@@ -486,15 +486,15 @@
                                     var frameWrapper = document.getElementById("framewrapper");
                                     frameWrapper.style.color = "white";
                                     frameWrapper.innerHTML = `You've reached your destination! Your score is: <br> Clicks: `
-                                                            + res.clicks + `<br> Time:` 
-                                                            + finalTime + `<br> Waiting on other players to finish.`;
+                                        + res.clicks + `<br> Time:`
+                                        + finalTime + `<br> Waiting on other players to finish.`;
                                 } else {
                                     var modal = document.getElementById("finished_modal");
                                     var modalBtn = document.getElementById("proceed_btn");
                                     document.getElementById("modal_text").innerHTML = `You've reached your destination! Your score is: <br> Clicks: `
-                                                                                    + res.clicks + `<br> Time:` 
-                                                                                    + finalTime + `<br> Click OK to go leaderboard.`;
-                                    modalBtn.addEventListener('click', function(e) {
+                                        + res.clicks + `<br> Time:`
+                                        + finalTime + `<br> Click OK to go leaderboard.`;
+                                    modalBtn.addEventListener('click', function (e) {
                                         window.location.href = "leaderboard.html#" + gameReqs.gameId;
                                     });
                                     modal.style.display = "block";
@@ -502,7 +502,7 @@
                                     addTwitter(res, gameReqs);
 
                                 }
-                                
+
                             } else {
                                 gameReqs.clicks = res.clicks;
                                 api.getWikiPage(res.current_page, function (err, res) {
@@ -516,84 +516,84 @@
 
                     });
                 }
-               
+
             }
             for (var i = 0; i < links.length; i++) {
                 linksAdder(i);
             }
-            
+
         }
 
-        function addTwitter(res, gameReqs){
+        function addTwitter(res, gameReqs) {
             var navBar = document.querySelector(".modal_content");
             var tweetBtn = document.createElement('a');
             var href = "";
             var time = new Date(null);
             time.setSeconds(res.time);
             var finalTime = time.toISOString().substr(11, 8);
-//            if(res.isSync){
-//            }
-//            else{
-            href += "I just got from '" +  gameReqs.start + "' to '" + gameReqs.end + "' in " + res.clicks + " clicks and " + finalTime + ". Game Id: " + gameReqs.gameId + ".";
-//            }
+            //            if(res.isSync){
+            //            }
+            //            else{
+            href += "I just got from '" + gameReqs.start + "' to '" + gameReqs.end + "' in " + res.clicks + " clicks and " + finalTime + ". Game Id: " + gameReqs.gameId + ".";
+            //            }
             tweetBtn.href = "https://twitter.com/intent/tweet?text=" + href;
             tweetBtn.className = "twitter-share-button";
             tweetBtn.innerHTML = "Tweet";
             navBar.appendChild(tweetBtn);
-            window.twttr = (function(d, s, id) {
-              var js, fjs = d.getElementsByTagName(s)[0],
-                t = window.twttr || {};
-              if (d.getElementById(id)) return t;
-              js = d.createElement(s);
-              js.id = id;
-              js.src = "https://platform.twitter.com/widgets.js";
-              fjs.parentNode.insertBefore(js, fjs);
+            window.twttr = (function (d, s, id) {
+                var js, fjs = d.getElementsByTagName(s)[0],
+                    t = window.twttr || {};
+                if (d.getElementById(id)) return t;
+                js = d.createElement(s);
+                js.id = id;
+                js.src = "https://platform.twitter.com/widgets.js";
+                fjs.parentNode.insertBefore(js, fjs);
 
-              t._e = [];
-              t.ready = function(f) {
-                t._e.push(f);
-              };
+                t._e = [];
+                t.ready = function (f) {
+                    t._e.push(f);
+                };
 
-              return t;
+                return t;
             }(document, "script", "twitter-wjs"));
         }
-        
+
         function addFacebook(res, gameReqs) {
-          var modal = document.querySelector(".modal_content");
-          var shareBtn = document.createElement('div');
-          shareBtn.id = "shareBtn";
-          shareBtn.className = "facebook_btn";
-          shareBtn.innerText = "Share";
-          modal.appendChild(shareBtn);
-          var time = new Date(null);
-          time.setSeconds(res.time);
-          var finalTime = time.toISOString().substr(11, 8);
-          (function (d, s, id) {
-            var js, fjs = d.getElementsByTagName(s)[0];
-            if (d.getElementById(id)) return;
-            js = d.createElement(s);
-            js.id = id;
-            js.src = 'https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.12&appId=1976880799295620&autoLogAppEvents=1';
-            fjs.parentNode.insertBefore(js, fjs);
-          }(document, 'script', 'facebook-jssdk'));
-          shareBtn.onclick = function () {
-            FB.init({
-              appId: '232524440651338',
-              xfbml: true,
-              version: 'v2.3'
-            });
-            FB.ui({
-              method: 'share',
-              display: 'popup',
-              href: 'https://wikiracer.me',
-              quote: "I just got from '" + gameReqs.start + "' to '"
-              + gameReqs.end + "' in " + res.clicks + " clicks and " + finalTime
-              + ". Game Id: " + gameReqs.gameId + "."
-            }, function (response) {
-            });
-          }
+            var modal = document.querySelector(".modal_content");
+            var shareBtn = document.createElement('div');
+            shareBtn.id = "shareBtn";
+            shareBtn.className = "facebook_btn";
+            shareBtn.innerText = "Share";
+            modal.appendChild(shareBtn);
+            var time = new Date(null);
+            time.setSeconds(res.time);
+            var finalTime = time.toISOString().substr(11, 8);
+            (function (d, s, id) {
+                var js, fjs = d.getElementsByTagName(s)[0];
+                if (d.getElementById(id)) return;
+                js = d.createElement(s);
+                js.id = id;
+                js.src = 'https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.12&appId=1976880799295620&autoLogAppEvents=1';
+                fjs.parentNode.insertBefore(js, fjs);
+            }(document, 'script', 'facebook-jssdk'));
+            shareBtn.onclick = function () {
+                FB.init({
+                    appId: '232524440651338',
+                    xfbml: true,
+                    version: 'v2.3'
+                });
+                FB.ui({
+                    method: 'share',
+                    display: 'popup',
+                    href: 'https://wikiracer.me',
+                    quote: "I just got from '" + gameReqs.start + "' to '"
+                        + gameReqs.end + "' in " + res.clicks + " clicks and " + finalTime
+                        + ". Game Id: " + gameReqs.gameId + "."
+                }, function (response) {
+                });
+            }
         }
-        function displayChat(gameReqs){
+        function displayChat(gameReqs) {
             var chatbox = document.getElementById("chatbox");
             var chatform = document.createElement("form");
             chatform.id = "chat_form";
@@ -609,32 +609,32 @@
             var sendBtn = document.createElement("button");
             sendBtn.className = "btn";
             sendBtn.innerHTML = "Send";
-            sendBtn.addEventListener('click', function(e) {
+            sendBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 var messageContent = messageArea.value;
                 messageArea.value = "";
                 if (messageContent !== "") {
-                  api.sendMessage(gameReqs.gameId, messageContent, function(err, res){
-                      if(err){
-                          console.log(err);
-                          alert(err);
-                      }
-                  });
+                    api.sendMessage(gameReqs.gameId, messageContent, function (err, res) {
+                        if (err) {
+                            console.log(err);
+                            alert(err);
+                        }
+                    });
                 }
             });
-            document.addEventListener("keydown", function(e){
-                if(event.key === "Enter"){
-                  e.preventDefault();
-                  var messageContent = messageArea.value;
-                  messageArea.value = "";
-                  if (messageContent !== "") {
-                    api.sendMessage(gameReqs.gameId, messageContent, function(err, res){
-                      if(err){
-                          console.log(err);
-                          alert(err);
-                      }
-                    });
-                  }
+            document.addEventListener("keydown", function (event) {
+                if (event.key === "Enter") {
+                    e.preventDefault();
+                    var messageContent = messageArea.value;
+                    messageArea.value = "";
+                    if (messageContent !== "") {
+                        api.sendMessage(gameReqs.gameId, messageContent, function (err, res) {
+                            if (err) {
+                                console.log(err);
+                                alert(err);
+                            }
+                        });
+                    }
                 }
             });
 
@@ -642,12 +642,12 @@
             hideChatBtn.id = "hide_chat_btn";
             hideChatBtn.innerHTML = "Hide Chat";
             hideChatBtn.className = "btn";
-            hideChatBtn.addEventListener('click', function(e){
+            hideChatBtn.addEventListener('click', function (e) {
                 e.preventDefault();
-                if(hideDiv.classList.contains("hidden")){
+                if (hideDiv.classList.contains("hidden")) {
                     hideDiv.classList.remove("hidden");
                 }
-                else{
+                else {
                     hideDiv.classList.add("hidden");
                 }
             });
@@ -660,6 +660,6 @@
             chatform.appendChild(hideDiv);
             chatbox.appendChild(chatform);
         }
-        
+
     });
 }());
