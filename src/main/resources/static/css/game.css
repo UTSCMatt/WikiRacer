@@ -30,3 +30,59 @@
         padding-bottom: 56.25%;
     }
 }
+
+#view_message_div{
+  height:200px;
+  overflow-y:auto;
+}
+
+#chat_box{
+  position:fixed;
+  bottom: 0;
+  width: 100%;
+}
+
+#chat_form{
+  margin: 0;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+#hide_div{
+  width: 100%;
+}
+
+#input_div {
+  display: flex;
+  justify-center: center;
+}
+
+#message_area {
+  flex-grow: 1;
+  font-size: 23pt;
+}
+
+.current_message_div {
+  display: flex;
+}
+
+.time_stamp {
+  order: 1;
+  color: lightgrey;
+  padding-right: 3px;
+}
+
+.player_name {
+  order: 2;
+  font-weight: bolder;
+  color: skyblue;
+  padding-right: 3px;
+}
+
+.message {
+  order: 3;
+  white-space: normal;
+  word-break: break-word;
+  text-alight: left;
+}

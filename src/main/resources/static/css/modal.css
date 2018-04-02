@@ -26,6 +26,19 @@
     width: 80%;
     
 }
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: white;
+    text-decoration: none;
+    cursor: pointer;
+}
 
 @-webkit-keyframes animatetop {
     from {top:-300px; opacity:0} 

@@ -16,6 +16,12 @@ header {
 
 table, th, td {
     border: 1px solid white;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+
+table {
+    width: 100%;
 }
 
 #title {
@@ -65,3 +71,13 @@ table, th, td {
     list-style-type: none;
 }
 
+.thumbnail {
+    max-width: 48px;
+    max-height: 48px;
+    vertical-align: middle;
+}
+
+.thumbnail_cell {
+    width: 1%;
+    white-space: nowrap;
+}
