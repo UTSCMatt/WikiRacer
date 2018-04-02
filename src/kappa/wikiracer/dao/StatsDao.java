@@ -56,7 +56,8 @@ public class StatsDao extends Dao {
    * @return list of games
    * @throws SQLException when database has an error
    */
-  public List<String> userGames(String username, boolean showNonFinished, int offset, int limit) throws SQLException {
+  public List<String> userGames(String username, boolean showNonFinished, int offset, int limit)
+      throws SQLException {
     Connection c = getConnection();
     CallableStatement stmt;
 
@@ -83,9 +84,9 @@ public class StatsDao extends Dao {
   }
 
   /**
-   * Get a list of wiki pages from start to end page of a game
+   * Get a list of wiki pages from start to end page of a game.
    *
-   * @param  gameId find game of this id
+   * @param gameId find game of this id
    * @param username find games of this user
    * @return list of wiki page ordered from start page to end page
    * @throws SQLException when database has an error
@@ -94,7 +95,9 @@ public class StatsDao extends Dao {
     Connection c = getConnection();
     PreparedStatement stmt;
 
-    String sql = "SELECT w.Title FROM Wiki_Pages w INNER JOIN Paths p ON w.Id = p.PageId INNER JOIN Users u ON u.Id=p.UserId INNER JOIN Games g ON g.Id=p.gameId WHERE g.GameId = ? AND u.Username = ? ORDER BY p.PathOrder";
+    String sql = "SELECT w.Title FROM Wiki_Pages w INNER JOIN Paths p ON w.Id = p.PageId "
+        + "INNER JOIN Users u ON u.Id=p.UserId INNER JOIN Games g ON g.Id=p.gameId "
+        + "WHERE g.GameId = ? AND u.Username = ? ORDER BY p.PathOrder";
 
     stmt = c.prepareStatement(sql);
     stmt.setString(1, gameId);

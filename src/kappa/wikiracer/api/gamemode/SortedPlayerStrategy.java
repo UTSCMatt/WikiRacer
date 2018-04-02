@@ -1,4 +1,4 @@
-package kappa.wikiracer.api.gameMode;
+package kappa.wikiracer.api.gamemode;
 
 import java.util.Collections;
 import java.util.Map;
@@ -20,7 +20,7 @@ public abstract class SortedPlayerStrategy implements Comparable<SortedPlayerStr
   }
 
   @Override
-  abstract public int compareTo(SortedPlayerStrategy o);
+  public abstract int compareTo(SortedPlayerStrategy o);
 
   public String getPlayer() {
     return player;

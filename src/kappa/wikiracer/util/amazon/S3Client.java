@@ -25,8 +25,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class S3Client {
-  private AmazonS3 s3client;
 
+  private static final int MAX_IMAGE_BYTES = 1000000;
+  private static final int MAX_DIMENSION = 1000;
+  private AmazonS3 s3client;
   @Value("${amazonProperties.endpointUrl}")
   private String endpointUrl;
   @Value("${amazonProperties.bucketName}")
@@ -38,14 +40,11 @@ public class S3Client {
   @Value("${amazonProperties.region}")
   private String region;
 
-  private static final int MAX_IMAGE_BYTES = 1000000;
-
-  private static final int MAX_DIMENSION = 1000;
-
   @PostConstruct
   private void init() {
     AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
-    s3client = AmazonS3ClientBuilder.standard().withRegion(region).withCredentials(new AWSStaticCredentialsProvider(credentials)).build();
+    s3client = AmazonS3ClientBuilder.standard().withRegion(region)
+        .withCredentials(new AWSStaticCredentialsProvider(credentials)).build();
   }
 
   public String uploadImage(MultipartFile multipartFile)

@@ -9,12 +9,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
-import kappa.wikiracer.api.gameMode.GameModeStrategy;
+import kappa.wikiracer.api.gamemode.GameModeStrategy;
 import kappa.wikiracer.exception.GameException;
 import kappa.wikiracer.exception.UserNotFoundException;
 
 public class SyncGame {
+
+  // Minutes
+  private static final int TIMEOUT = 60;
+  private static final int MAX_PLAYERS = 4;
   private Set<String> players;
   private String host;
   private String start;
@@ -25,11 +28,7 @@ public class SyncGame {
   private Map<String, Integer> clicks;
   private Date creationTime;
   private GameModeStrategy gameMode;
-  
-  // Minutes
-  private static final int TIMEOUT = 60;
-  private static final int MAX_PLAYERS = 4;
-  
+
   public SyncGame(String host, String startingArticle, GameModeStrategy gameMode) {
     this.host = host;
     started = false;
@@ -47,7 +46,7 @@ public class SyncGame {
     this.start = startingArticle;
     this.gameMode = gameMode;
   }
-  
+
   public Boolean addPlayer(String player) throws GameException {
     if (players.size() > MAX_PLAYERS) {
       throw new GameException("Lobby full");
@@ -58,7 +57,7 @@ public class SyncGame {
     clicks.put(player, 0);
     return players.add(player);
   }
-  
+
   public Boolean removePlayer(String player) throws UserNotFoundException {
     if (players.remove(player)) {
       finished.remove(player);
@@ -79,7 +78,7 @@ public class SyncGame {
       this.started = started;
     }
   }
-  
+
   public void startGame() throws GameException {
     if (started) {
       throw new GameException("game already started");
@@ -90,15 +89,17 @@ public class SyncGame {
   public String getHost() {
     return host;
   }
-  
+
   public Boolean isFinished() {
     return !finished.containsValue(false);
   }
-  
+
   public Boolean isTimedOut() {
-    return TimeUnit.MINUTES.convert(Calendar.getInstance().getTime().getTime() - creationTime.getTime(), TimeUnit.MILLISECONDS) >= TIMEOUT;
+    return TimeUnit.MINUTES
+        .convert(Calendar.getInstance().getTime().getTime() - creationTime.getTime(),
+            TimeUnit.MILLISECONDS) >= TIMEOUT;
   }
-  
+
   public Boolean inGame(String player) {
     return players.contains(player);
   }
