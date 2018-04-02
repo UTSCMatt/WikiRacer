@@ -1,6 +1,6 @@
 # WikiRacer
 ## Brought to you by Team Kappa
-
+[WikiRacer](https://wikiracer.me)
 # Table of Contents
 * [Team Members](#team_members)
 * [WikiRacer Description](#wikiracer_description)
