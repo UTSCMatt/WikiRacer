@@ -10,6 +10,7 @@ var api = (function () {
             if (xhr.status !== 200) callback("[" + xhr.status + "]" + xhr.responseText, null);
             else callback(null, JSON.parse(xhr.responseText));
         };
+
         xhr.open(method, url, true);
         if (!data) xhr.send();
         else { // converts data to json if there is any
@@ -26,7 +27,6 @@ var api = (function () {
             if (xhr.status !== 200) callback("[" + xhr.status + "]" + xhr.responseText, null);
             else callback(null, JSON.parse(xhr.responseText));
         };
-
 
         xhr.open(method, url, true);
         if (!data) xhr.send();
@@ -62,8 +62,8 @@ var api = (function () {
         send("GET", "/logoff/", null, callback);
     };
 
-    module.makeGame = function (start, end, gameMode, rules, callback) {
-        send("POST", "/api/game/new/", { start: start, end: end, gameMode: gameMode, rules: rules }, callback);
+    module.makeGame = function (start, end, gameMode, rules, syncOpt, callback) {
+        send("POST", "/api/game/new/", { start: start, end: end, gameMode: gameMode, rules: rules, isSync: syncOpt }, callback);
     };
 
     module.joinGame = function (gameId, callback) {
@@ -79,7 +79,7 @@ var api = (function () {
     };
 
     module.getGameList = function (offset, limit, search, callback) {
-        var url = "/api/getGameList?offset=" + offset + "&limit=" + limit;
+        var url = "/api/gameList?offset=" + offset + "&limit=" + limit;
         if (search) {
             url += "&search=" + search;
         }
@@ -87,9 +87,48 @@ var api = (function () {
     };
 
     module.getGameStats = function (gameId, callback) {
-        send("GET", "/api/getGameStats/" + gameId + "/", null, callback);
+        send("GET", "/api/game/" + gameId + "/stats/", null, callback);
     };
 
+    module.startSyncGame = function (gameId, callback) {
+        send("PATCH", "/api/game/realtime/" + gameId + "/start/", null, callback);
+    };
+
+    module.leaveSyncGame = function (gameId, callback) {
+        send("GET", "/api/game/" + gameId + "/leave/", null, callback);
+    };
+
+    module.getLobbyUsers = function (gameId, callback) {
+        send("GET", "/api/game/realtime/" + gameId + "/players/", null, callback);
+    };
+
+    module.postProfilePic = function (file, callback) {
+        send("POST", "/api/profile/image/", { file: file }, callback);
+    };
+
+    module.deleteProfilePic = function (callback) {
+        send("DELETE", "/api/profile/image/", null, callback);
+    };
+
+    module.getProfileData = function (user, callback) {
+        send("GET", "/api/user/" + user + "/game/", null, callback);
+    };
+
+    module.userGames = function (username, showNonFinished, offset, limit, callback) {
+        send("GET", "/api/user/" + username + "/game?showNonFinished=" + showNonFinished + "&offset=" + offset + "&limit=" + limit, null, callback);
+    };
+
+    module.userGamePath = function (gameId, username, callback) {
+        send("GET", "/api/game/" + gameId + "/player/" + username + "/path/", null, callback);
+    };
+
+    module.topStartEndPage = function (limit, callback) {
+        send("GET", "/api/article/mostused?limit=" + limit, null, callback);
+    };
+
+    module.sendMessage = function (gameId, messageContent, callback) {
+        send("POST", "/api/game/realtime/" + gameId + "/message/", { messageContent: messageContent }, callback);
+    };
     return module;
 
 })();

@@ -1,6 +1,10 @@
 package kappa.wikiracer.dao;
 
+import static kappa.wikiracer.api.Api.END_PAGE_KEY;
+import static kappa.wikiracer.api.Api.GAME_CODE_KEY;
+import static kappa.wikiracer.api.Api.GAME_MODE_KEY;
 import static kappa.wikiracer.api.Api.NUM_CLICKS_KEY;
+import static kappa.wikiracer.api.Api.START_PAGE_KEY;
 import static kappa.wikiracer.api.Api.TIME_SPEND_KEY;
 import static kappa.wikiracer.api.Api.USERNAME_KEY;
 
@@ -13,7 +17,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import kappa.wikiracer.exception.GameException;
 
@@ -32,20 +35,22 @@ public class GameDao extends Dao {
    * @return the game id
    * @throws SQLException when database has an error
    */
-  public String createGame(String start, String end, String gameMode) throws SQLException {
+  public String createGame(String start, String end, String gameMode, Boolean isSync)
+      throws SQLException {
     getConnection().close();
     String id = generateGameId();
 
     Connection c = newConnection();
     CallableStatement stmt;
 
-    String sql = "CALL Create_Game(?,?,?,?)";
+    String sql = "CALL Create_Game(?,?,?,?,?)";
 
     stmt = c.prepareCall(sql);
     stmt.setString(1, id);
     stmt.setString(2, start);
     stmt.setString(3, end);
     stmt.setString(4, gameMode);
+    stmt.setBoolean(5, isSync);
 
     stmt.execute();
 
@@ -213,7 +218,7 @@ public class GameDao extends Dao {
     rs.next();
 
     Map<String, Object> result = new HashMap<>();
-    result.put("clicks", rs.getString("NumClicks"));
+    result.put("clicks", rs.getInt("NumClicks"));
     result.put("time", rs.getInt("usedTime"));
 
     c.close();
@@ -262,11 +267,20 @@ public class GameDao extends Dao {
    * @return list of games
    * @throws SQLException when database has an error
    */
-  public List<String> getGameList(String search, int offset, int limit) throws SQLException {
+  public List<Map<String, Object>> getGameList(String search, int offset, int limit)
+      throws SQLException {
     Connection c = getConnection();
     PreparedStatement stmt;
 
-    String sql = "SELECT GameId FROM Games WHERE GameId LIKE ? LIMIT ? OFFSET ?";
+    String sql = "SELECT DISTINCT Games.GameId as GameCode, (SELECT Wiki_Pages.Title FROM "
+        + "Wiki_Pages INNER JOIN Games WHERE "
+        + "Games.GameId = GameCode AND Games.StartId = Wiki_Pages.Id) as StartPage, "
+        + "(SELECT Wiki_Pages.Title FROM Wiki_Pages INNER JOIN Games WHERE "
+        + "Games.GameId = GameCode AND Games.EndId = Wiki_Pages.Id) as "
+        + "EndPage, game_mode.GameMode FROM Games INNER JOIN player_game_map "
+        + "INNER JOIN game_mode WHERE Games.GameMode = game_mode.Id AND "
+        + "player_game_map.GameId = Games.Id AND Finished = 1 AND Games.GameId LIKE ? "
+        + "ORDER BY Games.Id DESC LIMIT ? OFFSET ?";
 
     stmt = c.prepareStatement(sql);
     stmt.setString(1, search + "%");
@@ -275,10 +289,15 @@ public class GameDao extends Dao {
 
     ResultSet rs = stmt.executeQuery();
 
-    ArrayList<String> results = new ArrayList<String>();
+    List<Map<String, Object>> results = new ArrayList<>();
 
     while (rs.next()) {
-      results.add(rs.getString("GameId"));
+      Map<String, Object> currentGame = new HashMap<>();
+      currentGame.put(GAME_CODE_KEY, rs.getString("GameCode"));
+      currentGame.put(START_PAGE_KEY, rs.getString("StartPage"));
+      currentGame.put(END_PAGE_KEY, rs.getString("EndPage"));
+      currentGame.put(GAME_MODE_KEY, rs.getString("GameMode"));
+      results.add(currentGame);
 
     }
     c.close();
@@ -297,22 +316,46 @@ public class GameDao extends Dao {
    */
   public List<Map> getGameStats(String gameId) throws SQLException, GameException {
     Connection c = getConnection();
-    PreparedStatement stmt;
 
-    String sql = "CALL Get_Leaderboard(?)";
-
-    stmt = c.prepareStatement(sql);
-    stmt.setString(1, gameId);
-    ResultSet rs = stmt.executeQuery();
+    String sql = "SELECT Wiki_Pages.Title as StartPage, "
+        + "(SELECT Wiki_Pages.Title FROM Wiki_Pages INNER JOIN Games WHERE "
+        + "Games.GameId = ? AND Games.EndId = Wiki_Pages.Id) as EndPage, game_mode.GameMode FROM "
+        + "Wiki_Pages INNER JOIN Games, game_mode WHERE Games.GameId = ? AND "
+        + "Games.StartId = Wiki_Pages.Id AND Games.GameMode = game_mode.id";
+    PreparedStatement stmt2;
+    stmt2 = c.prepareStatement(sql);
+    stmt2.setString(1, gameId);
+    stmt2.setString(2, gameId);
+    ResultSet rs = stmt2.executeQuery();
 
     List<Map> results = new ArrayList<>();
+
+    if (rs.next()) {
+      Map<String, Object> gamePageAndMode = new HashMap<>();
+      String startPage = rs.getString(1);
+      String endPage = rs.getString(2);
+      String gameMode = rs.getString(3);
+      gamePageAndMode.put(GAME_CODE_KEY, gameId);
+      gamePageAndMode.put(START_PAGE_KEY, startPage);
+      gamePageAndMode.put(END_PAGE_KEY, endPage);
+      gamePageAndMode.put(GAME_MODE_KEY, gameMode);
+      results.add(gamePageAndMode);
+    }
+
+    CallableStatement stmt;
+
+    sql = "CALL Get_Leaderboard(?)";
+
+    stmt = c.prepareCall(sql);
+    stmt.setString(1, gameId);
+    rs = stmt.executeQuery();
 
     while (rs.next()) {
       Map<String, Object> currentResult = new HashMap<>();
       String username = rs.getString(1);
       int timeSpend = rs.getInt(2);
       int numClicks = rs.getInt(3);
-      if(timeSpend < 0 | numClicks < 0){
+      if (timeSpend < 0 | numClicks < 0) {
         throw new GameException(username);
       }
       currentResult.put(USERNAME_KEY, username);
@@ -321,11 +364,69 @@ public class GameDao extends Dao {
       results.add(currentResult);
 
     }
+
     c.close();
     stmt.close();
     rs.close();
 
     return results;
+  }
+
+  public Boolean isSync(String gameId) throws SQLException {
+    Connection c = getConnection();
+    PreparedStatement stmt;
+
+    String sql = "SELECT IsSync FROM Games WHERE GameId LIKE ?";
+
+    stmt = c.prepareStatement(sql);
+    stmt.setString(1, gameId);
+
+    ResultSet rs = stmt.executeQuery();
+
+    rs.next();
+
+    final Boolean result = rs.getBoolean("IsSync");
+
+    c.close();
+    stmt.close();
+    rs.close();
+
+    return result;
+  }
+
+  public void leaveGame(String gameId, String username) throws SQLException {
+    Connection c = getConnection();
+    PreparedStatement stmt;
+
+    String sql = "DELETE FROM player_game_map WHERE GameId = "
+        + "(SELECT Id FROM Games WHERE GameId = ?) "
+        + "AND UserId = (SELECT Id FROM Users WHERE Username = ?)";
+
+    stmt = c.prepareStatement(sql);
+    stmt.setString(1, gameId);
+    stmt.setString(2, username);
+
+    stmt.executeUpdate();
+
+    c.close();
+    stmt.close();
+
+  }
+
+  public void startSyncGame(String gameId) throws SQLException {
+    Connection c = getConnection();
+    PreparedStatement stmt;
+
+    String sql = "UPDATE player_game_map SET StartTime = CURRENT_TIMESTAMP "
+        + "WHERE GameId = (SELECT Id FROM Games WHERE GameId = ?)";
+
+    stmt = c.prepareStatement(sql);
+    stmt.setString(1, gameId);
+
+    stmt.executeUpdate();
+
+    c.close();
+    stmt.close();
   }
 
 }

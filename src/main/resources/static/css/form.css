@@ -1,11 +1,11 @@
 .form {
     display: grid;
-    margin: 32px;
+    margin: 16px;
     padding: 10px 20px;
     color: white;
     border: black 2px solid;
     background-color: #333;
-    overflow: hidden;
+    overflow: auto;
     white-space: nowrap;
 }
 
@@ -33,9 +33,15 @@
     border: black 2px solid;
     padding: 8px;
     width: 25%;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .btn:hover {
     background-color: rgb(64, 128, 255);
     cursor: pointer;
+}
+.hidden{
+    display: none;
 }

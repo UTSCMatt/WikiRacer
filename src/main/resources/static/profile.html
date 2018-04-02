@@ -4,24 +4,63 @@
     <meta charset="UTF-8">
     <title>Wikiracer</title>
     <link href="css/main.css" rel="stylesheet" type="text/css"/>
+    <link href="css/form.css" rel="stylesheet" type="text/css"/>
+    <link href="css/leaderboard.css" rel="stylesheet" type="text/css"/>
+    <link href="css/profile.css" rel="stylesheet" type="text/css"/>
+    <link href="css/modal.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
     <header>
         <a href="index.html" id="title">Wikiracer</a>
     </header>
+
+    <div id="upload_modal" class="modal">
+        <div class="modal_content">
+            <span class="close">&times;</span>
+            <div id="img_form_wrapper">
+                <form id="img_form" class="form" enctype="multipart/form-data">
+                    <div class="form_title">Choose an image to upload</div>
+                    <input type="file" name="upload_img" class="form_element" id="file_upload" accept="image/*" required>
+                    <div>
+                        <button type="button" id="delete_btn" class="btn">Delete</button>
+                        <button type="submit" id="upload_btn" class="btn">Upload</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <ul id="navbar">
         <li class="navelmt"><a href="index.html">Home</a></li>
         <li class="navelmt"><a href="game.html">Play Now</a></li>
         <li class="navelmt"><a href="leaderboard.html">Leaderboards</a></li>   
         <li class="navelmt"><a href="profile.html">Profile</a></li>
     </ul> 
-    <div>This is a placeholder page for when profiles are implemented in final version</div>
-    <div id="profile_uname"></div>
+    <div id="hide_profile_container" class="hidden">
+        <div id="profile_wrapper">
+            <img src="images/profile_placeholder.png" id="profile_pic" alt="Profile Picture">
+            <div id="select_form_wrapper">
+                <form class="form" id="select_game_form">
+                    <div class="form_title">Completed Games</div>
+                    <div class="game_list" id="profile_list">
+                    </div>
+                    <button type="button" class="btn" id="prev_page_btn">Prev Page</button>
+                    <button type="button" class="btn" id="next_page_btn">Next Page</button>
+                </form>
+            </div>
+    
+            <button type="button" id="toggle_hidden_btn" class="btn hidden">Upload/Delete Profile Picture</button>
+    
+            <div id="profile_uname"></div>
+        </div>
+    </div>
+
+    <form class="hidden" id="profile_game_form"></form>
+
     <script src="js/api.js"></script>
     <script src="js/main.js"></script>
     <script src="js/profile.js"></script>
     <footer>
-        <a href='credits.html'>Credits</a>
     </footer>
 </body>
 </html>

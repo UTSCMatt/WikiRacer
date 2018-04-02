@@ -1,4 +1,4 @@
-﻿DELIMITER //
+﻿DROP PROCEDURE IF EXISTS Create_Game;
 
 CREATE PROCEDURE Create_Game (newGameId VARCHAR(255), startTitle VARCHAR(255), endTitle VARCHAR(255), selectedGameMode VARCHAR(255), sync BOOL)
 BEGIN
@@ -12,4 +12,4 @@ BEGIN
 	SET newStartID = (SELECT Id FROM Wiki_Pages WHERE Title=startTitle);
 	SET newEndId = (SELECT Id FROM Wiki_Pages WHERE Title=endTitle);
 	INSERT INTO Games (GameId, StartId, EndId, isSync, GameMode) Values (newGameId, newStartID, newEndId, sync, (SELECT Id FROM game_mode WHERE GameMode=selectedGameMode));
-END //
+END

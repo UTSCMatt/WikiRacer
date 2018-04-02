@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONArray;
 
 public class RulesDao extends Dao {
 
@@ -23,31 +22,32 @@ public class RulesDao extends Dao {
    * @param categories array of categories given from the front end
    * @throws SQLException when database has an error
    */
-  public void banCategories(String gameId, JSONArray categories) throws SQLException {
-    Connection c = getConnection();
-    CallableStatement stmt;
+  public void banCategories(String gameId, Set<String> categories) throws SQLException {
+    if (!categories.isEmpty()) {
+      Connection c = getConnection();
+      CallableStatement stmt;
 
-    String sql = "CALL Ban_Category(?, ?)";
+      String sql = "CALL Ban_Category(?, ?)";
 
-    stmt = c.prepareCall(sql);
+      stmt = c.prepareCall(sql);
 
-    for (int i = 0; i < categories.length(); i++) {
-      String category = categories.getString(i);
-      String fixedCategory = category.replaceAll(":", "%3A");
-      if (!category.startsWith("Category")) {
-        fixedCategory = "Category%3A" + fixedCategory;
+      for (String category : categories) {
+        String fixedCategory = category.replaceAll(":", "%3A");
+        if (!category.startsWith("Category")) {
+          fixedCategory = "Category%3A" + fixedCategory;
+        }
+        fixedCategory = StringUtils.trimToEmpty(fixedCategory);
+        if (!fixedCategory.isEmpty()) {
+          stmt.setString(1, gameId);
+          stmt.setString(2, fixedCategory);
+          stmt.addBatch();
+        }
       }
-      fixedCategory = StringUtils.trimToEmpty(fixedCategory);
-      if (!fixedCategory.isEmpty()) {
-        stmt.setString(1, gameId);
-        stmt.setString(2, fixedCategory);
-        stmt.addBatch();
-      }
+
+      stmt.executeBatch();
+      c.close();
+      stmt.close();
     }
-
-    stmt.executeBatch();
-    c.close();
-    stmt.close();
   }
 
   /**
@@ -89,26 +89,27 @@ public class RulesDao extends Dao {
    * @param articles array of articles given from the front end
    * @throws SQLException when database has an error
    */
-  public void banArticles(String gameId, JSONArray articles) throws SQLException {
-    Connection c = getConnection();
-    CallableStatement stmt;
+  public void banArticles(String gameId, Set<String> articles) throws SQLException {
+    if (!articles.isEmpty()) {
+      Connection c = getConnection();
+      CallableStatement stmt;
 
-    String sql = "CALL Ban_Article(?,?)";
+      String sql = "CALL Ban_Article(?,?)";
 
-    stmt = c.prepareCall(sql);
+      stmt = c.prepareCall(sql);
 
-    for (int i = 0; i < articles.length(); i++) {
-      String article = articles.getString(i);
-      String fixedArticle = StringUtils.trimToEmpty(article);
-      if (!fixedArticle.isEmpty()) {
-        stmt.setString(1, gameId);
-        stmt.setString(2, StringUtils.trimToEmpty(article));
-        stmt.addBatch();
+      for (String article : articles) {
+        String fixedArticle = StringUtils.trimToEmpty(article);
+        if (!fixedArticle.isEmpty()) {
+          stmt.setString(1, gameId);
+          stmt.setString(2, StringUtils.trimToEmpty(article));
+          stmt.addBatch();
+        }
       }
+      stmt.executeBatch();
+      c.close();
+      stmt.close();
     }
-    stmt.executeBatch();
-    c.close();
-    stmt.close();
   }
 
   /**

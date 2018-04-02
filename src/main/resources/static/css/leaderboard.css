@@ -13,6 +13,8 @@
 
 .list_element {
     text-align: left;
+    color: white;
+    text-decoration: none;
 }
 
 .list_element:hover {
@@ -41,10 +43,11 @@
 
 #code_search {
     grid-row: 2;
-
 }
 
 #search_title {
     grid-row: 1;
-
+}
+.hidden{
+    display: none;
 }
