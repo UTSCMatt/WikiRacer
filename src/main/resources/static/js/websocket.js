@@ -5,6 +5,7 @@ var websocket = (function () {
     function connect(gameId, callback) {
         var socket = new SockJS('/wikiracer-websocket');
         stompClient = Stomp.over(socket);
+        stompClient.debug = null;
         stompClient.connect({}, function (frame) {
             stompClient.subscribe('/socket/' + gameId, callback);
         });
