@@ -370,10 +370,13 @@
                     clicksCell.innerHTML = currentPlayerStats.clicks;
                     timeCell.innerHTML = finalTime;
                     pathCell.innerHTML = currentPlayerStats.path;
+                    if (api.getUser() === currentPlayer) {
+                        addFacebook(currentPlayerStats, gameReqs);
+                        addTwitter(currentPlayerStats, gameReqs);
+                    }
                 }
                 var rankingDiv = document.getElementById('ranking_div');
                 rankingDiv.appendChild(rankingTable);
-
             }
 
             if (socketProps.started) {
