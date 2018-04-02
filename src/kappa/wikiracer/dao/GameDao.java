@@ -218,7 +218,7 @@ public class GameDao extends Dao {
     rs.next();
 
     Map<String, Object> result = new HashMap<>();
-    result.put("clicks", rs.getString("NumClicks"));
+    result.put("clicks", rs.getInt("NumClicks"));
     result.put("time", rs.getInt("usedTime"));
 
     c.close();
@@ -267,11 +267,11 @@ public class GameDao extends Dao {
    * @return list of games
    * @throws SQLException when database has an error
    */
-  public List<List<String>> getGameList(String search, int offset, int limit) throws SQLException {
+  public List<Map<String, Object>> getGameList(String search, int offset, int limit) throws SQLException {
     Connection c = getConnection();
     PreparedStatement stmt;
 
-    String sql = "SELECT Games.GameId as GameCode, (SELECT Wiki_Pages.Title FROM Wiki_Pages INNER JOIN Games WHERE Games.GameId = GameCode AND Games.StartId = Wiki_Pages.Id) as StartPage, (SELECT Wiki_Pages.Title FROM Wiki_Pages INNER JOIN Games WHERE Games.GameId = GameCode AND Games.EndId = Wiki_Pages.Id) as EndPage, game_mode.GameMode FROM Games INNER JOIN player_game_map INNER JOIN game_mode WHERE Games.GameMode = game_mode.Id AND player_game_map.GameId = Games.Id AND Finished = 1 AND Games.GameId LIKE ? LIMIT ? OFFSET ?";
+    String sql = "SELECT DISTINCT Games.GameId as GameCode, (SELECT Wiki_Pages.Title FROM Wiki_Pages INNER JOIN Games WHERE Games.GameId = GameCode AND Games.StartId = Wiki_Pages.Id) as StartPage, (SELECT Wiki_Pages.Title FROM Wiki_Pages INNER JOIN Games WHERE Games.GameId = GameCode AND Games.EndId = Wiki_Pages.Id) as EndPage, game_mode.GameMode FROM Games INNER JOIN player_game_map INNER JOIN game_mode WHERE Games.GameMode = game_mode.Id AND player_game_map.GameId = Games.Id AND Finished = 1 AND Games.GameId LIKE ? LIMIT ? OFFSET ? ORDER BY Games.Id DESC";
 
     stmt = c.prepareStatement(sql);
     stmt.setString(1, search + "%");
@@ -280,14 +280,14 @@ public class GameDao extends Dao {
 
     ResultSet rs = stmt.executeQuery();
 
-    List<List<String>> results = new ArrayList<>();
+    List<Map<String, Object>> results = new ArrayList<>();
 
     while (rs.next()) {
-      ArrayList<String> currentGame = new ArrayList<>();
-      currentGame.add(rs.getString("GameCode"));
-      currentGame.add(rs.getString("StartPage"));
-      currentGame.add(rs.getString("EndPage"));
-      currentGame.add(rs.getString("GameMode"));
+      Map<String, Object> currentGame = new HashMap<>();
+      currentGame.put(GAME_CODE_KEY, rs.getString("GameCode"));
+      currentGame.put(START_PAGE_KEY, rs.getString("StartPage"));
+      currentGame.put(END_PAGE_KEY, rs.getString("EndPage"));
+      currentGame.put(GAME_MODE_KEY, rs.getString("GameMode"));
       results.add(currentGame);
 
     }
@@ -379,6 +379,38 @@ public class GameDao extends Dao {
     rs.close();
     
     return result;
+  }
+
+  public void leaveGame(String gameId, String username) throws SQLException {
+    Connection c = getConnection();
+    PreparedStatement stmt;
+
+    String sql = "DELETE FROM player_game_map WHERE GameId = (SELECT Id FROM Games WHERE GameId = ?) AND UserId = (SELECT Id FROM Users WHERE Username = ?)";
+
+    stmt = c.prepareStatement(sql);
+    stmt.setString(1, gameId);
+    stmt.setString(2, username);
+
+    stmt.executeUpdate();
+
+    c.close();
+    stmt.close();
+
+  }
+
+  public void startSyncGame(String gameId) throws SQLException {
+    Connection c = getConnection();
+    PreparedStatement stmt;
+
+    String sql = "UPDATE player_game_map SET StartTime = CURRENT_TIMESTAMP WHERE GameId = (SELECT Id FROM Games WHERE GameId = ?)";
+
+    stmt = c.prepareStatement(sql);
+    stmt.setString(1, gameId);
+
+    stmt.executeUpdate();
+
+    c.close();
+    stmt.close();
   }
 
 }

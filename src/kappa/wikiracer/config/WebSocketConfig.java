@@ -10,16 +10,16 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 @EnableWebSocketMessageBroker
 public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer {
   
-  public static final String SOCKET_DEST = "/socket";
+  public static final String SOCKET_DEST = "/socket/";
 
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
-    registry.addEndpoint("/gs-guide-websocket").withSockJS();
+    registry.addEndpoint("/wikiracer-websocket").withSockJS();
   }
 
   @Override
   public void configureMessageBroker(MessageBrokerRegistry config) {
-    config.enableSimpleBroker(SOCKET_DEST);
-    config.setApplicationDestinationPrefixes("/");
+    config.enableSimpleBroker(SOCKET_DEST.substring(0, SOCKET_DEST.length() - 1));
+    config.setApplicationDestinationPrefixes("/socket");
   }
 }

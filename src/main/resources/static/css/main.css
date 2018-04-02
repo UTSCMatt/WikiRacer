@@ -1,6 +1,6 @@
 
 html {overflow: -moz-scrollbars-vertical;}
-body{
+body {
     margin: auto;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
     font-size: 16px;
@@ -9,9 +9,19 @@ body{
     background: #a4a4a4;
 }
 
-header{
+header {
     margin-top:32px;
     height: 96px;
+}
+
+table, th, td {
+    border: 1px solid white;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+
+table {
+    width: 100%;
 }
 
 footer {
@@ -64,4 +74,15 @@ footer {
 
 .credit_list {
     list-style-type: none;
+}
+
+.thumbnail {
+    max-width: 48px;
+    max-height: 48px;
+    vertical-align: middle;
+}
+
+.thumbnail_cell {
+    width: 1%;
+    white-space: nowrap;
 }

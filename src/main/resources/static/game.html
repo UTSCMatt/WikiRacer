@@ -6,11 +6,23 @@
     <link href="css/main.css" rel="stylesheet" type="text/css"/>
     <link href="css/form.css" rel="stylesheet" type="text/css"/>
     <link href="css/game.css" rel="stylesheet" type="text/css"/>
+    <link href="css/modal.css" rel="stylesheet" type="text/css"/>
+    <link href="css/socialmedia.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
+
     <header>
         <a href="index.html" id="title">Wikiracer</a>
     </header>
+
+    <div id="finished_modal" class="modal">
+        <div class="modal_content">
+            <p id="modal_text"></p>
+            <div id="ranking_div"></div>
+            <button class="btn" type="button" id="proceed_btn">OK</button>
+        </div>
+    </div>
+
     <ul id="navbar">
         <li class="navelmt"><a href="index.html">Home</a></li>
         <li class="navelmt"><a href="game.html">Play Now</a></li>
@@ -19,7 +31,7 @@
     </ul>
     <div id="login_notify">You must log in or create an account before playing</div>
     <div id="form_container" class="hidden">
-        <form class="form" id="new-game_form">
+        <form class="form" id="new_game_form">
             <div class="form_title">Enter Start Page</div>
             <input type="text" id="startpage" class="form_element" placeholder="(Leave empty for random)" />
             <div class="form_title">Enter End Page</div>
@@ -30,6 +42,8 @@
             </div>
 
             <div id="options_menu" class="hidden">
+                <input type="checkbox" id="opt_sync" name="game_sync" value="Realtime"> Real Time Game
+                <br>
                 <input type="radio" id="opt_time" name="game_mode" value="Timed"> Time based scoring
                 <br>
                 <input type="radio" id="opt_clicks" name="game_mode" value="Clicks" checked="checked"> Click based scoring
@@ -51,12 +65,18 @@
         </form>
     </div>
 
+    <div id="lobbybox"></div>
+
     <div id="gamebox"></div>
 
+    <div id="chatbox"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
     <script src="js/api.js"></script>
     <script src="js/main.js"></script>
     <script src="js/game.js"></script>
-    
+    <script src="js/websocket.js"></script>
     <footer>
         <a href='credits.html'>Credits</a>
         <a target="_blank" href="https://privacypolicies.com/privacy/view/G8SzSs">Privacy policy</a>
