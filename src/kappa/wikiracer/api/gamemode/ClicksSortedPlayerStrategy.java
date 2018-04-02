@@ -1,4 +1,4 @@
-package kappa.wikiracer.api.gameMode;
+package kappa.wikiracer.api.gamemode;
 
 import java.util.Map;
 

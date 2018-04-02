@@ -1,23 +1,19 @@
 package kappa.wikiracer.api;
 
-import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import kappa.wikiracer.api.gameMode.ClicksGameModeStrategy;
-import kappa.wikiracer.api.gameMode.GameModeStrategy;
-import kappa.wikiracer.api.gameMode.TimeGameModeStrategy;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-
+import kappa.wikiracer.api.gamemode.ClicksGameModeStrategy;
+import kappa.wikiracer.api.gamemode.GameModeStrategy;
+import kappa.wikiracer.api.gamemode.TimeGameModeStrategy;
 import kappa.wikiracer.config.WebSocketConfig;
 import kappa.wikiracer.exception.GameException;
 import kappa.wikiracer.exception.UserNotFoundException;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 public class SyncGamesManager {
-  
+
   private static final String JOINED = "joined";
   private static final String LEFT = "left";
   private static final String LOBBY_CLOSED = "lobby_closed";
@@ -29,15 +25,15 @@ public class SyncGamesManager {
   private static final String TIME_STAMP = "time_stamp";
   private static final String MESSAGE_CONTENT = "message_content";
   private static final int MAX_GAMES = 1000;
-  
+
   private Map<String, SyncGame> games;
   private SimpMessagingTemplate simpMessagingTemplate;
-  
+
   public SyncGamesManager(SimpMessagingTemplate simpMessagingTemplate) {
     games = new HashMap<>();
     this.simpMessagingTemplate = simpMessagingTemplate;
   }
-  
+
   private Boolean trimGames() {
     Map<String, Boolean> payload = new HashMap<>();
     payload.put(TIMED_OUT, true);
@@ -51,8 +47,9 @@ public class SyncGamesManager {
     }
     return trimmed;
   }
-  
-  public void createGame(String gameId, String host, String startingArticle, String gameMode) throws GameException {
+
+  public void createGame(String gameId, String host, String startingArticle, String gameMode)
+      throws GameException {
     if (games.size() > MAX_GAMES && !trimGames()) {
       throw new GameException("Too many games in progress, try again later");
     }
@@ -64,7 +61,7 @@ public class SyncGamesManager {
     }
     games.put(gameId, new SyncGame(host, startingArticle, mode));
   }
-  
+
   public Boolean joinGame(String gameId, String player) throws GameException {
     SyncGame game = games.get(gameId);
     if (game == null) {
@@ -84,9 +81,10 @@ public class SyncGamesManager {
     } else {
       return false;
     }
-  } 
-  
-  public Boolean leaveGame(String gameId, String player) throws GameException, UserNotFoundException {
+  }
+
+  public Boolean leaveGame(String gameId, String player)
+      throws GameException, UserNotFoundException {
     SyncGame game = games.get(gameId);
     if (game == null) {
       throw new GameException(gameId + " not found");
@@ -108,7 +106,7 @@ public class SyncGamesManager {
     }
     return lobbyClosed;
   }
-  
+
   public void startGame(String gameId, String player) throws GameException {
     SyncGame game = games.get(gameId);
     if (game == null) {
@@ -158,22 +156,22 @@ public class SyncGamesManager {
   }
 
   public void sendMessage(String gameId, String player, String messageContent)
-      throws GameException, UserNotFoundException{
-      SyncGame game = games.get(gameId);
-      if (game == null) {
-        throw new GameException(gameId + " not found");
-      }
-      if(!game.inGame(player)){
-        throw new UserNotFoundException(player + " not found");
-      }
-      Map<String, Object> messageMap = new HashMap<>();
-      messageMap.put(MESSAGE_CONTENT, messageContent);
-      messageMap.put(PLAYER, player);
-      long timeStamp = Instant.now().getEpochSecond();
-      messageMap.put(TIME_STAMP, timeStamp);
-      Map<String, Object> payload = new HashMap<>();
-      payload.put(MESSAGE, messageMap);
-      simpMessagingTemplate.convertAndSend(WebSocketConfig.SOCKET_DEST + gameId, payload);
+      throws GameException, UserNotFoundException {
+    SyncGame game = games.get(gameId);
+    if (game == null) {
+      throw new GameException(gameId + " not found");
+    }
+    if (!game.inGame(player)) {
+      throw new UserNotFoundException(player + " not found");
+    }
+    Map<String, Object> messageMap = new HashMap<>();
+    messageMap.put(MESSAGE_CONTENT, messageContent);
+    messageMap.put(PLAYER, player);
+    long timeStamp = Instant.now().getEpochSecond();
+    messageMap.put(TIME_STAMP, timeStamp);
+    Map<String, Object> payload = new HashMap<>();
+    payload.put(MESSAGE, messageMap);
+    simpMessagingTemplate.convertAndSend(WebSocketConfig.SOCKET_DEST + gameId, payload);
 
   }
 }
