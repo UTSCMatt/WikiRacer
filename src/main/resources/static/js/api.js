@@ -125,6 +125,10 @@ var api = (function () {
     module.topStartEndPage = function (limit, callback){
         send("GET", "/api/article/mostused?limit=" + limit, null, callback);
     };
+
+    module.sendMessage = function(gameId, messageContent, callback){
+        send("POST", "/api/game/realtime/" + gameId + "/message/", {messageContent: messageContent}, callback);
+    }
     return module;
 
 })();

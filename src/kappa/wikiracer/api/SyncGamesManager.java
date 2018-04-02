@@ -1,5 +1,8 @@
 package kappa.wikiracer.api;
 
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +25,9 @@ public class SyncGamesManager {
   private static final String PLAYER = "player";
   private static final String GAME_FINISHED = "game_finished";
   private static final String STARTED = "started";
+  private static final String MESSAGE = "message";
+  private static final String TIME_STAMP = "time_stamp";
+  private static final String MESSAGE_CONTENT = "message_content";
   private static final int MAX_GAMES = 1000;
   
   private Map<String, SyncGame> games;
@@ -149,5 +155,25 @@ public class SyncGamesManager {
       throw new UserNotFoundException("Cannot check players of a game user is not in");
     }
     return game.getPlayers();
+  }
+
+  public void sendMessage(String gameId, String player, String messageContent)
+      throws GameException, UserNotFoundException{
+      SyncGame game = games.get(gameId);
+      if (game == null) {
+        throw new GameException(gameId + " not found");
+      }
+      if(!game.inGame(player)){
+        throw new UserNotFoundException(player + " not found");
+      }
+      Map<String, Object> messageMap = new HashMap<>();
+      messageMap.put(MESSAGE_CONTENT, messageContent);
+      messageMap.put(PLAYER, player);
+      long timeStamp = Instant.now().getEpochSecond();
+      messageMap.put(TIME_STAMP, timeStamp);
+      Map<String, Object> payload = new HashMap<>();
+      payload.put(MESSAGE, messageMap);
+      simpMessagingTemplate.convertAndSend(WebSocketConfig.SOCKET_DEST + gameId, payload);
+
   }
 }

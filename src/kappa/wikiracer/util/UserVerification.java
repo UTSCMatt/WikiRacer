@@ -1,13 +1,17 @@
 package kappa.wikiracer.util;
 
 import org.mindrot.jbcrypt.BCrypt;
+import org.owasp.html.HtmlPolicyBuilder;
+import org.owasp.html.PolicyFactory;
 
 public class UserVerification {
 
   private static final String USERNAME_REGEX = "^[a-zA-Z0-9._-]{3,}$";
 
   public static boolean usernameIsValid(String username) {
-    return username.matches(USERNAME_REGEX);
+    PolicyFactory policy = new HtmlPolicyBuilder().toFactory();
+    String sanitized = policy.sanitize(username);
+    return username.matches(USERNAME_REGEX) && sanitized.equals(username);
   }
 
   public static String createHash(String password) {
