@@ -72,7 +72,7 @@
             gameList.innerHTML = "";
             generateConfigTable(games, gameList, true);
         }
-       
+      
         // generate a table to display the game code, start/end page, and game mode
         function generateConfigTable(data, placement, link){
             var configTable = document.createElement("table");

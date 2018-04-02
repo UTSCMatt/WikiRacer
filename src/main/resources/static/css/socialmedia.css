@@ -1,0 +1,15 @@
+.facebook_btn {
+  background: #3b5998;
+  border-radius: 3px;
+  font-weight: 600;
+  padding: 5px 8px;
+  position: static;
+  margin: 10px auto;
+  width: 100px;
+}
+
+.facebook_btn:hover {
+  cursor: pointer;
+  background: #213A6F
+}
+

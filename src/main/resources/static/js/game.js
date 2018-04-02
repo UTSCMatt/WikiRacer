@@ -498,6 +498,9 @@
                                         window.location.href = "leaderboard.html#" + gameReqs.gameId;
                                     });
                                     modal.style.display = "block";
+                                    addFacebook(res, gameReqs);
+                                    addTwitter(res, gameReqs);
+
                                 }
                                 
                             } else {
@@ -521,6 +524,70 @@
             
         }
 
+        function addTwitter(res, gameReqs){
+            var navBar = document.querySelector(".modal_content");
+            var tweetBtn = document.createElement('a');
+            var href = "";
+            var time = new Date(null);
+            time.setSeconds(res.time);
+            var finalTime = time.toISOString().substr(11, 8);
+//            if(res.isSync){
+//            }
+//            else{
+            href += "I just got from '" +  gameReqs.start + "' to '" + gameReqs.end + "' in " + res.clicks + " clicks and " + finalTime + ". Game Id: " + gameReqs.gameId + ".";
+//            }
+            tweetBtn.href = "https://twitter.com/intent/tweet?text=" + href;
+            tweetBtn.className = "twitter-share-button";
+            tweetBtn.innerHTML = "Tweet";
+            navBar.appendChild(tweetBtn);
+            window.twttr = (function(d, s, id) {
+              var js, fjs = d.getElementsByTagName(s)[0],
+                t = window.twttr || {};
+              if (d.getElementById(id)) return t;
+              js = d.createElement(s);
+              js.id = id;
+              js.src = "https://platform.twitter.com/widgets.js";
+              fjs.parentNode.insertBefore(js, fjs);
+
+              t._e = [];
+              t.ready = function(f) {
+                t._e.push(f);
+              };
+
+              return t;
+            }(document, "script", "twitter-wjs"));
+        }
+        
+        function addFacebook(res, gameReqs) {
+            var modal = document.querySelector(".modal_content");
+            var shareBtn = document.createElement('div');
+            shareBtn.id = "shareBtn";
+            shareBtn.className = "facebook_btn";
+            shareBtn.innerText = "Share";
+            modal.appendChild(shareBtn);
+            var time = new Date(null);
+            time.setSeconds(res.time);
+            var finalTime = time.toISOString().substr(11, 8);
+            (function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) return;
+            js = d.createElement(s); js.id = id;
+            js.src = 'https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.12&appId=1976880799295620&autoLogAppEvents=1';
+            fjs.parentNode.insertBefore(js, fjs);
+          }(document, 'script', 'facebook-jssdk'));
+            shareBtn.onclick = function () {
+              FB.init({
+                appId: '232524440651338',
+                xfbml      : true,
+                version    : 'v2.3'
+              });
+              FB.ui({
+                method: 'share',
+                display: 'popup',
+                href: 'https://wikiracer.me',
+                quote: "I just got from '" +  gameReqs.start + "' to '" + gameReqs.end + "' in " + res.clicks + " clicks and " + finalTime + ". Game Id: " + gameReqs.gameId + "."
+              }, function(response){});
+            }
         function displayChat(gameReqs){
             var chatbox = document.getElementById("chatbox");
             var chatform = document.createElement("form");
