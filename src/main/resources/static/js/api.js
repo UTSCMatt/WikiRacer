@@ -90,7 +90,7 @@ var api = (function () {
         send("GET", "/api/getGameStats/" + gameId + "/", null, callback);
     };
 
-    module.startSyncGame = function(gameId, callback) {
+    module.startSyncGame = function (gameId, callback) {
         send("PATCH", "/api/game/realtime/" + gameId + "/start/", null, callback);
     }
 
@@ -98,21 +98,21 @@ var api = (function () {
         send("GET", "/api/game/" + gameId + "/leave/", null, callback);
     };
 
-    module.getLobbyUsers = function(gameId, callback) {
+    module.getLobbyUsers = function (gameId, callback) {
         send("GET", "/api/game/realtime/" + gameId + "/players/", null, callback);
     };
 
-    module.postProfilePic = function(file, callback) {
-        send("POST", "/api/profile/image/", {file: file}, callback);
+    module.postProfilePic = function (file, callback) {
+        send("POST", "/api/profile/image/", { file: file }, callback);
     };
 
-    module.deleteProfilePic = function(callback) {
+    module.deleteProfilePic = function (callback) {
         send("DELETE", "/api/profile/image/", null, callback);
     };
 
-    module.getProfileData = function(user, callback) {
+    module.getProfileData = function (user, callback) {
         send("GET", "/api/user/" + user + "/game/", null, callback);
-    }; 
+    };
 
     module.userGames = function (username, showNonFinished, offset, limit, callback) {
         send("GET", "/api/user/" + username + "/game?showNonFinished=" + showNonFinished + "&offset=" + offset + "&limit=" + limit, null, callback);
@@ -122,12 +122,12 @@ var api = (function () {
         send("GET", "/api/game/" + gameId + "/player/" + username + "/path/", null, callback);
     };
 
-    module.topStartEndPage = function (limit, callback){
+    module.topStartEndPage = function (limit, callback) {
         send("GET", "/api/article/mostused?limit=" + limit, null, callback);
     };
 
-    module.sendMessage = function(gameId, messageContent, callback){
-        send("POST", "/api/game/realtime/" + gameId + "/message/", {messageContent: messageContent}, callback);
+    module.sendMessage = function (gameId, messageContent, callback) {
+        send("POST", "/api/game/realtime/" + gameId + "/message/", { messageContent: messageContent }, callback);
     }
     return module;
 

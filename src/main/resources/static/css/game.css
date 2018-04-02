@@ -4,17 +4,18 @@
     background-color: white;
     width: 90%;
     padding-bottom: 35%;
-    height:0;
+    height: 0;
     overflow: auto;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 32px;
+    margin-top: 8px;
+    margin-bottom: 16px;
 }
 
 #wikiframe {
     position: absolute;
     background-color: white;
-    top:0;
+    top: 0;
     left: 0;
     width: 100%;
     height: 100%;
@@ -38,8 +39,8 @@
 
 #chatbox{
   position:sticky;
-  width: 100%;
   bottom: 0;
+  width: 100%;
 }
 
 #chat_form{
@@ -87,5 +88,5 @@
   order: 3;
   white-space: normal;
   word-break: break-word;
-  text-alight: left;
+  text-align: left;
 }

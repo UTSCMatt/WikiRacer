@@ -1,7 +1,7 @@
 (function () {
     "use strict";
-    
-    window.addEventListener("load", function() {
+
+    window.addEventListener("load", function () {
 
         var username = api.getUser();
         var showNonFinished = false;
@@ -11,14 +11,14 @@
         var profileName = document.getElementById("profile_uname");
         var profileWrapper = document.getElementById("profile_wrapper");
         var hideProfileContainer = document.getElementById("hide_profile_container");
-        
+
         if (!username) {
             profileWrapper.innerHTML = `You are not logged in`;
             hideProfileContainer.className = '';
 
         } else if (query == username || query == '') {
-            
-            api.userGames(username, false, offset, limit, function(err, res) {
+
+            api.userGames(username, false, offset, limit, function (err, res) {
                 if (err) {
                     console.log(err);
                     alert(err);
@@ -30,11 +30,11 @@
                     var uploadForm = document.getElementById("img_form");
 
                     // uploads the given image to server
-                    uploadForm.addEventListener('submit', function(e) {
+                    uploadForm.addEventListener('submit', function (e) {
                         e.preventDefault();
                         var imgFile = document.getElementById("file_upload").files[0];
                         uploadForm.reset();
-                        api.postProfilePic(imgFile, function(err, res) {
+                        api.postProfilePic(imgFile, function (err, res) {
                             if (err) {
                                 console.log(err);
                                 alert(err);
@@ -46,8 +46,8 @@
 
                     var deleteButton = document.getElementById("delete_btn");
                     // deletes the image from the profile
-                    deleteButton.addEventListener('click', function(e) {
-                        api.deleteProfilePic(function(err, res) {
+                    deleteButton.addEventListener('click', function (e) {
+                        api.deleteProfilePic(function (err, res) {
                             if (err) {
                                 console.log(err);
                                 alert(err);
@@ -59,19 +59,19 @@
 
                     var toggleButton = document.getElementById("toggle_hidden_btn");
                     // adds script to button that pops up modal
-                    toggleButton.addEventListener('click', function(e) {
+                    toggleButton.addEventListener('click', function (e) {
                         var modal = document.getElementById("upload_modal");
                         modal.style.display = "block";
-                        document.getElementsByClassName("close")[0].addEventListener('click', function(e) {
+                        document.getElementsByClassName("close")[0].addEventListener('click', function (e) {
                             modal.style.display = "none";
                         });
                     });
 
                     toggleButton.className = 'btn';
-                    
+
                     var profilePic = document.getElementById("profile_pic");
                     profilePic.src = `/profile/` + username + `/image/`;
-                    profilePic.onerror = function() {
+                    profilePic.onerror = function () {
                         this.src = "images/profile_placeholder.png";
                     };
                     addPageButtons(username);
@@ -79,9 +79,9 @@
                     hideProfileContainer.className = '';
                 }
             });
-            
+
         } else {
-            api.userGames(query, false, offset, limit, function(err, res) {
+            api.userGames(query, false, offset, limit, function (err, res) {
                 if (err) {
                     console.log(err);
                     alert(err);
@@ -90,7 +90,7 @@
 
                     var profilePic = document.getElementById("profile_pic");
                     profilePic.src = `/profile/` + query + `/image/`;
-                    profilePic.onerror = function() {
+                    profilePic.onerror = function () {
                         this.src = "images/profile_placeholder.png";
                     };
                     addPageButtons(query);
@@ -130,8 +130,8 @@
                     }
                 });
             });
-        }; 
-    
+        };
+
         function addLinks(listElmt) {
             // gets the game stats when a game code is clicked
             listElmt.addEventListener('click', function (e) {
@@ -171,7 +171,7 @@
                                 <th>End Page</th>
                                 <th>Game Mode</th>
                                 </tr>`;
-            
+
             var row = configTable.insertRow(-1);
             var codeCell = row.insertCell(0);
             var startPageCell = row.insertCell(1);
@@ -190,7 +190,7 @@
                                 <th>Time Taken</th>
                                 <th>Clicks Taken</th>
                                 </tr>`;
-                       
+
             var userGameData;
             // finds the stats only for the user in the profile page
             for (var i = 1; i < data.length; i++) {
@@ -218,7 +218,7 @@
 
             var pathRow = pathTable.insertRow(-1);
             var pathCell = pathRow.insertCell(0);
-            api.userGamePath(data[0].gameCode, userGameData.username, function(err, path) {
+            api.userGamePath(data[0].gameCode, userGameData.username, function (err, path) {
                 if (err) console.log(err);
                 else {
                     var pathNode = document.createTextNode(path);
@@ -231,6 +231,6 @@
             statsForm.appendChild(pathTable);
             statsForm.className = "form";
         }
-        
+
     });
 })();
