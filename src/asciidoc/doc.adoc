@@ -1,11 +1,409 @@
 = WikiRacer API
+:author: Team Kappa
+:revnumber: 1.00
+:revdate: April 6th, 2018
+Team Kappa
+:toc: left
+:toclevels: 5
 
 === User API
+
+===== POST Login
+*Login to the app*
+
 .request
-include::{snippets}/login/http-request.adoc[]
+include::{snippets}/login200/httpie-request.adoc[]
+
+- URL: /login.
+
+* username: User's username
+* password: User's password
 
 .response
-include::{snippets}/login/http-response.adoc[]
+include::{snippets}/login200/http-response.adoc[]
+
+* 200: Login was successful
+* 401: Invalid username of password
 
 .curl
-include::{snippets}/login/curl-request.adoc[]
+include::{snippets}/login200/curl-request.adoc[]
+
+===== POST Signup
+*Signup to the app*
+
+.request
+include::{snippets}/signup200/httpie-request.adoc[]
+
+- URL: /signup/
+
+* username: Desired username of at least 3 characters
+* password: Desired password
+
+.response
+include::{snippets}/signup200/http-response.adoc[]
+
+* 200: User signed up
+* 400: Username invalid
+* 409: Username in use
+
+.curl
+include::{snippets}/signup200/curl-request.adoc[]
+
+===== GET Logoff
+*Logoff from the app*
+
+.request
+include::{snippets}/logoff200/httpie-request.adoc[]
+
+- URL: /logoff/
+
+.response
+include::{snippets}/logoff200/http-response.adoc[]
+
+* 200: User logged off or was not logged in
+
+.curl
+include::{snippets}/logoff200/curl-request.adoc[]
+
+===== POST Image
+*Add a profile image for the current user*
+
+.request
+- URL: /api/profile/image/
+- Method: POST
+- Content-Type: multipart/form-data
+
+* File: The image file with a max width/height of 1000 pixels
+
+.response
+include::{snippets}/addImage200/http-response.adoc[]
+
+* 200: Image successfully added
+* 400: No file provided
+* 400: File not valid due to file type, size, or image dimensions
+* 401: Not logged in
+
+.curl
+include::{snippets}/addImage200/curl-request.adoc[]
+
+===== GET Image
+*Get the profile image for a given user*
+
+.request
+include::{snippets}/getImage200/httpie-request.adoc[]
+
+- URL: /profile/{user}/image/
+
+* user: Whose image to retrieve
+
+.response
+- Content-Type: image/jpeg
+
+* 200: User found and image retrieved
+* 404: User not found
+
+.curl
+include::{snippets}/getImage200/curl-request.adoc[]
+
+===== DELETE Image
+*Delete the profile image of the current user*
+
+.request
+include::{snippets}/deleteImage200/httpie-request.adoc[]
+
+- URL: /api/profile/image/
+
+.response
+include::{snippets}/deleteImage200/http-response.adoc[]
+
+* 200: Image deleted
+* 401: Not logged in
+* 404: No image to delete
+
+.curl
+include::{snippets}/deleteImage200/curl-request.adoc[]
+
+=== Game API
+
+===== POST New Game
+*Create a new game*
+
+.request
+include::{snippets}/startGame200/httpie-request.adoc[]
+
+- URL: /api/game/new/
+
+* start: The article to start at, random if blank
+* end: The article to end at, random if blank
+* gameMode: 'clicks' or 'timed'
+	- clicks: Leaderboard is sorted by least clicks
+	- timed: Leaderboard is sorted by fasted time
+* isSync: (Boolean) If the game is realtime or not
+* Rules: (JSON String)
+	- categories: List of categories to ban
+	- articles: List of articles to ban
+
+.response
+include::{snippets}/startGame200/http-response.adoc[]
+
+* 200: Object
+	- start: The article the new game starts at
+	- end: The article the new game ends at
+	- id: The game id
+	- isSync: (Boolean) If the game is realtime or not
+* 400: Invalid starting or ending article
+* 401: Not logged in
+* 404: Article does not exist in Wikipedia
+
+.curl
+include::{snippets}/startGame200/curl-request.adoc[]
+
+===== POST Join Existing Game
+*Join an existing game*
+
+.request
+include::{snippets}/joinGame200/httpie-request.adoc[]
+
+- URL: /api/game/join/
+
+* gameId: The id of the game to join
+
+.response
+include::{snippets}/joinGame200/http-response.adoc[]
+
+* 200: Object
+	- start: The article the new game starts at
+	- end: The article the new game ends at
+	- id: The game id
+	- isSync: (Boolean) If the game is realtime or not
+* 400: User already in game or game does not exist
+* 401: Not logged in
+
+.curl
+include::{snippets}/joinGame200/curl-request.adoc[]
+
+==== POST Go To Page
+*For a given game, go to another article*
+
+.request
+include::{snippets}/goto200/httpie-request.adoc[]
+
+- URL: /api/game/{gameId}/goto/
+
+* gameId: The id of the game being played
+* nextPage: The page to go to
+
+.response
+include::{snippets}/goto200/http-response.adoc[]
+
+* 200: Object
+	- clicks: Number of clicks used
+	- finished: (Boolean) If the player has finished or not
+	- time: Seconds since the player started
+	- isSync: (Boolean) If the game is realtime or not
+	- current_page: The current page the user is on
+* 400: The user has already finished the game
+* 401: Not logged in or has not joined game
+* 401: The attempted page is banned by the rules
+* 404: The attempted page cannot be reached from the current page or does not exist at all
+
+.curl
+include::{snippets}/goto200/curl-request.adoc[]
+
+==== Realtime Game Only API
+
+===== GET Leave Game
+*Leave a game lobby*
+
+.request
+include::{snippets}/leave200/httpie-request.adoc[]
+
+- URL: /api/game/{gameId}/leave/
+
+* gameId: The id of the game to leave
+
+.response
+include::{snippets}/leave200/http-response.adoc[]
+
+* 200: Game left
+* 400: User not in game or game does not exist
+* 401: Not logged in
+
+.curl
+include::{snippets}/leave200/curl-request.adoc[]
+
+===== GET Lobby Players
+*Get players in a lobby*
+
+.request
+include::{snippets}/lobbyList200/httpie-request.adoc[]
+
+- URL: /api/game/realtime/{gameId}/players/
+
+* gameId: The id of the game
+
+.response
+include::{snippets}/lobbyList200/http-response.adoc[]
+
+* 200: List of players in lobby
+* 400: Game does not exist
+* 401: Not logged in or not a player in the lobby
+
+.curl
+include::{snippets}/lobbyList200/curl-request.adoc[]
+
+===== PATCH Start Game
+*Start a realtime game*
+
+.request
+include::{snippets}/start200/httpie-request.adoc[]
+
+- URL: /api/game/realtime/{gameId}/start/
+
+* gameId: The id of the game to start
+
+.response
+include::{snippets}/start200/http-response.adoc[]
+
+* 200: Game started
+* 400: Game already started, does not exist, or player is not the host
+* 401: Not logged in
+
+.curl
+include::{snippets}/start200/curl-request.adoc[]
+
+===== POST Message
+*Post a message to a realtime game's chat*
+
+.request
+include::{snippets}/message200/httpie-request.adoc[]
+
+- URL: /api/game/realtime/{gameId}/message/
+
+* gameId: The id of the game to send a message to
+* messageContent: Content of the message
+
+.response
+include::{snippets}/message200/http-response.adoc[]
+
+* 200: Message sent successfully
+* 400: Not logged in or not in the game
+* 404: Game does not exist
+
+.curl
+include::{snippets}/message200/curl-request.adoc[]
+
+=== Stats API
+
+===== GET Game List
+*Get a list of games*
+
+.request
+include::{snippets}/gameList200/httpie-request.adoc[]
+
+- URL: /api/gameList
+
+* search: Limit games to id that belong with the given input
+* offset: Offset the returned list, default 0
+* limit: Limit the results by the input, default 10, max 50
+
+.response
+include::{snippets}/gameList200/http-response.adoc[]
+
+* 200: List of Objects
+	- startPage: The page the game started at
+	- gameCode: The id of the game
+	- endPage: The page the game ended at
+	- gameMode: The mode of the game
+
+.curl
+include::{snippets}/gameList200/curl-request.adoc[]
+
+===== GET Game Stats
+*Get the stats of a given game*
+
+.request 
+include::{snippets}/gameStats200/httpie-request.adoc[]
+
+- URL: /api/game/{gameId}/stats/
+
+* gameId: The id of the game to get stats of
+
+.response
+include::{snippets}/gameStats200/http-response.adoc[]
+
+* 200: List of Objects
+	- 1st element: Object
+		* startPage: The page the game started at
+		* gameCode: The id of the game
+		* endPage: The page the game ended at
+		* gameMode: The mode of the game
+	- All other elements: Object
+		* numClicks: Clicks taken
+		* timeSpend: Time spent in seconds
+		* username: The player's username
+
+.curl
+include::{snippets}/gameStats200/curl-request.adoc[]
+
+===== GET User Games
+*Get a list of a user's games*
+
+.request 
+include::{snippets}/userGameStats200/httpie-request.adoc[]
+
+- URL: /api/user/{username}/game
+
+* username: The user to get stats of
+* showNonFinished: (Boolean) Show unfinished games or not, default False
+* offset: Offset the returned list, default 0
+* limit: Limit the results by the input, default 10
+
+.response
+include::{snippets}/userGameStats200/http-response.adoc[]
+
+* 200: Object
+	- games: List of Game Ids
+	- match: If getting the games of the signed in user or not
+* 404: User not found
+
+.curl
+include::{snippets}/userGameStats200/curl-request.adoc[]
+
+===== GET Path
+*Get the path a user took for a given game*
+
+.request
+include::{snippets}/path200/httpie-request.adoc[]
+
+- URL: /api/game/{gameId}/player/{username}/path/
+
+* gameId: The game to get the path of
+* username: The user whose path to get
+
+.response
+include::{snippets}/path200/http-response.adoc[]
+
+* 200: Path as a string
+* 404: User not found
+
+.curl
+include::{snippets}/path200/curl-request.adoc[]
+
+===== GET Most Used
+*Get the articles used most as start and end articles*
+
+.request
+include::{snippets}/top200/httpie-request.adoc[]
+
+- URL: /api/article/mostused
+
+* limit: Limit the results by the input, default 10
+
+.response
+include::{snippets}/top200/http-response.adoc[]
+
+* 200: List of most used articles in ordered by use in descending order
+
+.curl
+include::{snippets}/top200/curl-request.adoc[]
