@@ -1,0 +1,11 @@
+= WikiRacer API
+
+=== User API
+.request
+include::{snippets}/login/http-request.adoc[]
+
+.response
+include::{snippets}/login/http-response.adoc[]
+
+.curl
+include::{snippets}/login/curl-request.adoc[]
