@@ -3,6 +3,8 @@
 [WikiRacer](https://wikiracer.me)
 
 [YouTube Demo](https://www.youtube.com/watch?v=Q6vgThFhmEM)
+
+[API Documentation](https://wikiracer.me/api.html)
 # Table of Contents
 * [Team Members](#team_members)
 * [WikiRacer Description](#wikiracer_description)
