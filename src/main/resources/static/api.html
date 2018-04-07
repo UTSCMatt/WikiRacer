@@ -486,7 +486,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="ulist">
 <ul>
 <li>
-<p>URL: /login.</p>
+<p>URL: /login/</p>
 <div class="ulist">
 <ul>
 <li>
@@ -525,9 +525,11 @@ Content-Length: 16
 <div class="listingblock">
 <div class="title">curl</div>
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">$ curl 'https://wikiracer.me/login/' -i -X POST \
-    -H 'Content-Type: application/json' \
-    -d 'username=test&amp;password=test'</code></pre>
+<pre class="highlight"><code class="language-bash" data-lang="bash">$ curl -i -X POST \
+    -H "Content-Type:application/x-www-form-urlencoded" \
+    -d "username=username" \
+    -d "password=password" \
+  'https://wikiracer.me/login/'</code></pre>
 </div>
 </div>
 </div>
@@ -590,9 +592,11 @@ Content-Length: 16
 <div class="listingblock">
 <div class="title">curl</div>
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">$ curl 'https://wikiracer.me/signup/' -i -X POST \
-    -H 'Content-Type: application/json' \
-    -d 'username=autosignup&amp;password=password'</code></pre>
+<pre class="highlight"><code class="language-bash" data-lang="bash">$ curl -i -X POST \
+    -H "Content-Type:application/x-www-form-urlencoded" \
+    -d "username=username" \
+    -d "password=password" \
+  'https://wikiracer.me/signup/'</code></pre>
 </div>
 </div>
 </div>
@@ -634,7 +638,7 @@ Content-Length: 12
 <div class="listingblock">
 <div class="title">curl</div>
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">$ curl 'https://wikiracer.me/logoff/' -i -X GET</code></pre>
+<pre class="highlight"><code class="language-bash" data-lang="bash">$ curl 'https://wikiracer.me/logoff/' -i -X GET -H 'Cookie:JSESSIONID=MOCKJESSIONID'</code></pre>
 </div>
 </div>
 </div>
@@ -695,6 +699,7 @@ Content-Length: 9
 <div class="content">
 <pre class="highlight"><code class="language-bash" data-lang="bash">$ curl 'https://wikiracer.me/api/profile/image/' -i -X POST \
     -H 'Content-Type: multipart/form-data' \
+    -H 'Cookie:JSESSIONID=MOCKJESSIONID' \
     -F 'file=@profile_placeholder.png;type=multipart/form-data'</code></pre>
 </div>
 </div>
@@ -793,7 +798,7 @@ Content-Length: 9
 <div class="listingblock">
 <div class="title">curl</div>
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">$ curl 'https://wikiracer.me/api/profile/image/' -i -X DELETE</code></pre>
+<pre class="highlight"><code class="language-bash" data-lang="bash">$ curl 'https://wikiracer.me/api/profile/image/' -H 'Cookie:JSESSIONID=MOCKJESSIONID' -i -X DELETE</code></pre>
 </div>
 </div>
 </div>
@@ -904,7 +909,7 @@ Content-Length: 89
 <div class="title">curl</div>
 <div class="content">
 <pre class="highlight"><code class="language-bash" data-lang="bash">$ curl 'https://wikiracer.me/api/game/new/' -i -X POST \
-    -d 'start=Canada&amp;end=Toronto&amp;gameMode=clicks&amp;isSync=false&amp;rules=%7B%22categories%22%3A%5B%22Rocky+Mountains%22%2C%22Urban+sprawl%22%5D%2C%22articles%22%3A%5B%22North+America%22%2C%22Provinces+and+territories+of+Canada%22%5D%7D'</code></pre>
+    -H 'Cookie:JSESSIONID=MOCKJESSIONID' -d 'start=Canada&amp;end=Toronto&amp;gameMode=clicks&amp;isSync=false&amp;rules=%7B%22categories%22%3A%5B%22Rocky+Mountains%22%2C%22Urban+sprawl%22%5D%2C%22articles%22%3A%5B%22North+America%22%2C%22Provinces+and+territories+of+Canada%22%5D%7D'</code></pre>
 </div>
 </div>
 </div>
@@ -977,7 +982,7 @@ Content-Length: 89
 <div class="title">curl</div>
 <div class="content">
 <pre class="highlight"><code class="language-bash" data-lang="bash">$ curl 'https://wikiracer.me/api/game/join/' -i -X POST \
-    -d 'gameId=763a5aac49064572a0b4744beb0440c6'</code></pre>
+    -d 'gameId=763a5aac49064572a0b4744beb0440c6' -H 'Cookie:JSESSIONID=MOCKJESSIONID'</code></pre>
 </div>
 </div>
 </div>
@@ -1062,7 +1067,7 @@ Content-Length: 77
 <div class="title">curl</div>
 <div class="content">
 <pre class="highlight"><code class="language-bash" data-lang="bash">$ curl 'https://wikiracer.me/api/game/763a5aac49064572a0b4744beb0440c6/goto/' -i -X POST \
-    -d 'nextPage=Toronto'</code></pre>
+    -d 'nextPage=Toronto' -H 'Cookie:JSESSIONID=MOCKJESSIONID'</code></pre>
 </div>
 </div>
 </div>
@@ -1119,7 +1124,7 @@ Content-Length: 9
 <div class="listingblock">
 <div class="title">curl</div>
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">$ curl 'https://wikiracer.me/api/game/850999f7e05a4b19bbae8fa7a682e3c3/leave/' -i -X GET</code></pre>
+<pre class="highlight"><code class="language-bash" data-lang="bash">$ curl 'https://wikiracer.me/api/game/850999f7e05a4b19bbae8fa7a682e3c3/leave/' -i -X GET -H 'Cookie:JSESSIONID=MOCKJESSIONID'</code></pre>
 </div>
 </div>
 </div>
@@ -1174,7 +1179,7 @@ Content-Length: 16
 <div class="listingblock">
 <div class="title">curl</div>
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">$ curl 'https://wikiracer.me/api/game/realtime/850999f7e05a4b19bbae8fa7a682e3c3/players/' -i -X GET</code></pre>
+<pre class="highlight"><code class="language-bash" data-lang="bash">$ curl 'https://wikiracer.me/api/game/realtime/850999f7e05a4b19bbae8fa7a682e3c3/players/' -i -X GET -H 'Cookie:JSESSIONID=MOCKJESSIONID'</code></pre>
 </div>
 </div>
 </div>
@@ -1229,7 +1234,7 @@ Content-Length: 9
 <div class="listingblock">
 <div class="title">curl</div>
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">$ curl 'https://wikiracer.me/api/game/realtime/850999f7e05a4b19bbae8fa7a682e3c3/start/' -i -X PATCH</code></pre>
+<pre class="highlight"><code class="language-bash" data-lang="bash">$ curl 'https://wikiracer.me/api/game/realtime/850999f7e05a4b19bbae8fa7a682e3c3/start/' -i -X PATCH -H 'Cookie:JSESSIONID=MOCKJESSIONID'</code></pre>
 </div>
 </div>
 </div>
@@ -1289,7 +1294,7 @@ Content-Length: 9
 <div class="title">curl</div>
 <div class="content">
 <pre class="highlight"><code class="language-bash" data-lang="bash">$ curl 'https://wikiracer.me/api/game/realtime/850999f7e05a4b19bbae8fa7a682e3c3/message/' -i -X POST \
-    -d 'messageContent=Hello+world'</code></pre>
+    -d 'messageContent=Hello+world' -H 'Cookie:JSESSIONID=MOCKJESSIONID'</code></pre>
 </div>
 </div>
 </div>
